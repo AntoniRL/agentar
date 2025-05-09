@@ -11,6 +11,13 @@ Język programowania agentowego do modelowania inteligentnych zachowań.
     pip install antlr4-tools
     pip install antlr4-python3-runtime
 
+2. Aktywacja venv-agentar:
+    ```bash
+    source venv-agentar/bin/activate
+
+    deactivate
+    ```
+
 2. Użycie:
     - Generowanie parsera i lexera
     ```bash
@@ -19,5 +26,5 @@ Język programowania agentowego do modelowania inteligentnych zachowań.
     ```
     - uruchomienie interpretera
     ```bash
-    python3 -m src.agentar examples/hello.agar
+    agentar run examples/hello.agar
     ```
