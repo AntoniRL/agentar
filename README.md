@@ -18,7 +18,7 @@ Język programowania agentowego do modelowania inteligentnych zachowań.
     deactivate
     ```
 
-2. Użycie:
+3. Użycie:
     - Generowanie parsera i lexera
     ```bash
     cd src/antlr/
@@ -28,3 +28,9 @@ Język programowania agentowego do modelowania inteligentnych zachowań.
     ```bash
     agentar run examples/hello.agar
     ```
+
+## Rebuilding the Parser
+After modifying grammar files:
+```bash
+./scripts/generate_parser.sh
+```
