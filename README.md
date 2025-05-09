@@ -21,16 +21,9 @@ Język programowania agentowego do modelowania inteligentnych zachowań.
 3. Użycie:
     - Generowanie parsera i lexera
     ```bash
-    cd src/antlr/
-    antlr4 -Dlanguage=Python3 Agentar.g4 -o gen/
+    ./scripts/generate_parser.sh
     ```
     - uruchomienie interpretera
     ```bash
     agentar run examples/hello.agar
     ```
-
-## Rebuilding the Parser
-After modifying grammar files:
-```bash
-./scripts/generate_parser.sh
-```
