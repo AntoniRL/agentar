@@ -1,0 +1,17 @@
+# ANTLR
+src/antlr/gen/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Systemowe
+.DS_Store
+*.swp
+
+# IDE
+.vscode/
+.idea/
