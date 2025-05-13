@@ -1,0 +1,1 @@
+# Visitor, który buduje AST z drzewa składniowego ANTLR (dziedziczy po AgentarVisitor).
