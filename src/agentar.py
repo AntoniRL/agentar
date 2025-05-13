@@ -1,7 +1,23 @@
 import sys
 from antlr4 import *
 
-from compiler.interpreter import run_agentar
+from antlr.AgentarLexer import AgentarLexer
+from antlr.AgentarParser import AgentarParser
+from antlr.AgentarVisitor import AgentarVisitor
+from interpreter.interpreter import AgentarInterpreter
+
+def run_agentar(file_path):
+    input_stream = FileStream(file_path)
+    lexer = AgentarLexer(input_stream)
+    stream = CommonTokenStream(lexer)
+    parser = AgentarParser(stream)
+    tree = parser.program()
+    
+    builder = ASTBuilder()
+    ast = builder.visit(tree)
+
+    interpreter = AgentarInterpreter()
+    interpreter.interpret(ast)
 
 def main():
     if len(sys.argv) < 2:
