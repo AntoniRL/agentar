@@ -13,12 +13,9 @@ def run_agentar(file_path):
     stream = CommonTokenStream(lexer)
     parser = AgentarParser(stream)
     tree = parser.program()
-    
-    builder = ASTBuilder()
-    ast = builder.visit(tree)
 
     interpreter = AgentarInterpreter()
-    interpreter.interpret(ast)
+    interpreter.visit(tree)
 
 def main():
     if len(sys.argv) < 2:
