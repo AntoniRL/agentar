@@ -18,6 +18,12 @@ Język programowania agentowego do modelowania inteligentnych zachowań.
     deactivate
     ```
 
+3. Po zamianie struktury plików aktualizacja pakietu agentar.
+    (wewnątrz folderu agentar i w venv-agentar)
+    ```bash
+    pip install -e .
+    ```
+
 3. Użycie:
     - Generowanie parsera i lexera
     ```bash
