@@ -10,7 +10,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "agentar = agentar:main",  # Komenda 'agentar' będzie wywoływać funkcję main() z agenter.py
+            "agentar = cli:main",  # Komenda 'agentar' będzie wywoływać funkcję main() z cli.py
         ],
     },
     python_requires=">=3.8",

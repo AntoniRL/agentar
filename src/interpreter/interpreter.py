@@ -1,60 +1,50 @@
 # -*- coding: utf-8 -*- 
 # Główna klasa interpretera – odwiedza AST i wykonuje go.
 
-import sys
-from antlr4 import *
+# agentar/interpreter/interpreter.py
 
-from antlr.AgentarLexer import AgentarLexer
-from antlr.AgentarParser import AgentarParser
-from antlr.AgentarVisitor import AgentarVisitor
+from interpreter.agenter_builtins import builtins
+from core.agent import *
+from ast_tree.nodes import * 
 
-class AgentarInterpreter(AgentarVisitor):
+class AgentarInterpreter:
     def __init__(self):
-        self.variables = {}  # Przechowuje zmienne
-    
-    # Obsługa wyrażeń -------------------------------------------
-    def visitIntLiteral(self, ctx):
-        return int(ctx.INT().getText())
-    
-    def visitFloatLiteral(self, ctx):
-        return float(ctx.FLOAT().getText())
-    
-    def visitStringLiteral(self, ctx):
-        return ctx.STRING().getText()[1:-1]  # Usuwa cudzysłowy
-    
-    def visitBoolLiteral(self, ctx):
-        return ctx.BOOL().getText() == 'true'
-    
-    def visitVarReference(self, ctx):
-        var_name = ctx.ID().getText()
-        if var_name not in self.variables:
-            raise NameError(f"Nieznana zmienna: {var_name}")
-        return self.variables[var_name]
-    
-    # Operacje matematyczne -------------------------------------
-    def visitAddSubExpr(self, ctx):
-        left = self.visit(ctx.expression(0))
-        right = self.visit(ctx.expression(1))
-        op = ctx.op.text
-        return left + right if op == '+' else left - right
-    
-    def visitMulDivExpr(self, ctx):
-        left = self.visit(ctx.expression(0))
-        right = self.visit(ctx.expression(1))
-        op = ctx.op.text
-        return left * right if op == '*' else left / right
-    
-    # Instrukcje ------------------------------------------------
-    def visitPrintStmt(self, ctx):
-        value = self.visit(ctx.expression())
-        print(value)
-    
-    def visitVariableDecl(self, ctx):
-        var_name = ctx.ID().getText()
-        if ctx.expression():
-            self.variables[var_name] = self.visit(ctx.expression())
-    
-    def visitAssignment(self, ctx):
-        var_name = ctx.ID().getText()
-        self.variables[var_name] = self.visit(ctx.expression())
+        self.variables = {}
+
+    def interpret(self, program: Program):
+        for stmt in program.statements:
+            self.execute(stmt)
+
+    def execute(self, node):
+        if isinstance(node, VariableDecl):
+            value = self.evaluate(node.expression) if node.expression else None
+            self.variables[node.name] = value
+        elif isinstance(node, Assignment):
+            self.variables[node.name] = self.evaluate(node.expression)
+        elif isinstance(node, PrintStatement):
+            value = self.evaluate(node.expression)
+            builtins["print"](value)
+        else:
+            raise RuntimeError(f"Nieobsługiwany typ instrukcji: {node}")
+
+    def evaluate(self, expr):
+        if isinstance(expr, Literal):
+            return expr.value
+        elif isinstance(expr, VarReference):
+            if expr.name not in self.variables:
+                raise NameError(f"Nieznana zmienna: {expr.name}")
+            return self.variables[expr.name]
+        elif isinstance(expr, BinaryOp):
+            left = self.evaluate(expr.left)
+            right = self.evaluate(expr.right)
+            if expr.op == '+':
+                return left + right
+            elif expr.op == '-':
+                return left - right
+            elif expr.op == '*':
+                return left * right
+            elif expr.op == '/':
+                return left / right
+        else:
+            raise RuntimeError(f"Nieobsługiwane wyrażenie: {type(expr)}")
 

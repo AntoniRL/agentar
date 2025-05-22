@@ -5,6 +5,7 @@ from antlr.AgentarLexer import AgentarLexer
 from antlr.AgentarParser import AgentarParser
 from antlr.AgentarVisitor import AgentarVisitor
 from interpreter.interpreter import AgentarInterpreter
+from ast_tree.builder import ASTBuilder
 
 def run_agentar(file_path):
     input_stream = FileStream(file_path)
