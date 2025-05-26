@@ -131,7 +131,7 @@ agent <agent_name> {
 | `print(...)`   | Debugowanie | dowolnie |
 | `kill()`       | Zakończenie działania agenta | dowolnie |
 | `kill_child(child_id)` | Usunięcie dzieci | dowolnie |
-| `spawn(agent_name, personal_name)`   | Tworzenie dzieci | `initialize`, `action` |
+| `spawn(agent_name, personal_name, fields_of_agent)`   | Tworzenie dzieci | `initialize`, `action` |
 | `sleep(ms)`    | Pauza w wykonaniu | `action`, `receive` |
 
 ### Kontrola przepływów
@@ -155,7 +155,7 @@ agent <agent_name> {
 | `string` | Tekst                             |
 | `list`   | Lista wartości                    |
 | `dict`   | Słownik (klucz → wartość)         |
-| `ID`     | np. `.1.1`         |
+| `agentID`| np. `.1.1`         |
 
 
 ### Obsługa list i map
