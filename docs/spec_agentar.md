@@ -40,7 +40,7 @@ agent mother {
 agent <agent_name> {
     fields {
         // Pola wbudowane patrz niżej.
-        <name>: <type> = <value>;     // np. counter: int = 0;
+        <type> <name> = <value>;     // np. int counter = 0;
     }
 
     initialize {

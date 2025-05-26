@@ -1,5 +1,7 @@
 # ANTLR
 src/antlr/gen/
+*.jar
+java_tree/
 
 # Python
 __pycache__/

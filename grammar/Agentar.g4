@@ -2,8 +2,8 @@ grammar Agentar;
 
 // PARSER RULES ---------------------------------------
 
-program: 
-    : motherDecl agentDecl* EOF
+program 
+    : (motherDecl | agentDecl)* EOF
     ;
 
 statement: 
@@ -13,7 +13,7 @@ statement:
     ;
 
 // === Mother declaration
-motherAgentDecl
+motherDecl
     : 'agent' 'mother' '{' agentBody '}'
     ;
 
@@ -32,7 +32,7 @@ fieldSection
     ;
 
 fieldDecl
-    : ID ':' type ('=' literal)? ';'
+    : type ID ('=' literal)? ';'
     ;
 
 actionSection
@@ -45,29 +45,29 @@ block
 // === End agent declaration
 
 printStmt: 'print' '(' expression ')';
+
 variableDecl: type ID ('=' expression)?;
+
 assignment
-    : ID '=' expression                             # SimpleAssign
-    | expression '[' expression ']' '=' expression  # IndexAssign
+    : ID '=' expression                                # SimpleAssign
+    | expression '[' expression ']' '=' expression     # IndexAssign
     ;
 
-type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'matrix';
+type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map';
 
-expression:
-    NOT expresion # NotExpr
-    | expresion AND expression # AndExpr
-    | expresion OR expression # OrExpr
-    | expresion XOR expression # XorExpr
-    | expression op=('*'|'/') expression   # MulDivExpr
-    | expression op=('+'|'-') expression # AddSubExpr
-    | expression op=('=='|'!='|'<'|'>') expression # CompareExpr
-    | matrixLiteral                      # MatrixExpr
-    | listLiteral                        # ListExpr
-    | mapLiteral                         # MapExpr
-    | literal                            # LiteralExpr
-    | ID                                 # VarReference
-    | '(' expression ')'                 # ParenExpr
-    | expression '[' expression ']'      # IndexExpr
+expression
+    : NOT expression                         # NotExpr
+    | expression AND expression              # AndExpr
+    | expression OR expression               # OrExpr
+    | expression XOR expression              # XorExpr
+    | expression op=('*'|'/') expression    # MulDivExpr
+    | expression op=('+'|'-') expression    # AddSubExpr
+    | listLiteral                           # ListExpr
+    | mapLiteral                            # MapExpr
+    | literal                               # LiteralExpr
+    | ID                                    # VarReference
+    | '(' expression ')'                    # ParenExpr
+    | expression '[' expression ']'         # IndexExpr
     ;
 
 listLiteral
@@ -78,20 +78,17 @@ mapLiteral
     : '{' (ID ':' expression (',' ID ':' expression)*)? '}'
     ;
 
-matrixLiteral
-    : '[' listLiteral (',' listLiteral)* ']'
+literal
+    : INT       # IntLiteral
+    | FLOAT     # FloatLiteral
+    | STRING    # StringLiteral
+    | BOOL      # BoolLiteral
     ;
 
-literal: 
-    INT     # IntLiteral
-    | FLOAT # FloatLiteral
-    | STRING # StringLiteral
-    | BOOL   # BoolLiteral
-    ;
+// === End of parser rules
 
 
 // LEXER RULES ---------------------------------------
-
 ID: [a-zA-Z_][a-zA-Z0-9_]*;
 INT: [0-9]+;
 FLOAT: [0-9]+ '.' [0-9]+;
@@ -120,7 +117,7 @@ GT: '>';
 NOT: 'NOT';
 AND: 'AND';
 OR: 'OR';
-XOR: 'XOR'
+XOR: 'XOR';
 
 // Whitespace and comments
 BLOCK_COMMENT: '/*' .*? '*/' -> skip;
