@@ -25,11 +25,24 @@ Język programowania agentowego do modelowania inteligentnych zachowań.
     ```
 
 3. Użycie:
-    - Generowanie parsera i lexera
-    ```bash
-    ./scripts/generate_parser.sh
-    ```
-    - uruchomienie interpretera
-    ```bash
-    agentar run examples/hello.agar
-    ```
+
+Python
+- Generowanie parsera i lexera
+```bash
+./scripts/generate_parser.sh
+```
+
+- uruchomienie interpretera
+```bash
+agentar run examples/hello.agar
+```
+
+Java (testowanie, łatwiejsza analiza drzewa parsowego)
+
+- generuj parser
+```bash
+antlr4 -Dlanguage=Java -o java_tree grammar/Agentar.g4
+find java_tree/grammar -name "*.java" | xargs javac -cp ".:../antlr-4.13.1-complete.jar"
+java -cp ".:../antlr-4.13.1-complete.jar:java_tree/grammar" org.antlr.v4.gui.TestRig Agentar program -gui examples/test.agar
+```
+

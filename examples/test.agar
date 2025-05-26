@@ -1,4 +1,9 @@
-x = "tak";
-y = 6;
-z = 7;
-print(y+z);
+agent tic {
+    fields {
+        string nazwisko = "Agenaaaaa";
+    }
+}
+
+agent mother {
+}
+
