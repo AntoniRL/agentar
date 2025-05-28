@@ -111,7 +111,6 @@ agent <agent_name> {
 | `self.parent`             | ID rodzica np. `.1.2`                        |
 | `self.children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
 | `self.next_child`         | ID następnego dziecka (inkremetowanie automatycznie po `spawn()`) |
-| `self.name`               | imie agenta - jak nie zdefiniowane to: `imie-rodzica_1` `imie-rodzica_2` itd. |
 | `self.now`                | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) |
 
 ### Operacje
@@ -131,14 +130,13 @@ agent <agent_name> {
 | `print(...)`   | Debugowanie | dowolnie |
 | `kill()`       | Zakończenie działania agenta | dowolnie |
 | `kill_child(child_id)` | Usunięcie dzieci | dowolnie |
-| `spawn(agent_name, personal_name, fields_of_agent)`   | Tworzenie dzieci | `initialize`, `action` |
+| `spawn(agent_name, [fields_of_agent])`   | Tworzenie dzieci | `initialize`, `action` |
 | `sleep(ms)`    | Pauza w wykonaniu | `action`, `receive` |
 
 ### Kontrola przepływów
 
 | Słowo kluczowe | Opis | Kontekst |
 |----------------|------|----------|
-| `let`          | Zmienna lokalna | `action`, `receive` |
 | `return`       | Zwracanie wartości | `action` |
 | `if`, `else`   | Warunkowe wykonanie | dowolnie |
 | `for ... in ...` | Pętla iteracyjna | dowolnie |
@@ -215,7 +213,7 @@ message <msg_name>  {
 
 | Funkcja                          | Opis                                  |
 | -------------------------------- | ------------------------------------- |
-| `send(to_id or name, content, msg_type='inform')` | Wysyła wiadomość do wskazanego agenta (po nazwie lub ID). Wiadomość jest dodawana na koniec kolejki odbiorcy i zostanie przetworzona asynchronicznie w jego kolejnej pętli.|
+| `send(to_id, content, msg_type='inform')` | Wysyła wiadomość do wskazanego agenta (ID). Wiadomość jest dodawana na koniec kolejki odbiorcy i zostanie przetworzona asynchronicznie w jego kolejnej pętli.|
 | `send_to_children(content, msg_type='inform')`     | Wysyła wiadomość do wszystkich dzieci |
 | `send_to_parent(content, msg_type='inform')`            | Skrót do komunikacji z rodzicem       |
 | `send_to_siblings(content, msg_type='inform')`          | Wysyła wiadomość do wszystkich braci  |
@@ -290,9 +288,10 @@ message pong {
 
 agent responder {
     receive ping {
-        when (msg.type == "request") then {
-            print("Received ping: " + msg.content.content);
-            send_to_parent(pong{response = "pong!"});       // msg_type="inform" niepotrzebne (domyślna wartość)
+        when (msg.type == request) then {
+            print("Received ping: ", msg.content.content);
+            msg_ = pong(response = "PONG!!!");
+            send_to_parent(msg_);       // msg_type="inform" niepotrzebne (domyślna wartość)
         }
     }
 }
@@ -300,13 +299,14 @@ agent responder {
 agent mother {
     initialize {
         print("Starting ping-pong demo");
-        spawn(responder, "child");
-        let mes_ping = ping{content = "ping!"};
-        send("child", mes+ping, msg_type="request");
+        agentid id_;
+        id_ = spawn(responder);
+        mes_ping = ping(content = "ping!");
+        send(id_, mes_ping, msg_type=request);
     }
 
     receive pong {
-        print("Got pong: " + msg.content.response);
+        print("Got pong: ", msg.content.response);
         kill(); // Kończy system
     }
 }
@@ -345,8 +345,8 @@ agent cleaner {
         print("Cleaning room...");
         beliefs("dirty") = false;
         drop_goal("clean_room");
-        let done = task_done{status = "done"};
-        send_to_parent(done, msg_type="confirm");
+        done = task_done(status = "done");
+        send_to_parent(done, msg_type=confirm);
     }
 
     receive clean_room {
@@ -362,14 +362,15 @@ agent cleaner {
 
 agent mother {
     initialize {
-        spawn(cleaner, "room_bot");
-        let msg = clean_room{task = "clean"};
-        send("room_bot", msg, msg_type="request");
+        agentid id_;
+        id_ = spawn(cleaner);
+        msg = clean_room(task = "clean");
+        send(id_, msg, msg_type=request);
     }
 
     receive task_done {
         when (
-            msg.type == "confirm" &&
+            msg.type == confirm &&
             msg.content.status == "done"
         ) then {
             print("Cleaner completed task.");

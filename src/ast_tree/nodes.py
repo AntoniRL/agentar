@@ -1,36 +1,173 @@
-# Definicje klas AST (np. AgentDef, Send, If, Loop). To czyste obiekty danych.
+# src/ast_tree/nodes.py
 
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import List, Optional, Union
+
+# === Base AST class ===
+@dataclass
 class ASTNode:
     pass
 
-class Literal(ASTNode):
-    def __init__(self, value):
-        self.value = value
+# === Program and declarations ===
+@dataclass
+class ProgramNode(ASTNode):
+    declarations: List[ASTNode]  # AgentNode, MotherNode, MessageDeclNode
 
-class VarReference(ASTNode):
-    def __init__(self, name):
-        self.name = name
 
-class BinaryOp(ASTNode):
-    def __init__(self, left, op, right):
-        self.left = left
-        self.op = op  # "+", "-", "*", "/"
-        self.right = right
+@dataclass
+class AgentNode(ASTNode):
+    name: str
+    body: List[ASTNode]  # FieldSectionNode, InitSectionNode, etc.
 
-class VariableDecl(ASTNode):
-    def __init__(self, name, expression):
-        self.name = name
-        self.expression = expression
 
-class Assignment(ASTNode):
-    def __init__(self, name, expression):
-        self.name = name
-        self.expression = expression
+@dataclass
+class MotherNode(ASTNode):
+    body: List[ASTNode]
 
-class PrintStatement(ASTNode):
-    def __init__(self, expression):
-        self.expression = expression
 
-class Program(ASTNode):
-    def __init__(self, statements):
-        self.statements = statements
+@dataclass
+class MessageDeclNode(ASTNode):
+    name: str
+    fields: List[VariableDeclNode]
+
+
+# === Agent sections ===
+@dataclass
+class FieldSectionNode(ASTNode):
+    declarations: List[VariableDeclNode]
+
+
+@dataclass
+class InitSectionNode(ASTNode):
+    statements: List[ASTNode]
+
+
+@dataclass
+class DestroySectionNode(ASTNode):
+    statements: List[ASTNode]
+
+
+@dataclass
+class ReceiveSectionNode(ASTNode):
+    name: str
+    blocks: List[ASTNode]  # WhenBlockNode or statements
+
+
+@dataclass
+class WhenBlockNode(ASTNode):
+    conditions: List[ASTNode]
+    statements: List[ASTNode]
+
+
+@dataclass
+class ActionNode(ASTNode):
+    name: str
+    parameters: List[ParameterNode]
+    return_type: str
+    body: List[ASTNode]
+
+
+@dataclass
+class ParameterNode(ASTNode):
+    param_type: str
+    name: str
+
+
+# === Statements ===
+@dataclass
+class PrintNode(ASTNode):
+    values: List[ASTNode]
+
+
+@dataclass
+class AssignmentNode(ASTNode):
+    target: Union[ASTNode]
+    value: ASTNode
+    index: Optional[ASTNode] = None
+
+
+@dataclass
+class VariableDeclNode(ASTNode):
+    var_type: str
+    name: str
+    value: Optional[ASTNode] = None
+
+
+@dataclass
+class SendNode(ASTNode):
+    to: ASTNode
+    message: ASTNode
+    msg_type: Optional[str] = None
+
+
+@dataclass
+class SpawnNode(ASTNode):
+    agent_type: str
+    args: List[ASTNode]
+
+
+@dataclass
+class DoNode(ASTNode):
+    name: str
+    variables: List[ASTNode]
+
+
+# === Expressions ===
+@dataclass
+class LiteralNode(ASTNode):
+    value: Union[int, float, str, bool]
+
+
+@dataclass
+class VarRefNode(ASTNode):
+    name: str
+
+
+@dataclass
+class BinaryOpNode(ASTNode):
+    op: str
+    left: ASTNode
+    right: ASTNode
+
+
+@dataclass
+class NotNode(ASTNode):
+    operand: ASTNode
+
+
+@dataclass
+class IndexAccessNode(ASTNode):
+    base: ASTNode
+    index: ASTNode
+
+
+@dataclass
+class MessageInitNode(ASTNode):
+    message_type: str
+    fields: dict  # str -> ASTNode
+
+
+@dataclass
+class SelfAccessNode(ASTNode):
+    path: List[str]  # e.g., ['msg', 'content', 'text']
+
+
+@dataclass
+class MsgAccessNode(ASTNode):
+    path: List[str]  # e.g., ['msg', 'content', 'text']
+
+
+@dataclass
+class MapLiteralNode(ASTNode):
+    entries: dict  # Dict[str, ASTNode]
+
+
+@dataclass
+class ListLiteralNode(ASTNode):
+    elements: List[ASTNode]
+
+
+@dataclass
+class AgentIdNode(ASTNode):
+    path: str  # np. '.1.2.3'

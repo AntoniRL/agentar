@@ -12,6 +12,7 @@ statement
     | assignment
     | sendStmt
     | spawnStmt
+    | doStmt
     ;
 
 // === Mother declaration
@@ -46,7 +47,7 @@ destroySection
     ;
 
 receiveSection
-    : 'receive' ID '{' (whenBlock+ | statement*) '}'
+    : 'receive' ID '{' whenBlock* '}'
     ;
 
 whenBlock
@@ -54,13 +55,7 @@ whenBlock
     ;
 
 actionSection
-    : 'action' ID '(' parameterList* ')' ':' type '{' statement* '}'
-    ;
-// === End agent declaration
-
-// === Message declaration
-messageDecl
-    : MESSAGE ID '{' variableDecl? '}'
+    : 'action' ID '(' parameterList? ')' ':' type '{' statement* '}'
     ;
 
 parameterList
@@ -70,7 +65,12 @@ parameterList
 parameter
     : type ID
     ;
+// === End agent declaration
 
+// === Message declaration
+messageDecl
+    : MESSAGE ID '{' variableDecl* '}'
+    ;
 // === end of message declaration
 
 // === Statements
@@ -79,12 +79,12 @@ sendStmt
     ;
 
 spawnStmt
-    : 'spawn' '(' ID (',' expression)* ')' ';'
+    : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
     ;
 
 
 messageInit
-    : ID '(' messageFieldAssign (',' messageFieldAssign)* ')'
+    : ID '(' (messageFieldAssign (',' messageFieldAssign)*)? ')'
     ;
 
 messageFieldAssign
@@ -101,10 +101,15 @@ variableDecl
 
 assignment
     : ID '=' expression ';'                               # SimpleAssign
-    | expression '[' expression ']' '=' expression ';'    # IndexAssign
+    | ID '[' expression ']' '=' expression ';'            # IndexAssign
+    | ID '=' spawnStmt                                    # SpawnAssign
     ;
 
-type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' ;
+doStmt
+    : 'do' ID '(' (expression (',' expression)*)? ')' ';'
+    ;
+
+type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
 
 expression
     : NOT expression                         # NotExpr
@@ -114,7 +119,13 @@ expression
     | expression op=('*'|'/') expression     # MulDivExpr
     | expression op=('+'|'-') expression     # AddSubExpr
     | expression EQ expression               # EqExpr
-    | 'msg' ('.' ID)+                        # MessageAccessExpr
+    | expression NEQ expression              # NeqExpr
+    | expression LT expression               # LtExpr
+    | expression GT expression               # GtExpr
+    | expression LEQ expression              # LeqExpr
+    | expression GEQ expression              # GeqExpr
+    | MSG ('.' ID)+                          # MessageAccessExpr
+    | SELF ('.' ID)+                         # SelfAccessExpr
     | listLiteral                            # ListExpr
     | mapLiteral                             # MapExpr
     | literal                                # LiteralExpr
@@ -154,18 +165,20 @@ msgTypeValue
 
 // LEXER RULES --------------------------------------
 MESSAGE: 'message';
+MSG: 'msg';
+SELF: 'self';
 MSGTYPE_INFORM:  'inform';
 MSGTYPE_ASK:     'ask';
 MSGTYPE_REQUEST: 'request';
 MSGTYPE_CONFIRM: 'confirm';
 MSGTYPE_DENY:    'deny';
 
+
 INT: [0-9]+;
 FLOAT: [0-9]+ '.' [0-9]+;
-STRING: '"' .*? '"';
-BOOL: 'true' | 'false';
 AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
-
+BOOL: 'true' | 'false';
+STRING: '"' .*? '"';
 // function and variables names 
 ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
@@ -188,6 +201,8 @@ EQ: '==';
 NEQ: '!=';
 LT: '<';
 GT: '>';
+LEQ: '<=';
+GEQ: '>=';
 NOT: 'NOT';
 AND: 'AND';
 OR: 'OR';

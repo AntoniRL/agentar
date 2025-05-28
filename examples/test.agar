@@ -1,5 +1,6 @@
 message clean_room{
     int task;
+    float value;
 }
 
 agent tic {
@@ -12,7 +13,8 @@ agent tic {
     }
     receive clean_room {
         when(msg.type==request) then {
-            print(msg.content.task);
+            print(self.id, msg.content.task);
+            do clean();
         }
     }
     action clean(): void {
@@ -22,8 +24,9 @@ agent tic {
 
 agent mother {
     initialize{
-        spawn(tic, "myTic", "RRR", 0);
+        agentid agentid_;
+        agentid_ = spawn(tic, ["RRR", 0]);
         msg_ = clean_room(task = "clean");
-        send("room_bot", msg_, msg_type=request);
+        send(agentid_, msg_, msg_type=request);
     }
 }
