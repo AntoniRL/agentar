@@ -3,13 +3,16 @@ grammar Agentar;
 // PARSER RULES ---------------------------------------
 
 program 
-    : (motherDecl | agentDecl)* EOF
+    : (motherDecl | agentDecl | messageDecl)* EOF
     ;
 
-statement: 
-    printStmt ';' 
-    | variableDecl ';'
-    | assignment ';'
+statement
+    : printStmt
+    | variableDecl
+    | assignment
+    | sendStmt
+    | spawnStmt
+    | doStmt
     ;
 
 // === Mother declaration
@@ -24,50 +27,114 @@ agentDecl
     ;
 
 agentBody
-    : fieldSection actionSection*
+    : fieldSection? 
+    initialSection?
+    destroySection?
+    receiveSection*
+    actionSection*
     ;
 
 fieldSection
-    : 'fields' '{' fieldDecl* '}'
+    : 'fields' '{' variableDecl* '}'
     ;
 
-fieldDecl
-    : type ID ('=' literal)? ';'
+initialSection
+    : 'initialize' '{' statement* '}'
+    ;
+
+destroySection
+    : 'destroy' '{' statement* '}'
+    ;
+
+receiveSection
+    : 'receive' ID '{' whenBlock* '}'
+    ;
+
+whenBlock
+    : 'when' '(' expression* ')' 'then' '{' statement* '}'
     ;
 
 actionSection
-    : 'action' ID '(' ')' ':' type block
+    : 'action' ID '(' parameterList? ')' ':' type '{' statement* '}'
     ;
 
-block
-    : '{' statement* '}'
+parameterList
+    : parameter (',' parameter)*
+    ;
+
+parameter
+    : type ID
     ;
 // === End agent declaration
 
-printStmt: 'print' '(' expression ')';
+// === Message declaration
+messageDecl
+    : MESSAGE ID '{' variableDecl* '}'
+    ;
+// === end of message declaration
 
-variableDecl: type ID ('=' expression)?;
-
-assignment
-    : ID '=' expression                                # SimpleAssign
-    | expression '[' expression ']' '=' expression     # IndexAssign
+// === Statements
+sendStmt
+    : 'send' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'  
     ;
 
-type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map';
+spawnStmt
+    : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
+    ;
+
+
+messageInit
+    : ID '(' (messageFieldAssign (',' messageFieldAssign)*)? ')'
+    ;
+
+messageFieldAssign
+    : ID '=' expression
+    ;
+
+printStmt
+    : 'print' '(' expression (',' expression)* ')' ';'
+    ;
+
+variableDecl
+    : type ID ('=' expression)? ';'
+    ;
+
+assignment
+    : ID '=' expression ';'                               # SimpleAssign
+    | ID '[' expression ']' '=' expression ';'            # IndexAssign
+    | ID '=' spawnStmt                                    # SpawnAssign
+    ;
+
+doStmt
+    : 'do' ID '(' (expression (',' expression)*)? ')' ';'
+    ;
+
+type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
 
 expression
     : NOT expression                         # NotExpr
     | expression AND expression              # AndExpr
     | expression OR expression               # OrExpr
     | expression XOR expression              # XorExpr
-    | expression op=('*'|'/') expression    # MulDivExpr
-    | expression op=('+'|'-') expression    # AddSubExpr
-    | listLiteral                           # ListExpr
-    | mapLiteral                            # MapExpr
-    | literal                               # LiteralExpr
-    | ID                                    # VarReference
-    | '(' expression ')'                    # ParenExpr
-    | expression '[' expression ']'         # IndexExpr
+    | expression op=('*'|'/') expression     # MulDivExpr
+    | expression op=('+'|'-') expression     # AddSubExpr
+    | expression EQ expression               # EqExpr
+    | expression NEQ expression              # NeqExpr
+    | expression LT expression               # LtExpr
+    | expression GT expression               # GtExpr
+    | expression LEQ expression              # LeqExpr
+    | expression GEQ expression              # GeqExpr
+    | MSG ('.' ID)+                          # MessageAccessExpr
+    | SELF ('.' ID)+                         # SelfAccessExpr
+    | listLiteral                            # ListExpr
+    | mapLiteral                             # MapExpr
+    | literal                                # LiteralExpr
+    | ID                                     # VarReference
+    | '(' expression ')'                     # ParenExpr
+    | expression '[' expression ']'          # IndexExpr
+    | AGENTID                                # AgentIdExpr
+    | messageInit                            # MessageInitExpr
+    | msgTypeValue                           # MsgTypeValueExpr
     ;
 
 listLiteral
@@ -85,15 +152,35 @@ literal
     | BOOL      # BoolLiteral
     ;
 
+msgTypeValue
+    : MSGTYPE_INFORM
+    | MSGTYPE_ASK
+    | MSGTYPE_REQUEST
+    | MSGTYPE_CONFIRM
+    | MSGTYPE_DENY
+    ;
+
 // === End of parser rules
 
 
-// LEXER RULES ---------------------------------------
-ID: [a-zA-Z_][a-zA-Z0-9_]*;
+// LEXER RULES --------------------------------------
+MESSAGE: 'message';
+MSG: 'msg';
+SELF: 'self';
+MSGTYPE_INFORM:  'inform';
+MSGTYPE_ASK:     'ask';
+MSGTYPE_REQUEST: 'request';
+MSGTYPE_CONFIRM: 'confirm';
+MSGTYPE_DENY:    'deny';
+
+
 INT: [0-9]+;
 FLOAT: [0-9]+ '.' [0-9]+;
-STRING: '"' .*? '"';
+AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
 BOOL: 'true' | 'false';
+STRING: '"' .*? '"';
+// function and variables names 
+ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
 // Symbols
 LPAREN: '(';
@@ -114,6 +201,8 @@ EQ: '==';
 NEQ: '!=';
 LT: '<';
 GT: '>';
+LEQ: '<=';
+GEQ: '>=';
 NOT: 'NOT';
 AND: 'AND';
 OR: 'OR';

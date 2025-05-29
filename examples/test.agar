@@ -1,9 +1,32 @@
+message clean_room{
+    int task;
+    float value;
+}
+
 agent tic {
     fields {
-        string nazwisko = "Agenaaaaa";
+        string nazwisko;
+        int counter;
+    }
+    initialize{
+        print("I am here!");
+    }
+    receive clean_room {
+        when(msg.type==request) then {
+            print(self.id, msg.content.task);
+            do clean();
+        }
+    }
+    action clean(): void {
+        print(msg.text.ttt);
     }
 }
 
 agent mother {
+    initialize{
+        agentid agentid_;
+        agentid_ = spawn(tic, ["RRR", 0]);
+        msg_ = clean_room(task = "clean");
+        send(agentid_, msg_, msg_type=request);
+    }
 }
-
