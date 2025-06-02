@@ -5,20 +5,26 @@ message clean_room{
 
 agent tic {
     fields {
-        string nazwisko;
+        string nazwisko = 5;
         int counter;
     }
     initialize{
-        print("I am here!");
+        print("I am here!", 34);
+    }
+    destroy{
+        print("destroy");
     }
     receive clean_room {
         when(msg.type==request) then {
             print(self.id, msg.content.task);
             do clean();
         }
+        when() then {
+            print("nie wiem czy to dziala");
+        }
     }
-    action clean(): void {
-        print(msg.text.ttt);
+    action clean(int c): void {
+        print("Akcja clean");
     }
 }
 

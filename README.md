@@ -46,3 +46,8 @@ find java_tree/grammar -name "*.java" | xargs javac -cp ".:../antlr-4.13.1-compl
 java -cp ".:../antlr-4.13.1-complete.jar:java_tree/grammar" org.antlr.v4.gui.TestRig Agentar program -gui examples/test.agar
 ```
 
+4. Budowanie drzewa AST testowo:
+
+```bash
+python ./src/ast_tree/print_ast.py examples/test.agar 
+```

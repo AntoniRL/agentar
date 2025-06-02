@@ -46,7 +46,7 @@ class AgentarToASTBuilder(AgentarVisitor):
  
     def visitDestroySection(self, ctx:AgentarParser.DestroySectionContext):
         stats = [self.visit(stat) for stat in ctx.statement()]
-        return ast.DestroySectionNode(statments=stats)
+        return ast.DestroySectionNode(statements=stats)
 
 
     def visitReceiveSection(self, ctx:AgentarParser.ReceiveSectionContext):
@@ -80,7 +80,7 @@ class AgentarToASTBuilder(AgentarVisitor):
     
 
     def visitSelfAccessExpr(self, ctx: AgentarParser.SelfAccessExprContext):
-        return ast.MsgAccessNode(path=["self"] + [id_.getText() for id_ in ctx.ID()])
+        return ast.SelfAccessNode(path=["self"] + [id_.getText() for id_ in ctx.ID()])
 
 
     def visitMessageDecl(self, ctx:AgentarParser.MessageDeclContext):

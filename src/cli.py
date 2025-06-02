@@ -1,21 +1,11 @@
+#  -*- coding: utf-8 -*- 
+# src/cli.py
+# Command Line Interface (CLI) for running Agentar scripts (.agar files)
+
 import sys
 from antlr4 import *
-
-from antlr.AgentarLexer import AgentarLexer
-from antlr.AgentarParser import AgentarParser
-from antlr.AgentarVisitor import AgentarVisitor
-from interpreter.interpreter import AgentarInterpreter
-from ast_tree.builder import ASTBuilder
-
-def run_agentar(file_path):
-    input_stream = FileStream(file_path)
-    lexer = AgentarLexer(input_stream)
-    stream = CommonTokenStream(lexer)
-    parser = AgentarParser(stream)
-    tree = parser.program()
-
-    interpreter = AgentarInterpreter()
-    interpreter.visit(tree)
+from interpreter.AgentarInterpreter import AgentarInterpreter
+# from runtime.AgentarSystem import AgentarSystem
 
 def main():
     if len(sys.argv) < 2:
@@ -43,7 +33,10 @@ def main():
     input_file = sys.argv[2]
     try:        
         if sys.argv[1] == 'run':
-            run_agentar(input_file)
+            interpreter = AgentarInterpreter()
+            mother, agnet, messages = interpreter.runAgentar(input_file)
+            # system = AgentarSystem(mother, agnet, messages)
+            # system.start()
     except FileNotFoundError:
         print(f"Error: File '{input_file}' not found")
         sys.exit(1)
