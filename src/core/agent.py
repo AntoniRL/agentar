@@ -13,12 +13,7 @@ class AgentarAgent:
         self.destroy = []
         
         self.isMother = False
-        self.name = None
-        self.id = None 
-        self.parent = None
-        self.children = []
-        self.next_child = 1
-        self.now = 1
+        self.name = None        
 
     def __repr__(self):
         return (
@@ -30,3 +25,15 @@ class AgentarAgent:
             f"  Destroy statements: {len(self.destroy)}\n"
             f"</AgentarAgent>"
         )
+    
+    def execute_action(self, action_name):
+        print("Executing action...")
+
+    def process_messages(self, inbox):
+        print("Processing messages...")
+
+    def execute_stmt(self, stmt):
+        print("Executing statement...")
+
+    def eval_expr(self, expr):
+        print("Evaluating expression...")

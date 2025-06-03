@@ -12,6 +12,7 @@ statement
     | assignment
     | sendStmt
     | spawnStmt
+    | killStmt
     | doStmt
     ;
 
@@ -80,6 +81,10 @@ sendStmt
 
 spawnStmt
     : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
+    ;
+
+killStmt  
+    : 'kill' '('')' ';'
     ;
 
 

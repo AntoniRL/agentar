@@ -18,8 +18,8 @@ class AgentarInterpreter:
         self.mother_decl = AgentarAgent()  # Mother agent declaration
         self.agent = AgentarAgent()  
         self.message = AgentarMessage()
-        self.agents_decl = {}       # List of agents declarations
-        self.messages_decl = {}     # List of messages declarations
+        self.agents_decl = {}       # Dict of agents declarations
+        self.messages_decl = {}     # Dict of messages declarations
 
     def runAgentar(self, file_path):
         input_stream = FileStream(file_path)
@@ -32,7 +32,7 @@ class AgentarInterpreter:
         ast_root = builder.visit(tree)
 
         self.visitAST(ast_root)
-
+        
         return self.mother_decl, self.agents_decl, self.messages_decl
 
 
@@ -43,7 +43,6 @@ class AgentarInterpreter:
                 self.mother_decl = self.agent
                 self.mother_decl.isMother = True
                 self.mother_decl.name = "MOTHER"
-                self.mother_decl.id = AgentId(".1")
                 self.agent = AgentarAgent()  # Reset for next agent
             elif isinstance(decl, AgentNode):
                 self.declareAgent(decl)

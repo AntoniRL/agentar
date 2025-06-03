@@ -2,8 +2,8 @@
 
 from rich.tree import Tree
 from rich import print
-from builder import AgentarToASTBuilder
-from nodes import ASTNode
+from ast_tree.builder import AgentarToASTBuilder
+from ast_tree.nodes import ASTNode
 from antlr4 import InputStream, CommonTokenStream
 from antlr.AgentarLexer import AgentarLexer
 from antlr.AgentarParser import AgentarParser
@@ -31,11 +31,7 @@ def _build_tree(rich_tree, node):
     else:
         rich_tree.add(str(node))
 
-if __name__ == "__main__":
-    import sys
-    with open(sys.argv[1], "r") as f:
-        source = f.read()
-
+def main(source):
     lexer = AgentarLexer(InputStream(source))
     tokens = CommonTokenStream(lexer)
     parser = AgentarParser(tokens)
@@ -46,4 +42,11 @@ if __name__ == "__main__":
 
     rich_tree = build_rich_tree(ast_root)
     print(rich_tree)
+
+if __name__ == "__main__":
+    import sys
+    with open(sys.argv[1], "r") as f:
+        source = f.read()
+
+    main(source)
 

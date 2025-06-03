@@ -102,6 +102,9 @@ class AgentarToASTBuilder(AgentarVisitor):
             raise ValueError("Agent type is required for spawn statement.")
         args = [self.visit(arg) for arg in ctx.expression()]
         return ast.SpawnNode(agent_type=agent_type, args=args)
+    
+    def visitKillStmt(self, ctx:AgentarParser.KillStmtContext):
+        return ast.KillNode()
 
 
     def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):

@@ -152,6 +152,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#killStmt.
+    def enterKillStmt(self, ctx:AgentarParser.KillStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#killStmt.
+    def exitKillStmt(self, ctx:AgentarParser.KillStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#messageInit.
     def enterMessageInit(self, ctx:AgentarParser.MessageInitContext):
         pass

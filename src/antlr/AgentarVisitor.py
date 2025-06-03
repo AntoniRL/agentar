@@ -89,6 +89,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#killStmt.
+    def visitKillStmt(self, ctx:AgentarParser.KillStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#messageInit.
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
         return self.visitChildren(ctx)

@@ -13,7 +13,7 @@
 ├── java_tree                           
 │   └── grammar
 ├── requirements.txt
-├── scripts                             # Script to run agentar run ...
+├── scripts                             # Script to run agentar run ..
 │   └── generate_parser.sh
 ├── setup.py
 ├── src
@@ -23,19 +23,33 @@
 │   │   ├── nodes.py                    # AST node classes
 │   │   └── print_ast.py                # Printing AST tree for tests
 │   ├── core
-│   │   ├── agent.py                    # AgenterAgent class (based on AST)
+│   │   ├── agent.py                    # AgenterAgent class (based on AST) 
 │   │   └── message.py                  # AgentarMessage class (based on AST)
 │   ├── interpreter
 │   │   └── AgentarInterpreter.py       # Parses, builds AST and agent definitions 
 │   ├── runtime
-|   |   ├── AgentarSystem.py            # System runner: starts mother and other agents
-|   |   ├── agent_instance.py           # AgentInstance: inbox, step(), process logic
-│   │   ├── agenter_builtins.py         # Built-in Agentar functions (e.g. spawn)
-│   |   └── runner.py                   # AgentRunner: thread class running AgentInstance
+|   |   ├── AgentarSystem.py            # System runner: starts/stops mother and other agents
+|   |   ├── AgentRunner.py              # AgentRunner: thread class running AgentInstance
+│   │   ├── AgentInstance.py           # AgentInstance: inbox, step(), process logic
+│   |   └── Agentar_builtins.py         # Built-in Agentar functions (e.g. spawn, print)
 |   |
 |   └── cli.py                          # Command-line entry
 └── tests
     ├── integration
     └── unit
 ```
+
+```
+agent.agar → AST → AgentarInterpreter → (mother, agents, messages)
+                                 ↓
+                       AgentarSystem(mother, agents, ...)
+                                 ↓
+       ┌────────────┬────────────┬────────────┐
+       ▼            ▼            ▼            ▼
+  AgentRunner   AgentRunner   AgentRunner   ...
+     │             │             │
+AgentInstance  AgentInstance  AgentInstance
+     │             │             │
+  AgentarAgent   AgentarAgent   AgentarAgent
+  ```
 

@@ -108,6 +108,11 @@ class SpawnNode(ASTNode):
 
 
 @dataclass
+class KillNode(ASTNode):
+    pass
+
+
+@dataclass
 class DoNode(ASTNode):
     name: str
     variables: List[ASTNode]

@@ -5,7 +5,7 @@ message clean_room{
 
 agent tic {
     fields {
-        string nazwisko = 5;
+        string nazwisko;
         int counter;
     }
     initialize{
@@ -31,8 +31,9 @@ agent tic {
 agent mother {
     initialize{
         agentid agentid_;
-        agentid_ = spawn(tic, ["RRR", 0]);
+        agentid_ = spawn(tic, ["RRR",0]);
         msg_ = clean_room(task = "clean");
         send(agentid_, msg_, msg_type=request);
+        kill();
     }
 }
