@@ -7,6 +7,7 @@ from core.agent import AgentarAgent
 from runtime.AgentInstance import AgentInstance
 from runtime.AgentRunner import AgentRunner
 from core.agentid import AgentId
+import threading
 
 class AgentarSystem:
     def __init__(self, mother_decl, agents_decl, messages_decl):
@@ -22,9 +23,8 @@ class AgentarSystem:
 
         # Create mother
         self.mother_id = AgentId(".1")
-        mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id, fields=["nnnn", 5])
-        self.agents[self.mother_id.path] = mother_instance
-        self.threads[self.mother_id.path] = AgentRunner(mother_instance, system=self, agent_id=self.mother_id)
+        self.mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id, fields=["nnnn", 5])
+        self.threads[self.mother_id.path] = AgentRunner(self.mother_instance, system=self, agent_id=self.mother_id)
 
 
     def start(self):
@@ -35,10 +35,19 @@ class AgentarSystem:
         for thread in self.threads.values():
             thread.stop()
             thread.join()
-        logging.info("Stopping Agentar system...")
+        logging.info("Agentar system stopped.")
 
-    def send_message(self, sender_id, to_id, msg, msg_type):
+    def send_message(self, message_to_send):
         pass
 
-    def spawn_agent(self, agent_type_name, args, parent):
+    def spawn_agent(self, senderInstance: AgentInstance, agent_type: AgentarAgent, fields=None):
+        logging.info(f"Spawning agent ======") #TODO: remove logging
+        # TODO: spawn agenr also change the parent agent
+        senderInstance.next_child += 1 
+        return self.mother_id.child(senderInstance.next_child)
+    
+    def killMother(self):
+        pass
+
+    def killAgent(self, agent_id: AgentId):
         pass

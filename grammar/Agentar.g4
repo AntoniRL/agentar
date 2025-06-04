@@ -101,7 +101,8 @@ printStmt
     ;
 
 variableDecl
-    : type ID ('=' expression)? ';'
+    : type ID ('=' expression)? ';'                       # VarDecl
+    | type expression ('=' expression)? ';'               # SelfDecl
     ;
 
 assignment

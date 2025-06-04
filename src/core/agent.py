@@ -4,8 +4,9 @@
 
 from core.agentid import AgentId
 import logging
-from ast_tree.nodes import VariableDeclNode, AssignmentNode, SpawnNode, SelfAccessNode, LiteralNode
+from ast_tree.nodes import VariableDeclNode, AssignmentNode, SpawnNode, SelfAccessNode, LiteralNode, MessageInitNode, SendNode, PrintNode, KillNode
 from core.agentarTypes import AGENTAR_TYPE_MAP
+from runtime.MessageInstance import MessageInstance
 
 class AgentarAgent:
     def __init__(self):
@@ -19,7 +20,8 @@ class AgentarAgent:
         self.isMother = False
         self.name = None   
 
-        self.runtime = None  # Placeholder for runtime context     
+        self.runtime = None  # Placeholder for runtime context   
+        self.AgetnInstance = None  # Placeholder for the agent instance  
 
     def __repr__(self):
         return (
@@ -35,33 +37,87 @@ class AgentarAgent:
     def execute_action(self, action_name):
         logging.info("Executing action...")
 
+
     def process_messages(self, inbox):
         logging.info("Processing messages...")
 
+
     def execute_stmt(self, stmt, local_var, local_var_type):
         logging.info(f"Executing statement...{stmt}") # TODO: remove logging
+
         if isinstance(stmt, VariableDeclNode):
-            value = self.eval_expr(stmt.value) if stmt.value else None
-            var_type = stmt.var_type
-            # TODO: handle var_type properly
-            local_var[stmt.name] = value
-            local_var_type[stmt.name] = var_type
+            if isinstance(stmt.name, SelfAccessNode):
+                pass # TODO: handle self-access variable declaration
+
+            elif stmt.value is None:
+                local_var[stmt.name] = None
+                local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type)
+
+            elif stmt.value is not None:
+                value = self.eval_expr(stmt.value)
+                if not AGENTAR_TYPE_MAP[stmt.var_type] == type(value):
+                    raise TypeError(f"Type mismatch in variable declaration for {stmt.target}: expected {AGENTAR_TYPE_MAP[stmt.type]}, got {type(value)}")
+                local_var[stmt.name] = value
+                local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type)
+
 
         elif isinstance(stmt, AssignmentNode):
             if isinstance(stmt.target, SelfAccessNode):
-                self.fields[stmt.target.path[1]] = self.eval_expr(stmt.value)
-                self.fields_type[stmt.target.path[1]] = type(self.eval_expr(stmt.value))
-                print(self.fields, self.fields_type)  # TODO: remove print
-            elif isinstance(stmt.value, LiteralNode):
-                pass
-                # if checkType(type(stmt.value.value), local_var_type.get(stmt.target)):
-                #     local_var[stmt.target] = stmt.value.value
-                #     local_var_type[stmt.target] = type(stmt.value.value)
+                target = stmt.target.path[1]
+                value = self.eval_expr(stmt.value)
+                if not self.fields_type[target] == type(value):
+                    raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
+                self.fields[target] = value
+                return 0
+            
+            elif stmt.index is not None:
+                pass # TODO: handle indexed assignment
+
+            elif isinstance(stmt.value, SpawnNode):
+                if stmt.target not in local_var_type:
+                    raise NameError(f"Variable '{stmt.target}' is not declared.")
+                fields = [self.eval_expr(arg) for arg in stmt.value.args] if stmt.value.args else []
+                value = self.runtime.spawn_agent(senderInstance = self.AgetnInstance, agent_type = stmt.value.agent_type, fields = fields)
+
+            elif isinstance(stmt.value, MessageInitNode):
+                message = stmt.value
+                if message.message_type not in self.runtime.messages_decl:
+                    raise NameError(f"Message type '{message.message_type}' is not declared.")
+                if self.runtime.messages_decl[message.message_type].content.keys() != message.fields.keys():
+                    raise ValueError(f"Message fields do not match declaration for {message.message_type}. Expected {self.runtime.messages_decl[message.message_type].content.keys()}, got {message.fields.keys()}")
+                content = {}
+                for key, val, ref_type in zip(message.fields.keys(), message.fields.values(), self.runtime.messages_decl[message.message_type].content_type.values()):
+                    val = self.eval_expr(val)
+                    if not isinstance(val, ref_type):
+                        raise TypeError(f"Type mismatch in message field '{val}': expected {ref_type}, got {type(val)}")
+                    content[key] = val
+                value = MessageInstance(name=message.message_type, content=content)
+
+            else:
+                if stmt.target not in local_var_type:
+                    raise NameError(f"Variable '{stmt.target}' is not declared.")
+                value = self.eval_expr(stmt.value)
+                if not local_var_type[stmt.target] == type(value):
+                    raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
+            
+            local_var[stmt.target] = value
+
+        elif isinstance(stmt, SendNode):
+            logging.info(f"Sending message to {stmt.to}...")
+            # TODO: Implement message sending logic
+
+        elif isinstance(stmt, PrintNode):
+            to_print = [self.eval_expr(value) for value in stmt.values]
+            print(f"AGENT {self.AgetnInstance.id}::", " ".join(str(v) for v in to_print))
+
+        elif isinstance(stmt, KillNode):
+            if self.AgetnInstance.isMother:
+                self.runtime.killMother()
+            else:
+                logging.info(f"Killing agent {self.AgetnInstance.id}...")
+                # TODO: Implement agent termination logic
 
 
     def eval_expr(self, expr):
-        if isinstance(expr, SpawnNode):
-            logging.info(f"Spawning agent of type {expr.agent_type} with args {expr.args}")
-            return None
-        elif isinstance(expr, LiteralNode):
+        if isinstance(expr, LiteralNode):
             return expr.value

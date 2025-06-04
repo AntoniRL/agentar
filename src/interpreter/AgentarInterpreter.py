@@ -106,3 +106,4 @@ class AgentarInterpreter:
     def declareMessage(self, node):
         self.message.name = node.name
         self.message.content = {field.name: field.value for field in node.fields}
+        self.message.content_type = {field.name: AGENTAR_TYPE_MAP.get(field.var_type) for field in node.fields}

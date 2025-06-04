@@ -30,17 +30,14 @@ agent mother {
         int counter;
     }
     initialize{
-        self.counter = 10;
-        int x;
-        x = 10;
         agentid agentid_;
         agentid_ = spawn(tic, ["RRR",0]);
-        msg_ = clean_room(task = "clean", value = 10);
+        msg_ = clean_room(task = 10, value = 10.0);
         send(agentid_, msg_, msg_type=request);
         kill();
     }
     destroy{
-        print("destroy");
+        print("Destroy myself...", 10);
     }
     receive clean_room {
         when(msg.type==inform) then {

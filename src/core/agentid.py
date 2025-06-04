@@ -18,4 +18,4 @@ class AgentId:
         return AgentId('.' + '.'.join(parts[:-1]))
 
     def child(self, index: int):
-        return AgentId(self.path + f".{index}"), index+1
+        return AgentId(self.path + f".{index}")

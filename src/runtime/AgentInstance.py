@@ -16,6 +16,7 @@ class AgentInstance:
     def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
         self.agent = agent_ast
         self.agent.runtime = system
+        self.agent.AgetnInstance = self
         self.isMother = self.agent.isMother
         self.id = id
         self.parent = id.parent() if not self.isMother else None
@@ -26,25 +27,23 @@ class AgentInstance:
             for key, value, val_type in zip(self.agent.fields.keys(), fields, self.agent.fields_type.values()):
                 if type(value) == val_type:
                     self.agent.fields[key] = value
-                    self.agent.fields_type[key] = val_type
 
         self.now = 1 # time step counter (Agent perception time)
         self.inbox = Queue()  # Queue for incoming messages
 
     def initialize(self):
-        logging.info(f"Initializing agent {self.id}") #TODO : remove logging
+        logging.info(f"{self.id}:: Initializing agent")
         local_var = {}
         local_var_type = {}
         for stmt in self.agent.initialize:
             self.agent.execute_stmt(stmt, local_var, local_var_type)
-        logging.info(f"local_var: {local_var}, local_var_type: {local_var_type}") #TODO : remove logging
 
     def step(self):
-        logging.info(f"Agent {self.id} stepping at time {self.now}") #TODO : remove logging
+        # logging.info(f"Agent {self.id} stepping at time {self.now}") #TODO : remove logging
         self.now += 1
 
     def destroy(self):
-        logging.info(f"Destroying agent {self.id}") #TODO : remove logging
+        logging.info(f"{self.id}:: Destroying agent") #TODO : remove logging
         local_var = {}
         local_var_type = {}
         for stmt in self.agent.destroy:
