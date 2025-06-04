@@ -12,6 +12,7 @@ from antlr.AgentarLexer import AgentarLexer
 from antlr.AgentarParser import AgentarParser
 from dataclasses import is_dataclass
 from dataclasses import dataclass, fields
+from core.agentarTypes import AGENTAR_TYPE_MAP
 
 class AgentarInterpreter:
     def __init__(self):
@@ -77,9 +78,10 @@ class AgentarInterpreter:
         for field in node.declarations:
             if field.value is None:
                 self.agent.fields[field.name] = None
-            elif isinstance(field.value, LiteralNode):
+                self.agent.fields_type[field.name] = AGENTAR_TYPE_MAP.get(field.var_type)  # np. int, str, bool
+            elif isinstance(field.value, LiteralNode or SpawnNode):
                 self.agent.fields[field.name] = field.value.value  # np. 42, "hello", True
-                self.agent.fields_type[field.name] = field.value.type  # np. int, str, bool
+                self.agent.fields_type[field.name] = AGENTAR_TYPE_MAP.get(field.var_type)  # np. int, str, bool
             else:
                 raise ValueError(f"Unsupported field value type: {type(field.value)}")
 

@@ -31,6 +31,8 @@ agent mother {
     }
     initialize{
         self.counter = 10;
+        int x;
+        x = 10;
         agentid agentid_;
         agentid_ = spawn(tic, ["RRR",0]);
         msg_ = clean_room(task = "clean", value = 10);

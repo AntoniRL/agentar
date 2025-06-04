@@ -4,7 +4,8 @@
 
 from core.agentid import AgentId
 import logging
-from ast_tree.nodes import VariableDeclNode, AssignmentNode, SpawnNode, SelfAccessNode
+from ast_tree.nodes import VariableDeclNode, AssignmentNode, SpawnNode, SelfAccessNode, LiteralNode
+from core.agentarTypes import AGENTAR_TYPE_MAP
 
 class AgentarAgent:
     def __init__(self):
@@ -49,19 +50,18 @@ class AgentarAgent:
         elif isinstance(stmt, AssignmentNode):
             if isinstance(stmt.target, SelfAccessNode):
                 self.fields[stmt.target.path[1]] = self.eval_expr(stmt.value)
-            # target = stmt.target    
-            # value = stmt.value
-            # local_var[stmt.target] = self.eval_expr(stmt.value)
-
-        elif isinstance(stmt, SpawnNode): # TODO handle SpawnNode
-            pass
-
-        elif isinstance(stmt, str): # TODO 
-            pass
-
+                self.fields_type[stmt.target.path[1]] = type(self.eval_expr(stmt.value))
+                print(self.fields, self.fields_type)  # TODO: remove print
+            elif isinstance(stmt.value, LiteralNode):
+                pass
+                # if checkType(type(stmt.value.value), local_var_type.get(stmt.target)):
+                #     local_var[stmt.target] = stmt.value.value
+                #     local_var_type[stmt.target] = type(stmt.value.value)
 
 
     def eval_expr(self, expr):
         if isinstance(expr, SpawnNode):
             logging.info(f"Spawning agent of type {expr.agent_type} with args {expr.args}")
             return None
+        elif isinstance(expr, LiteralNode):
+            return expr.value

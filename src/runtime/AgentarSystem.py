@@ -22,7 +22,7 @@ class AgentarSystem:
 
         # Create mother
         self.mother_id = AgentId(".1")
-        mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id)
+        mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id, fields=["nnnn", 5])
         self.agents[self.mother_id.path] = mother_instance
         self.threads[self.mother_id.path] = AgentRunner(mother_instance, system=self, agent_id=self.mother_id)
 

@@ -6,6 +6,7 @@ from runtime.Agentar_builtins import builtins
 from core.agent import AgentarAgent
 from core.message import AgentarMessage
 from core.agentid import AgentId
+from core.agentarTypes import AGENTAR_TYPE_MAP
 from ast_tree.nodes import *
 from queue import Queue
 import logging
@@ -22,8 +23,10 @@ class AgentInstance:
         self.next_child = 1
 
         if fields is not None:
-            for key, value in zip(self.agent.fields.keys(), fields):
-                self.agent.fields[key] = value
+            for key, value, val_type in zip(self.agent.fields.keys(), fields, self.agent.fields_type.values()):
+                if type(value) == val_type:
+                    self.agent.fields[key] = value
+                    self.agent.fields_type[key] = val_type
 
         self.now = 1 # time step counter (Agent perception time)
         self.inbox = Queue()  # Queue for incoming messages
@@ -34,6 +37,7 @@ class AgentInstance:
         local_var_type = {}
         for stmt in self.agent.initialize:
             self.agent.execute_stmt(stmt, local_var, local_var_type)
+        logging.info(f"local_var: {local_var}, local_var_type: {local_var_type}") #TODO : remove logging
 
     def step(self):
         logging.info(f"Agent {self.id} stepping at time {self.now}") #TODO : remove logging
