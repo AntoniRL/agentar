@@ -3,17 +3,22 @@
 # Agentar agent class – the main class for running the Agentar interpreter
 
 from core.agentid import AgentId
+import logging
+from ast_tree.nodes import VariableDeclNode, AssignmentNode, SpawnNode, SelfAccessNode
 
 class AgentarAgent:
     def __init__(self):
         self.fields = {}
+        self.fields_type = {}
         self.receive = {}
         self.actions = {}
         self.initialize = []
         self.destroy = []
         
         self.isMother = False
-        self.name = None        
+        self.name = None   
+
+        self.runtime = None  # Placeholder for runtime context     
 
     def __repr__(self):
         return (
@@ -27,13 +32,37 @@ class AgentarAgent:
         )
     
     def execute_action(self, action_name):
-        print("Executing action...")
+        logging.info("Executing action...")
 
     def process_messages(self, inbox):
-        print("Processing messages...")
+        logging.info("Processing messages...")
 
-    def execute_stmt(self, stmt):
-        print("Executing statement...")
+    def execute_stmt(self, stmt, local_var, local_var_type):
+        logging.info(f"Executing statement...{stmt}") # TODO: remove logging
+        if isinstance(stmt, VariableDeclNode):
+            value = self.eval_expr(stmt.value) if stmt.value else None
+            var_type = stmt.var_type
+            # TODO: handle var_type properly
+            local_var[stmt.name] = value
+            local_var_type[stmt.name] = var_type
+
+        elif isinstance(stmt, AssignmentNode):
+            if isinstance(stmt.target, SelfAccessNode):
+                self.fields[stmt.target.path[1]] = self.eval_expr(stmt.value)
+            # target = stmt.target    
+            # value = stmt.value
+            # local_var[stmt.target] = self.eval_expr(stmt.value)
+
+        elif isinstance(stmt, SpawnNode): # TODO handle SpawnNode
+            pass
+
+        elif isinstance(stmt, str): # TODO 
+            pass
+
+
 
     def eval_expr(self, expr):
-        print("Evaluating expression...")
+        if isinstance(expr, SpawnNode):
+            logging.info(f"Spawning agent of type {expr.agent_type} with args {expr.args}")
+            return None
+        elif isinstance():

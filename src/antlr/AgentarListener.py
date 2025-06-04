@@ -224,6 +224,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#SelfAssign.
+    def enterSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SelfAssign.
+    def exitSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#doStmt.
     def enterDoStmt(self, ctx:AgentarParser.DoStmtContext):
         pass

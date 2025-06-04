@@ -13,8 +13,8 @@ class AgentarSystem:
         self.mother_decl = mother_decl
         self.agents_decl = agents_decl          # Dict of agent declarations
         self.messages_decl = messages_decl      # Dict of messages declarations
-        self.agents = {}                        # dict of AgentInstance (agent_id -> AgentInstance)
-        self.threads = {}                       # dict of AgentRunner threads (agent_id -> AgentRunner)
+        self.agents = {}                        # Dict of AgentInstance (agent_id -> AgentInstance)
+        self.threads = {}                       # Dict of AgentRunner threads (agent_id -> AgentRunner)
 
         # create agent time
         # self.time_id = AgentId(".2")
@@ -22,9 +22,9 @@ class AgentarSystem:
 
         # Create mother
         self.mother_id = AgentId(".1")
-        mother_instance = AgentInstance(mother_decl, id=self.mother_id)
+        mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id)
         self.agents[self.mother_id.path] = mother_instance
-        self.threads[self.mother_id.path] = AgentRunner(mother_instance)
+        self.threads[self.mother_id.path] = AgentRunner(mother_instance, system=self, agent_id=self.mother_id)
 
 
     def start(self):
@@ -34,6 +34,7 @@ class AgentarSystem:
     def stop(self):
         for thread in self.threads.values():
             thread.stop()
+            thread.join()
         logging.info("Stopping Agentar system...")
 
     def send_message(self, sender_id, to_id, msg, msg_type):

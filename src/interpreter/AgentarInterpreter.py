@@ -79,6 +79,7 @@ class AgentarInterpreter:
                 self.agent.fields[field.name] = None
             elif isinstance(field.value, LiteralNode):
                 self.agent.fields[field.name] = field.value.value  # np. 42, "hello", True
+                self.agent.fields_type[field.name] = field.value.type  # np. int, str, bool
             else:
                 raise ValueError(f"Unsupported field value type: {type(field.value)}")
 

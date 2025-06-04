@@ -8,11 +8,13 @@ from core.message import AgentarMessage
 from core.agentid import AgentId
 from ast_tree.nodes import *
 from queue import Queue
+import logging
 
 
 class AgentInstance:
-    def __init__(self, agent_ast: AgentarAgent, id: AgentId = None, fields = None):
+    def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
         self.agent = agent_ast
+        self.agent.runtime = system
         self.isMother = self.agent.isMother
         self.id = id
         self.parent = id.parent() if not self.isMother else None
@@ -26,11 +28,20 @@ class AgentInstance:
         self.now = 1 # time step counter (Agent perception time)
         self.inbox = Queue()  # Queue for incoming messages
 
+    def initialize(self):
+        logging.info(f"Initializing agent {self.id}") #TODO : remove logging
+        local_var = {}
+        local_var_type = {}
+        for stmt in self.agent.initialize:
+            self.agent.execute_stmt(stmt, local_var, local_var_type)
+
     def step(self):
-        pass
+        logging.info(f"Agent {self.id} stepping at time {self.now}") #TODO : remove logging
+        self.now += 1
 
-    def receive_msg(self, message: AgentarMessage):
-        pass
-
-    def spawn_child(self, agent_ast):
-        pass
+    def destroy(self):
+        logging.info(f"Destroying agent {self.id}") #TODO : remove logging
+        local_var = {}
+        local_var_type = {}
+        for stmt in self.agent.destroy:
+            self.agent.execute_stmt(stmt, local_var, local_var_type)

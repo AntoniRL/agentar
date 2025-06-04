@@ -21,11 +21,14 @@ def show_help():
     print("  agentar run examples/hello.agar")
 
 def run_file(file_path):
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
+    datefmt='%H:%M:%S')
     interpreter = AgentarInterpreter()
     mother, agents, messages = interpreter.runAgentar(file_path)
     system = AgentarSystem(mother, agents, messages)
     system.start()
+    time.sleep(5)
+    system.stop()
 
 def ast_tree(file_path):
     print_ast(file_path)

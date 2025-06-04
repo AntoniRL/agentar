@@ -129,6 +129,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#SelfAssign.
+    def visitSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#doStmt.
     def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):
         return self.visitChildren(ctx)

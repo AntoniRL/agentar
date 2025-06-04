@@ -103,6 +103,12 @@ class AgentarToASTBuilder(AgentarVisitor):
         args = [self.visit(arg) for arg in ctx.expression()]
         return ast.SpawnNode(agent_type=agent_type, args=args)
     
+
+    def visitSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
+        target = self.visit(ctx.expression(0))
+        value = self.visit(ctx.expression(1))
+        return ast.AssignmentNode(target=target, value=value)
+    
     def visitKillStmt(self, ctx:AgentarParser.KillStmtContext):
         return ast.KillNode()
 

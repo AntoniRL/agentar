@@ -108,6 +108,7 @@ assignment
     : ID '=' expression ';'                               # SimpleAssign
     | ID '[' expression ']' '=' expression ';'            # IndexAssign
     | ID '=' spawnStmt                                    # SpawnAssign
+    | expression '=' expression ';'                       # SelfAssign
     ;
 
 doStmt
