@@ -65,4 +65,3 @@ class AgentarAgent:
         if isinstance(expr, SpawnNode):
             logging.info(f"Spawning agent of type {expr.agent_type} with args {expr.args}")
             return None
-        elif isinstance():
