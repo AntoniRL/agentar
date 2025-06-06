@@ -1,0 +1,8 @@
+[23:41:23] INFO: Starting Agentar system...
+[23:41:23] INFO: .1:: Initializing agent
+[23:41:23] INFO: .1.1:: Initializing agent
+[23:41:23] INFO: .1:: Sending message to VarRefNode(name='agentid_')...
+[23:41:33] WARNING: Timeout reached. Stopping system.
+[23:41:34] INFO: .1.1:: Destroying agent
+[23:41:34] INFO: .1:: Destroying agent
+[23:41:34] INFO: Agentar system stopped.

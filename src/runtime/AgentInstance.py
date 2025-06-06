@@ -15,21 +15,20 @@ import logging
 class AgentInstance:
     def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
         self.agent = agent_ast
-        self.agent.runtime = system
-        self.agent.AgetnInstance = self
+        self.agent.runtime = system         # Set the runtime context for the agent
+        self.agent.AgetnInstance = self     # Set the agent instance context for the agent
         self.isMother = self.agent.isMother
-        self.id = id
+        self.id = id        
         self.parent = id.parent() if not self.isMother else None
-        self.children = []
+        self.children = []                  # List of agent children [AgentId]
         self.next_child = 1
+        self.now = 1                        # time step counter (Agent perception time)
+        self.inbox = Queue()                # Queue for incoming messages
 
         if fields is not None:
             for key, value, val_type in zip(self.agent.fields.keys(), fields, self.agent.fields_type.values()):
                 if type(value) == val_type:
                     self.agent.fields[key] = value
-
-        self.now = 1 # time step counter (Agent perception time)
-        self.inbox = Queue()  # Queue for incoming messages
 
     def initialize(self):
         logging.info(f"{self.id}:: Initializing agent")
@@ -48,3 +47,8 @@ class AgentInstance:
         local_var_type = {}
         for stmt in self.agent.destroy:
             self.agent.execute_stmt(stmt, local_var, local_var_type)
+
+        # TODO: kill children agents
+        # for child_id in self.children:
+        #     logging.info(f"{self.id}:: Killing child agent {child_id}")
+        #     child_instance = self.agent.runtime.agents.get(child_id.path)

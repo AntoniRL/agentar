@@ -26,11 +26,6 @@ class AgentRunner(threading.Thread):
             time.sleep(self.tick_interval)
         
         self.instance.destroy()
-
-        # if the agent is not the mother, remove it from the system
-        if (self.agent_id.path != self.system.mother_id.path) and (self.system and self.agent_id in self.system.threads):
-                del self.system.agents[self.agent_id]
-                del self.system.threads[self.agent_id]
-
+        
     def stop(self):
         self.running = False

@@ -87,7 +87,6 @@ killStmt
     : 'kill' '('')' ';'
     ;
 
-
 messageInit
     : ID '(' (messageFieldAssign (',' messageFieldAssign)*)? ')'
     ;

@@ -17,37 +17,54 @@ class AgentarSystem:
         self.agents = {}                        # Dict of AgentInstance (agent_id -> AgentInstance)
         self.threads = {}                       # Dict of AgentRunner threads (agent_id -> AgentRunner)
 
+        self.terminated = threading.Event()     # Event to signal termination of the system
+        
         # create agent time
         # self.time_id = AgentId(".2")
         # self.AgentTime = AgentInstance(AgentarAgent(), agent_id=self.time_id)
 
         # Create mother
         self.mother_id = AgentId(".1")
-        self.mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id, fields=["nnnn", 5])
+        self.mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id)
         self.threads[self.mother_id.path] = AgentRunner(self.mother_instance, system=self, agent_id=self.mother_id)
-
+        
 
     def start(self):
         logging.info("Starting Agentar system...")
         self.threads[self.mother_id.path].start()
 
+
     def stop(self):
-        for thread in self.threads.values():
+        for thread in reversed(self.threads.values()):
             thread.stop()
             thread.join()
         logging.info("Agentar system stopped.")
 
+
+    def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None):
+        if agent_type not in self.agents_decl:
+            raise ValueError(f"Agent type {agent_type} not found in system declarations.")
+        id = parentInstance.id.child(parentInstance.next_child)     # Create new AgentId for the child agent
+        parentInstance.next_child += 1                              # Increment child index for next spawn
+        parentInstance.children.append(id)                       # Add child id to parent's children list
+        agent = AgentInstance(self.agents_decl[agent_type], system=self, id=id, fields=fields)
+        self.agents[id.path] = agent
+        self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)
+        self.threads[id.path].start()
+        return id
+    
     def send_message(self, message_to_send):
         pass
 
-    def spawn_agent(self, senderInstance: AgentInstance, agent_type: AgentarAgent, fields=None):
-        logging.info(f"Spawning agent ======") #TODO: remove logging
-        # TODO: spawn agenr also change the parent agent
-        senderInstance.next_child += 1 
-        return self.mother_id.child(senderInstance.next_child)
-    
+
     def killMother(self):
-        pass
+        logging.info("Mother agent requested system shutdown.")
+        self.terminated.set()
+
 
     def killAgent(self, agent_id: AgentId):
         pass
+        # TODO: del from system threads
+        # if not self.instance.isMother and not self.system.terminated.is_set():
+        #     del self.system.agents[self.agent_id.path]
+        #     del self.system.threads[self.agent_id.path]

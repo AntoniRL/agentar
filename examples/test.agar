@@ -5,7 +5,7 @@ message clean_room{
 
 agent tic {
     initialize{
-        print("I am here!", 34);
+        print("I am here!");
     }
     destroy{
         print("destroy");
@@ -26,18 +26,20 @@ agent tic {
 
 agent mother {
     fields {
-        string nazwisko;
-        int counter;
+        string nazwisko = "kkk";
+        int counter = 2;
     }
     initialize{
         agentid agentid_;
         agentid_ = spawn(tic, ["RRR",0]);
+        print("My child name: ", agentid_);
+        self.nazwisko = "radomin";
         msg_ = clean_room(task = 10, value = 10.0);
         send(agentid_, msg_, msg_type=request);
-        kill();
+        // kill();
     }
     destroy{
-        print("Destroy myself...", 10);
+        print("Destroy myself...");
     }
     receive clean_room {
         when(msg.type==inform) then {

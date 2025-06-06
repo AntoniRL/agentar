@@ -4,9 +4,10 @@
 
 from core.agentid import AgentId
 import logging
-from ast_tree.nodes import VariableDeclNode, AssignmentNode, SpawnNode, SelfAccessNode, LiteralNode, MessageInitNode, SendNode, PrintNode, KillNode
+from ast_tree.nodes import VariableDeclNode, AssignmentNode, SpawnNode, SelfAccessNode, LiteralNode, MessageInitNode, SendNode, PrintNode, KillNode, VarRefNode
 from core.agentarTypes import AGENTAR_TYPE_MAP
 from runtime.MessageInstance import MessageInstance
+
 
 class AgentarAgent:
     def __init__(self):
@@ -25,7 +26,7 @@ class AgentarAgent:
 
     def __repr__(self):
         return (
-            f"<AgentarAgent name='{self.name}' id={self.id}>\n"
+            f"<AgentarAgent name='{self.name}'"
             f"  Fields: {list(self.fields.keys())}\n"
             f"  Actions: {list(self.actions.keys())}\n"
             f"  Receive handlers: {list(self.receive.keys())}\n"
@@ -35,16 +36,17 @@ class AgentarAgent:
         )
     
     def execute_action(self, action_name):
-        logging.info("Executing action...")
+        logging.info(f"{self.AgetnInstance.id.path}:: Executing action...")
 
 
     def process_messages(self, inbox):
-        logging.info("Processing messages...")
+        logging.info(f"{self.AgetnInstance.id.path}:: Processing messages...")
 
 
+    # === Statement Execution ===============================================
     def execute_stmt(self, stmt, local_var, local_var_type):
-        logging.info(f"Executing statement...{stmt}") # TODO: remove logging
-
+        # logging.info(f"{self.AgetnInstance.id.path}:: Executing statement...{stmt}") # TODO: remove logging
+        # VariableDeclNode handles variable declarations
         if isinstance(stmt, VariableDeclNode):
             if isinstance(stmt.name, SelfAccessNode):
                 pass # TODO: handle self-access variable declaration
@@ -61,6 +63,7 @@ class AgentarAgent:
                 local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type)
 
 
+        # AssignmentNode handles different types of assignments
         elif isinstance(stmt, AssignmentNode):
             if isinstance(stmt.target, SelfAccessNode):
                 target = stmt.target.path[1]
@@ -77,7 +80,7 @@ class AgentarAgent:
                 if stmt.target not in local_var_type:
                     raise NameError(f"Variable '{stmt.target}' is not declared.")
                 fields = [self.eval_expr(arg) for arg in stmt.value.args] if stmt.value.args else []
-                value = self.runtime.spawn_agent(senderInstance = self.AgetnInstance, agent_type = stmt.value.agent_type, fields = fields)
+                value = self.runtime.spawn_agent(parentInstance = self.AgetnInstance, agent_type = stmt.value.agent_type, fields = fields)
 
             elif isinstance(stmt.value, MessageInitNode):
                 message = stmt.value
@@ -102,22 +105,33 @@ class AgentarAgent:
             
             local_var[stmt.target] = value
 
+
+        # SendNode handles sending messages
         elif isinstance(stmt, SendNode):
-            logging.info(f"Sending message to {stmt.to}...")
+            logging.info(f"{self.AgetnInstance.id.path}:: Sending message to {stmt.to}...")
             # TODO: Implement message sending logic
 
+        # print statement
         elif isinstance(stmt, PrintNode):
-            to_print = [self.eval_expr(value) for value in stmt.values]
+            to_print = [self.eval_expr(value, local_var, local_var_type) for value in stmt.values]
             print(f"AGENT {self.AgetnInstance.id}::", " ".join(str(v) for v in to_print))
 
+        # KillNode handles agent termination
         elif isinstance(stmt, KillNode):
             if self.AgetnInstance.isMother:
                 self.runtime.killMother()
             else:
-                logging.info(f"Killing agent {self.AgetnInstance.id}...")
-                # TODO: Implement agent termination logic
+                logging.info(f"{self.AgetnInstance.id.path}:: Killing agent {self.AgetnInstance.id}...")
+                self.ryuntime.killAgent(self.AgetnInstance.id)
 
 
-    def eval_expr(self, expr):
+    def eval_expr(self, expr, local_var=None, local_var_type=None):
         if isinstance(expr, LiteralNode):
             return expr.value
+        if isinstance(expr, VarRefNode):
+            if expr.name in self.fields:
+                return self.fields[expr.name]
+            elif expr.name in local_var:
+                return local_var[expr.name]
+            else:
+                raise NameError(f"Variable '{expr.name}' is not declared.")
