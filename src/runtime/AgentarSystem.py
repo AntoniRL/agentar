@@ -18,7 +18,9 @@ class AgentarSystem:
         self.threads = {}                       # Dict of AgentRunner threads (agent_id -> AgentRunner)
 
         self.terminated = threading.Event()     # Event to signal termination of the system
-        
+        self.mutex = threading.Lock()
+        self.shutdown = False
+
         # create agent time
         # self.time_id = AgentId(".2")
         # self.AgentTime = AgentInstance(AgentarAgent(), agent_id=self.time_id)
@@ -35,14 +37,19 @@ class AgentarSystem:
 
 
     def stop(self):
-        for thread in reversed(self.threads.values()):
-            thread.stop()
-            thread.join()
-            logging.info(f"Thread for agent {thread.agent_id.path} stopped.")
-        logging.info("Agentar system stopped.")
+        self.shutdown = True
+        with self.mutex:
+            for thread in reversed(self.threads.values()):
+                thread.agentStop()
+                thread.join()
+                logging.info(f"Thread for agent {thread.agent_id.path} stopped.")
+            logging.info("Agentar system stopped.")
 
 
     def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None):
+        if self.shutdown:
+            return None    # Do not spawn new agents if the system is terminated
+        
         if agent_type not in self.agents_decl:
             raise ValueError(f"Agent type {agent_type} not found in system declarations.")
         id = parentInstance.id.child(parentInstance.next_child)     # Create new AgentId for the child agent
@@ -50,9 +57,10 @@ class AgentarSystem:
         parentInstance.children.append(id)                          # Add child id to parent's children list
         new_agent_inst = self.agents_decl[agent_type]               # Get the agent declaration from the system
         agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
-        self.agents[id.path] = agent
-        self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)
-        self.threads[id.path].start()
+        with self.mutex:
+            self.agents[id.path] = agent
+            self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)
+            self.threads[id.path].start()
         return id
     
     def send_message(self, message_to_send):
@@ -64,10 +72,19 @@ class AgentarSystem:
         self.terminated.set()
 
 
-    def killAgent(self, agent_id: AgentId):
-        logging.info(f"{agent_id.path}:: Killing agent ...")
+    def killAgent(self, agent_id: AgentId):    
+        if self.shutdown:
+            return None    # Do not kill agents if the system is terminated
+        
+        if self.agents[agent_id.path].children:
+            for child_id in self.agents[agent_id.path].children:
+                self.killAgent(child_id)
+            
+        self.threads[agent_id.path].agentStop()
+        
+        if self.threads[agent_id.path] != threading.current_thread():
+            self.threads[agent_id.path].join()
+        
+        logging.info(f"{agent_id.path}:: Agent killed.")
 
-        # TODO: del from system threads
-        # if not self.instance.isMother and not self.system.terminated.is_set():
-        #     del self.system.agents[self.agent_id.path]
-        #     del self.system.threads[self.agent_id.path]
+

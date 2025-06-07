@@ -161,6 +161,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#sleepStmt.
+    def enterSleepStmt(self, ctx:AgentarParser.SleepStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#sleepStmt.
+    def exitSleepStmt(self, ctx:AgentarParser.SleepStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#messageInit.
     def enterMessageInit(self, ctx:AgentarParser.MessageInitContext):
         pass
@@ -188,12 +197,21 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#variableDecl.
-    def enterVariableDecl(self, ctx:AgentarParser.VariableDeclContext):
+    # Enter a parse tree produced by AgentarParser#VarDecl.
+    def enterVarDecl(self, ctx:AgentarParser.VarDeclContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#variableDecl.
-    def exitVariableDecl(self, ctx:AgentarParser.VariableDeclContext):
+    # Exit a parse tree produced by AgentarParser#VarDecl.
+    def exitVarDecl(self, ctx:AgentarParser.VarDeclContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#SelfDecl.
+    def enterSelfDecl(self, ctx:AgentarParser.SelfDeclContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SelfDecl.
+    def exitSelfDecl(self, ctx:AgentarParser.SelfDeclContext):
         pass
 
 

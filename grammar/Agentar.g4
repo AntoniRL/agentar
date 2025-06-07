@@ -14,6 +14,7 @@ statement
     | spawnStmt
     | killStmt
     | doStmt
+    | sleepStmt
     ;
 
 // === Mother declaration
@@ -86,6 +87,11 @@ spawnStmt
 killStmt  
     : 'kill' '('')' ';'
     ;
+
+sleepStmt  
+    : 'sleep' '('expression')' ';'
+    ;
+
 
 messageInit
     : ID '(' (messageFieldAssign (',' messageFieldAssign)*)? ')'

@@ -15,11 +15,12 @@ def show_help():
     print("========================================")
     print("Usage: agentar <command> [options]")
     print("\nCommands:")
-    print("  help      Show this help message")
-    print("  run       Execute a .agar file")
-    print("      -r    Execute a .agar file and log output to agentar.log")
-    print("      -t    <seconds>  Set maximum runtime for the script (default is 5 seconds)")
-    print("  tree      Print the AST of a .agar file")
+    print("  help       Show this help message")
+    print("  run        Execute a .agar file")
+    print("    -r       Log output to console")
+    print("    -to_file Log output to agentar.log")
+    print("    -t       <seconds>  Set maximum runtime for the script (default is 5 seconds)")
+    print("  tree       Print the AST of a .agar file")
     print("\nExamples:")
     print("  agentar run examples/hello.agar -r -t 10")
 
@@ -40,14 +41,18 @@ def run_file(file_path, max_runtime):
 def ast_tree(file_path):
     print_ast(file_path)
 
-def logging_setup(raport_flag=None):
-    if raport_flag == '-r':
+def logging_setup(raport_flag=False, to_file=False):
+    if raport_flag:
+        logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
+                        datefmt='%H:%M:%S')
+    elif to_file:
+        
         logging.basicConfig(filename='agentar.log',  # write to a file
                             filemode='w',            # 'a' = append, 'w' = overwrite
                             level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
                             datefmt='%H:%M:%S')
     else:
-        logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
+        logging.basicConfig(level=logging.ERROR, format='[%(asctime)s] %(levelname)s: %(message)s',
                             datefmt='%H:%M:%S')
 
 
@@ -70,9 +75,14 @@ def main():
         input_file = sys.argv[2]
 
         if "-r" in sys.argv:
-            raport_flag = '-r'
+            raport_flag = True
         else:
-            raport_flag = None
+            raport_flag = False
+
+        if "-to_file" in sys.argv:
+            to_file = True
+        else:
+            to_file = False
         
         if "-t" in sys.argv:
             t_index = sys.argv.index("-t")
@@ -85,7 +95,7 @@ def main():
             max_runtime = 5
 
         try:
-            logging_setup(raport_flag)
+            logging_setup(raport_flag, to_file)
             run_file(input_file, max_runtime)       # run the Agentar script
         except FileNotFoundError:
             print(f"Error: File '{input_file}' not found")

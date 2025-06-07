@@ -27,5 +27,5 @@ class AgentRunner(threading.Thread):
         
         self.instance.destroy()
 
-    def stop(self):
+    def agentStop(self):
         self.running = False

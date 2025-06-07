@@ -3,13 +3,17 @@ message clean_room{
     float value;
 }
 
+agent tok{
+    fields{
+    }
+}
+
 agent tic {
     initialize{
-        print("I am here!");
-        //kill();
-    }
-    destroy{
-        print("destroy", self.id);
+        agentid agentid_;
+        //agentid_ = spawn(tic, ["RRR",0]);
+        sleep(1);
+        kill();
     }
     receive clean_room {
         when(msg.type==request) then {
@@ -33,13 +37,11 @@ agent mother {
     initialize{
         agentid agentid_;
         agentid_ = spawn(tic, ["RRR",0]);
-        agentid_ = spawn(tic, ["RRR",0]);
-        agentid_ = spawn(tic, ["RRR",0]);
         print("My child name: ", agentid_);
         self.nazwisko = "radomin";
         msg_ = clean_room(task = 10, value = 10.0);
         send(agentid_, msg_, msg_type=request);
-        // kill();
+        //kill();
     }
     destroy{
         print("Destroy myself...");

@@ -176,3 +176,8 @@ class ListLiteralNode(ASTNode):
 @dataclass
 class AgentIdNode(ASTNode):
     path: str  # np. '.1.2.3'
+
+
+@dataclass
+class SleepNode(ASTNode):
+    duration: ASTNode

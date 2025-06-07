@@ -43,7 +43,7 @@ class AgentarToASTBuilder(AgentarVisitor):
         stats = [self.visit(stat) for stat in ctx.statement()]
         return ast.InitSectionNode(statements=stats)
 
- 
+
     def visitDestroySection(self, ctx:AgentarParser.DestroySectionContext):
         stats = [self.visit(stat) for stat in ctx.statement()]
         return ast.DestroySectionNode(statements=stats)
@@ -71,16 +71,16 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.ActionNode(name=name, parameters=parameters, return_type=return_type, body=body)
 
 
+    def visitParameterList(self, ctx:AgentarParser.ParameterListContext):
+        pass # TODO: Handle parameter list if needed
+
+
     def visitParameter(self, ctx:AgentarParser.ParameterContext):
         param_type = ctx.type_().getText() if ctx.type_() else None
         name = ctx.ID().getText()
         if not param_type or not name:
             raise ValueError("Parameter type and name are required.")
         return ast.ParameterNode(param_type=param_type, name=name)
-    
-
-    def visitSelfAccessExpr(self, ctx: AgentarParser.SelfAccessExprContext):
-        return ast.SelfAccessNode(path=["self"] + [id_.getText() for id_ in ctx.ID()])
 
 
     def visitMessageDecl(self, ctx:AgentarParser.MessageDeclContext):
@@ -102,21 +102,15 @@ class AgentarToASTBuilder(AgentarVisitor):
             raise ValueError("Agent type is required for spawn statement.")
         args = [self.visit(arg) for arg in ctx.expression()]
         return ast.SpawnNode(agent_type=agent_type, args=args)
-    
 
-    def visitSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
-        target = self.visit(ctx.expression(0))
-        value = self.visit(ctx.expression(1))
-        return ast.AssignmentNode(target=target, value=value)
-    
+
     def visitKillStmt(self, ctx:AgentarParser.KillStmtContext):
         return ast.KillNode()
 
 
-    def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):
-        name = ctx.ID().getText()
-        variables = [self.visit(var) for var in ctx.expression()] if ctx.expression() else []
-        return ast.DoNode(name=name, variables=variables)
+    def visitSleepStmt(self, ctx:AgentarParser.SleepStmtContext):
+        return ast.SleepNode(duration=self.visit(ctx.expression()))
+    # TODO: Handle sleep duration, currently just returns the expression
 
 
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
@@ -129,15 +123,24 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.MessageInitNode(message_type=message_type, fields=fields)
 
 
+    def visitMessageFieldAssign(self, ctx:AgentarParser.MessageFieldAssignContext):
+        pass # TODO: Handle message field assignment if needed
+
+
     def visitPrintStmt(self, ctx:AgentarParser.PrintStmtContext):
         return ast.PrintNode(values=[self.visit(expr) for expr in ctx.expression()])
 
 
-    def visitVariableDecl(self, ctx:AgentarParser.VariableDeclContext):
+    def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
         var_type = ctx.type_().getText()
         name = ctx.ID().getText()
         value = self.visit(ctx.expression()) if ctx.expression() else None
         return ast.VariableDeclNode(var_type=var_type, name=name, value=value)
+
+
+    def visitSelfDecl(self, ctx:AgentarParser.SelfDeclContext):
+        pass 
+    # TODO: Handle self declaration if needed, currently not used in the grammar
 
 
     def visitSimpleAssign(self, ctx: AgentarParser.SimpleAssignContext):
@@ -145,17 +148,31 @@ class AgentarToASTBuilder(AgentarVisitor):
         value = self.visit(ctx.expression())
         return ast.AssignmentNode(target=target, value=value)
 
+
     def visitIndexAssign(self, ctx: AgentarParser.IndexAssignContext):
         base = ctx.ID().getText()    # np. x
         index = self.visit(ctx.expression(0))   # np. 3
         value = self.visit(ctx.expression(1))   # np. 10
         return ast.AssignmentNode(target=base, index=index, value=value)
-    
+
+
     def visitSpawnAssign(self, ctx: AgentarParser.SpawnAssignContext):
         target = ctx.ID().getText()
         value = self.visit(ctx.spawnStmt())
         return ast.AssignmentNode(target=target, value=value)
-    
+
+
+    def visitSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
+        target = self.visit(ctx.expression(0))
+        value = self.visit(ctx.expression(1))
+        return ast.AssignmentNode(target=target, value=value)
+
+
+    def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):
+        name = ctx.ID().getText()
+        variables = [self.visit(var) for var in ctx.expression()] if ctx.expression() else []
+        return ast.DoNode(name=name, variables=variables)
+
 
     def visitMapExpr(self, ctx:AgentarParser.MapExprContext):
         entries = {}
@@ -172,6 +189,10 @@ class AgentarToASTBuilder(AgentarVisitor):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
         return ast.BinaryOpNode(op='AND', left=left, right=right)
+
+
+    def visitSelfAccessExpr(self, ctx: AgentarParser.SelfAccessExprContext):
+        return ast.SelfAccessNode(path=["self"] + [id_.getText() for id_ in ctx.ID()])
 
 
     def visitLeqExpr(self, ctx:AgentarParser.LeqExprContext):
@@ -275,16 +296,6 @@ class AgentarToASTBuilder(AgentarVisitor):
         return self.visit(ctx.expression())
 
 
-    def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
-        message_type = ctx.ID().getText()
-        fields = {}
-        for field_assign in ctx.messageFieldAssign():
-            key = field_assign.ID().getText()
-            value = self.visit(field_assign.expression())
-            fields[key] = value
-        return ast.MessageInitNode(message_type=message_type, fields=fields)
-
-
     def visitMessageInitExpr(self, ctx:AgentarParser.MessageInitExprContext):
         return self.visit(ctx.messageInit())
 
@@ -297,6 +308,14 @@ class AgentarToASTBuilder(AgentarVisitor):
         else:
             op = '-'
         return ast.BinaryOpNode(op=op, left=left, right=right)
+
+
+    def visitListLiteral(self, ctx:AgentarParser.ListLiteralContext):
+        pass # TODO: Handle list literal if needed, currently not used in the grammar
+
+
+    def visitMapLiteral(self, ctx:AgentarParser.MapLiteralContext):
+        pass # TODO: Handle map literal if needed, currently not used in the grammar
 
 
     def visitIntLiteral(self, ctx:AgentarParser.IntLiteralContext):
