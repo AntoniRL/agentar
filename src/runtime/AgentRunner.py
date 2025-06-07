@@ -26,6 +26,6 @@ class AgentRunner(threading.Thread):
             time.sleep(self.tick_interval)
         
         self.instance.destroy()
-        
+
     def stop(self):
         self.running = False

@@ -38,6 +38,7 @@ class AgentarSystem:
         for thread in reversed(self.threads.values()):
             thread.stop()
             thread.join()
+            logging.info(f"Thread for agent {thread.agent_id.path} stopped.")
         logging.info("Agentar system stopped.")
 
 
@@ -46,8 +47,9 @@ class AgentarSystem:
             raise ValueError(f"Agent type {agent_type} not found in system declarations.")
         id = parentInstance.id.child(parentInstance.next_child)     # Create new AgentId for the child agent
         parentInstance.next_child += 1                              # Increment child index for next spawn
-        parentInstance.children.append(id)                       # Add child id to parent's children list
-        agent = AgentInstance(self.agents_decl[agent_type], system=self, id=id, fields=fields)
+        parentInstance.children.append(id)                          # Add child id to parent's children list
+        new_agent_inst = self.agents_decl[agent_type]               # Get the agent declaration from the system
+        agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
         self.agents[id.path] = agent
         self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)
         self.threads[id.path].start()
@@ -63,7 +65,8 @@ class AgentarSystem:
 
 
     def killAgent(self, agent_id: AgentId):
-        pass
+        logging.info(f"{agent_id.path}:: Killing agent ...")
+
         # TODO: del from system threads
         # if not self.instance.isMother and not self.system.terminated.is_set():
         #     del self.system.agents[self.agent_id.path]

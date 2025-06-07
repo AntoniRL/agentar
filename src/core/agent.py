@@ -22,30 +22,28 @@ class AgentarAgent:
         self.name = None   
 
         self.runtime = None  # Placeholder for runtime context   
-        self.AgetnInstance = None  # Placeholder for the agent instance  
+        self.agentInstance = None  # Placeholder for the agent instance  
 
     def __repr__(self):
         return (
-            f"<AgentarAgent name='{self.name}'"
+            f"<AgentarAgent name='{self.name}', id='{self.agentInstance.id.path}'\n"
             f"  Fields: {list(self.fields.keys())}\n"
             f"  Actions: {list(self.actions.keys())}\n"
             f"  Receive handlers: {list(self.receive.keys())}\n"
-            f"  Init statements: {len(self.initialize)}\n"
-            f"  Destroy statements: {len(self.destroy)}\n"
             f"</AgentarAgent>"
         )
     
     def execute_action(self, action_name):
-        logging.info(f"{self.AgetnInstance.id.path}:: Executing action...")
+        logging.info(f"{self.agentInstance.id.path}:: Executing action...")
 
 
     def process_messages(self, inbox):
-        logging.info(f"{self.AgetnInstance.id.path}:: Processing messages...")
+        logging.info(f"{self.agentInstance.id.path}:: Processing messages...")
 
 
     # === Statement Execution ===============================================
     def execute_stmt(self, stmt, local_var, local_var_type):
-        # logging.info(f"{self.AgetnInstance.id.path}:: Executing statement...{stmt}") # TODO: remove logging
+        logging.info(f"{self.agentInstance.id.path}:: Executing statement...{stmt}") # TODO: remove logging
         # VariableDeclNode handles variable declarations
         if isinstance(stmt, VariableDeclNode):
             if isinstance(stmt.name, SelfAccessNode):
@@ -80,7 +78,7 @@ class AgentarAgent:
                 if stmt.target not in local_var_type:
                     raise NameError(f"Variable '{stmt.target}' is not declared.")
                 fields = [self.eval_expr(arg) for arg in stmt.value.args] if stmt.value.args else []
-                value = self.runtime.spawn_agent(parentInstance = self.AgetnInstance, agent_type = stmt.value.agent_type, fields = fields)
+                value = self.runtime.spawn_agent(parentInstance = self.agentInstance, agent_type = stmt.value.agent_type, fields = fields)
 
             elif isinstance(stmt.value, MessageInitNode):
                 message = stmt.value
@@ -108,21 +106,20 @@ class AgentarAgent:
 
         # SendNode handles sending messages
         elif isinstance(stmt, SendNode):
-            logging.info(f"{self.AgetnInstance.id.path}:: Sending message to {stmt.to}...")
+            logging.info(f"{self.agentInstance.id.path}:: Sending message to {stmt.to}...")
             # TODO: Implement message sending logic
 
         # print statement
         elif isinstance(stmt, PrintNode):
             to_print = [self.eval_expr(value, local_var, local_var_type) for value in stmt.values]
-            print(f"AGENT {self.AgetnInstance.id}::", " ".join(str(v) for v in to_print))
+            print(f"AGENT {self.agentInstance.id}::", " ".join(str(v) for v in to_print))
 
         # KillNode handles agent termination
         elif isinstance(stmt, KillNode):
-            if self.AgetnInstance.isMother:
+            if self.agentInstance.isMother:
                 self.runtime.killMother()
             else:
-                logging.info(f"{self.AgetnInstance.id.path}:: Killing agent {self.AgetnInstance.id}...")
-                self.ryuntime.killAgent(self.AgetnInstance.id)
+                self.runtime.killAgent(self.agentInstance.id)
 
 
     def eval_expr(self, expr, local_var=None, local_var_type=None):
@@ -135,3 +132,5 @@ class AgentarAgent:
                 return local_var[expr.name]
             else:
                 raise NameError(f"Variable '{expr.name}' is not declared.")
+        if isinstance(expr, SelfAccessNode):
+            return self.fields[expr.path[1]] if expr.path[1] in self.fields else None

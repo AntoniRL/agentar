@@ -6,9 +6,10 @@ message clean_room{
 agent tic {
     initialize{
         print("I am here!");
+        //kill();
     }
     destroy{
-        print("destroy");
+        print("destroy", self.id);
     }
     receive clean_room {
         when(msg.type==request) then {
@@ -31,6 +32,8 @@ agent mother {
     }
     initialize{
         agentid agentid_;
+        agentid_ = spawn(tic, ["RRR",0]);
+        agentid_ = spawn(tic, ["RRR",0]);
         agentid_ = spawn(tic, ["RRR",0]);
         print("My child name: ", agentid_);
         self.nazwisko = "radomin";

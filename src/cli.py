@@ -23,7 +23,7 @@ def show_help():
     print("\nExamples:")
     print("  agentar run examples/hello.agar -r -t 10")
 
-def run_file(file_path, max_runtime=5):
+def run_file(file_path, max_runtime):
     interpreter = AgentarInterpreter()
     mother, agents, messages = interpreter.runAgentar(file_path)
     system = AgentarSystem(mother, agents, messages)

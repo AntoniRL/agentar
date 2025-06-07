@@ -15,8 +15,6 @@ import logging
 class AgentInstance:
     def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
         self.agent = agent_ast
-        self.agent.runtime = system         # Set the runtime context for the agent
-        self.agent.AgetnInstance = self     # Set the agent instance context for the agent
         self.isMother = self.agent.isMother
         self.id = id        
         self.parent = id.parent() if not self.isMother else None
@@ -30,6 +28,19 @@ class AgentInstance:
                 if type(value) == val_type:
                     self.agent.fields[key] = value
 
+        self.agent.fields["id"] = self.id   # Set the agent's id in its fields
+        self.agent.fields_type["id"] = AgentId
+        
+        self.agent.runtime = system         # Set the runtime context for the agent
+        self.agent.agentInstance = self     # Set the agent instance context for the agent
+
+
+    def __repr__(self):
+        return (
+            f"<AgentarAgent name='{self.agent.name}', id='{self.id.path}'\n"
+            f"</AgentarAgent>"
+        )
+
     def initialize(self):
         logging.info(f"{self.id}:: Initializing agent")
         local_var = {}
@@ -42,11 +53,15 @@ class AgentInstance:
         self.now += 1
 
     def destroy(self):
+        print(self.id)  # TODO: remove print
+        print(self.agent.agentInstance.id)  # TODO: remove print
         logging.info(f"{self.id}:: Destroying agent") #TODO : remove logging
         local_var = {}
         local_var_type = {}
         for stmt in self.agent.destroy:
             self.agent.execute_stmt(stmt, local_var, local_var_type)
+        
+        logging.info(f"My children: {[aa.path for aa in self.children]}") # TODO: remove logging
 
         # TODO: kill children agents
         # for child_id in self.children:

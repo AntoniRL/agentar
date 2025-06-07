@@ -8,13 +8,13 @@ from core.agentid import AgentId
 
 class MessageInstance():
     def __init__(self, name: str, content: dict = None):
-        self.name = name                # np. 'clean_room'
-        self.sender: AgentId = None        # AgentId('.1')
+        self.name = name                    # np. 'clean_room'
+        self.sender: AgentId = None         # AgentId('.1')
         self.receiver: AgentId = None       # AgentId('.1.2')
-        self.type = MessageType.INFORM  # np. MessageType.REQUEST
-        self.content = content or {}    # np. {'task': 3, 'value': 1.2}
-        self.content_type = {}          # np. {'task': int, 'value': float}
-        self.send_time = 0              # czas systemowy
+        self.type = MessageType.INFORM      # np. MessageType.REQUEST
+        self.content = content or {}        # np. {'task': 3, 'value': 1.2}
+        self.content_type = {}              # np. {'task': int, 'value': float}
+        self.send_time = 0                  # czas systemowy
 
     def __repr__(self):
         return (
