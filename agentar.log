@@ -1,0 +1,19 @@
+[18:16:22] INFO: Starting Agentar system...
+[18:16:22] INFO: .1:: Initializing agent
+[18:16:22] INFO: .1:: Executing statement...VariableDeclNode(var_type='agentid', name='agentid_', value=None)
+[18:16:22] INFO: .1:: Executing statement...AssignmentNode(target='agentid_', value=SpawnNode(agent_type='tic', args=[LiteralNode(value='RRR'), LiteralNode(value=0)]), index=None)
+[18:16:22] INFO: .1.1:: Initializing agent
+[18:16:22] INFO: .1.1:: Executing statement...VariableDeclNode(var_type='agentid', name='agentid_', value=None)
+[18:16:22] INFO: .1.1:: Executing statement...SleepNode(duration=LiteralNode(value=1))
+[18:16:22] INFO: .1.1:: Sleeping for 1s...
+[18:16:22] INFO: .1:: Executing statement...PrintNode(values=[LiteralNode(value='My child name: '), VarRefNode(name='agentid_')])
+[18:16:22] INFO: .1:: Executing statement...AssignmentNode(target=SelfAccessNode(path=['self', 'nazwisko']), value=LiteralNode(value='radomin'), index=None)
+[18:16:22] INFO: .1:: Executing statement...AssignmentNode(target='msg_', value=MessageInitNode(message_type='clean_room', fields={'task': LiteralNode(value=10), 'value': LiteralNode(value=10.0)}), index=None)
+[18:16:22] INFO: .1:: Executing statement...SendNode(to=VarRefNode(name='agentid_'), message=VarRefNode(name='msg_'), msg_type='request')
+[18:16:22] INFO: .1:: Sending message to VarRefNode(name='agentid_')...
+[18:16:23] INFO: .1.1:: Executing statement...KillNode()
+[18:16:23] INFO: .1.1:: Agent killed.
+[18:16:27] WARNING: Timeout reached. Stopping system.
+[18:16:28] INFO: .1:: Executing statement...PrintNode(values=[LiteralNode(value='Destroy myself...')])
+[18:16:28] INFO: Thread for agent .1 stopped.
+[18:16:28] INFO: Agentar system stopped.

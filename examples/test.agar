@@ -3,16 +3,21 @@ message clean_room{
     float value;
 }
 
+agent tok{
+    fields{
+    }
+}
+
 agent tic {
-    fields {
-        string nazwisko = 5;
-        int counter;
-    }
     initialize{
-        print("I am here!", 34);
-    }
-    destroy{
-        print("destroy");
+        agentid agentid_;
+        sleep(1);
+        agentid_ = spawn(tok);
+        agentid_ = spawn(tok);
+        agentid_ = spawn(tok);
+        agentid_ = spawn(tok);
+        sleep(1);
+        //kill();
     }
     receive clean_room {
         when(msg.type==request) then {
@@ -20,19 +25,37 @@ agent tic {
             do clean();
         }
         when() then {
-            print("nie wiem czy to dziala");
+            print("Lets go!");
         }
     }
     action clean(int c): void {
-        print("Akcja clean");
+        print("Akcion clean");
     }
 }
 
 agent mother {
+    fields {
+        string nazwisko = "kkk";
+        int counter = 2;
+    }
     initialize{
         agentid agentid_;
-        agentid_ = spawn(tic, ["RRR", 0]);
-        msg_ = clean_room(task = "clean");
+        agentid_ = spawn(tic, ["RRR",0]);
+        print("My child name: ", agentid_);
+        self.nazwisko = "radomin";
+        msg_ = clean_room(task = 10, value = 10.0);
         send(agentid_, msg_, msg_type=request);
+        //kill();
+    }
+    destroy{
+        print("Destroy myself...");
+    }
+    receive clean_room {
+        when(msg.type==inform) then {
+            print(self.id, msg.content.task);
+        }
+        when() then {
+            print("DONE");
+        }
     }
 }

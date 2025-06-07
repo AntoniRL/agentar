@@ -108,6 +108,11 @@ class SpawnNode(ASTNode):
 
 
 @dataclass
+class KillNode(ASTNode):
+    pass
+
+
+@dataclass
 class DoNode(ASTNode):
     name: str
     variables: List[ASTNode]
@@ -171,3 +176,8 @@ class ListLiteralNode(ASTNode):
 @dataclass
 class AgentIdNode(ASTNode):
     path: str  # np. '.1.2.3'
+
+
+@dataclass
+class SleepNode(ASTNode):
+    duration: ASTNode

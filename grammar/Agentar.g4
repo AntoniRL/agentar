@@ -12,7 +12,9 @@ statement
     | assignment
     | sendStmt
     | spawnStmt
+    | killStmt
     | doStmt
+    | sleepStmt
     ;
 
 // === Mother declaration
@@ -82,6 +84,14 @@ spawnStmt
     : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
     ;
 
+killStmt  
+    : 'kill' '('')' ';'
+    ;
+
+sleepStmt  
+    : 'sleep' '('expression')' ';'
+    ;
+
 
 messageInit
     : ID '(' (messageFieldAssign (',' messageFieldAssign)*)? ')'
@@ -96,13 +106,15 @@ printStmt
     ;
 
 variableDecl
-    : type ID ('=' expression)? ';'
+    : type ID ('=' expression)? ';'                       # VarDecl
+    | type expression ('=' expression)? ';'               # SelfDecl
     ;
 
 assignment
     : ID '=' expression ';'                               # SimpleAssign
     | ID '[' expression ']' '=' expression ';'            # IndexAssign
     | ID '=' spawnStmt                                    # SpawnAssign
+    | expression '=' expression ';'                       # SelfAssign
     ;
 
 doStmt

@@ -15,16 +15,11 @@ class MessageType(str, Enum):
 class AgentarMessage:
     def __init__(self):
         self.name = None
-        self.sender = None
-        self.receiver = None
-        self.type = MessageType.INFORM
         self.content = {}
-        self.send_time = None
+        self.content_type = {}
 
     def __repr__(self):
         return (
             f"<AgentarMessage name='{self.name}' "
-            f"from={self.sender} to={self.receiver} "
-            f"type={self.type} time={self.send_time} "
             f"content={self.content}>"
         )
