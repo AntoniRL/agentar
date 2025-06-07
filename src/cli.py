@@ -33,6 +33,7 @@ def run_file(file_path, max_runtime):
     while not system.terminated.is_set():
         if time.time() - start_time > max_runtime:
             logging.warning("Timeout reached. Stopping system.")
+            system.terminated.set()  # Signal termination
             break
         time.sleep(0.1)
     system.stop()

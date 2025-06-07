@@ -63,12 +63,11 @@ class AgentInstance:
         local_var_type = {}
         for stmt in self.agent.destroy:
             self.execute_stmt(stmt, local_var, local_var_type)
-        
-        if not self.runtime.shutdown:
-            with self.runtime.mutex:
-                if not self.isMother:
-                    del self.runtime.agents[self.id.path]
-                    del self.runtime.threads[self.id.path]    
+
+        with self.runtime._lock:
+            if not self.isMother:
+                del self.runtime.agents[self.id.path]
+                del self.runtime.threads[self.id.path]    
 
     def execute_action(self, action_name):
         logging.info(f"{self.id.path}:: Executing action...")
@@ -79,7 +78,7 @@ class AgentInstance:
 
 
     def execute_stmt(self, stmt, local_var, local_var_type):
-        logging.info(f"{self.id.path}:: Executing statement...{stmt}") # TODO: remove logging
+        # logging.info(f"{self.id.path}:: Executing statement...{stmt}") # TODO: remove logging
 
         # VariableDeclNode handles variable declarations
         if isinstance(stmt, VariableDeclNode):

@@ -10,22 +10,23 @@ class AgentRunner(threading.Thread):
     """
     One thread per agent. Periodically calls step() on the associated AgentInstance.
     """
-    def __init__(self, instance, system, agent_id, tick_interval=0.5):
-        super().__init__()
+    def __init__(self, instance, system, agent_id, tick_interval=0.5, **kwargs):
+        super().__init__(**kwargs)
         self.system = system
         self.agent_id = agent_id
         self.instance = instance
         self.tick_interval = tick_interval
-        self.running = True
+        self.running = threading.Event()
+        self.running.set()
 
     def run(self):
         self.instance.initialize()
 
-        while self.running:
+        while self.running.is_set():
             self.instance.step()
             time.sleep(self.tick_interval)
         
         self.instance.destroy()
 
-    def agentStop(self):
-        self.running = False
+    def stopAgent(self):
+        self.running.clear()

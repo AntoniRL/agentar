@@ -11,9 +11,13 @@ agent tok{
 agent tic {
     initialize{
         agentid agentid_;
-        //agentid_ = spawn(tic, ["RRR",0]);
         sleep(1);
-        kill();
+        agentid_ = spawn(tok);
+        agentid_ = spawn(tok);
+        agentid_ = spawn(tok);
+        agentid_ = spawn(tok);
+        sleep(1);
+        //kill();
     }
     receive clean_room {
         when(msg.type==request) then {
