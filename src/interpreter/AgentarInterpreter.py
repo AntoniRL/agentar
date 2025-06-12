@@ -100,7 +100,7 @@ class AgentarInterpreter:
         self.agent.receive[node.name] = list_of_blocks        
         
     def ActionDeclare(self, node):
-        self.agent.actions[node.name] = (node.parameters, node.return_type, node.body)
+        self.agent.actions[node.name] = node
 
     
     def declareMessage(self, node):

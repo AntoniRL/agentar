@@ -11,7 +11,7 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 * Dostęp do pól agenta poprzez `self.name`
 * Agent matka `mother` (Tworzony jako pierwszy, zarządza działaniem systemu)
 * Agent czas `time` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
-* Koniec działania systemu kiedy brak agentów (mother: `kill()`)
+* Koniec działania systemu kiedy brak agentów (mother: `kill()`) LUB minie czas symulacji
 
 ---
 
@@ -214,9 +214,9 @@ message <msg_name>  {
 | Funkcja                          | Opis                                  |
 | -------------------------------- | ------------------------------------- |
 | `send(to_id, content, msg_type='inform')` | Wysyła wiadomość do wskazanego agenta (ID). Wiadomość jest dodawana na koniec kolejki odbiorcy i zostanie przetworzona asynchronicznie w jego kolejnej pętli.|
-| `send_to_children(content, msg_type='inform')`     | Wysyła wiadomość do wszystkich dzieci |
-| `send_to_parent(content, msg_type='inform')`            | Skrót do komunikacji z rodzicem       |
-| `send_to_siblings(content, msg_type='inform')`          | Wysyła wiadomość do wszystkich braci  |
+| `send2children(content, msg_type='inform')`     | Wysyła wiadomość do wszystkich dzieci |
+| `send2parent(content, msg_type='inform')`            | Skrót do komunikacji z rodzicem       |
+| `send2siblings(content, msg_type='inform')`          | Wysyła wiadomość do wszystkich braci  |
 
 `msg` jako struktura zawierająca pola:
 ```
@@ -230,7 +230,7 @@ msg {
 ```
 
 `msg.content` to instancja klasy wiadomości, wygenerowanej na podstawie definicji `message <msg_name> {...}`.
-Dostęp do pól odbywa się przez kropkę, np. `msg.content.task`
+Dostęp do pól odbywa się przez kropkę, np. `msg.task`
 
 W ciele `receive`, agent ma dostęp do struktury `msg`, która zawiera metadane wiadomości oraz jej treść (`content`)
 
@@ -240,7 +240,7 @@ receive ping {
     when (
         msg.type == "request" &&
         msg.sender == "mother" &&
-        msg.content.text == "hello"
+        msg.text == "hello"
     ) then {
         print("Received hello from mother");
     }
@@ -291,7 +291,7 @@ agent responder {
         when (msg.type == request) then {
             print("Received ping: ", msg.content.content);
             msg_ = pong(response = "PONG!!!");
-            send_to_parent(msg_);       // msg_type="inform" niepotrzebne (domyślna wartość)
+            send2parent(msg_);       // msg_type="inform" niepotrzebne (domyślna wartość)
         }
     }
 }
@@ -325,7 +325,7 @@ message task_done {
 
 agent cleaner {
     beliefs {
-        dirty = true;
+        dirty;
     }
 
     goals {

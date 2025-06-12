@@ -1,0 +1,58 @@
+message clean_room {
+    string task;
+}
+
+message task_done {
+    string status;
+}
+
+agent cleaner {
+    beliefs {
+        dirty;
+    }
+    goals {
+        clean_room = true;
+    }
+    rules {
+        when (
+            belief("dirty") && 
+            goal("clean_room")
+        ) then {
+            clean();
+        }
+    }
+    action clean(): void {
+        print("Cleaning room...");
+        beliefs("dirty") = false;
+        drop_goal("clean_room");
+        done = task_done(status = "done");
+        send_to_parent(done, msg_type=confirm);
+    }
+    receive clean_room {
+        when (
+            msg.type == "request" &&
+            msg.content.task == "clean"
+        ) then {
+            beliefs("dirty") = true;
+            adopt_goal("clean_room");
+        }
+    }
+}
+
+agent mother {
+    initialize {
+        agentid id_;
+        id_ = spawn(cleaner);
+        msg = clean_room(task = "clean");
+        send(id_, msg, msg_type=request);
+    }
+    receive task_done {
+        when (
+            msg.type == confirm &&
+            msg.content.status == "done"
+        ) then {
+            print("Cleaner completed task.");
+            kill();
+        }
+    }
+}
