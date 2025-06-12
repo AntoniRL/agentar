@@ -56,7 +56,7 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitWhenBlock(self, ctx:AgentarParser.WhenBlockContext):
-        conditions = [self.visit(cond) for cond in ctx.expression()]
+        conditions = self.visit(ctx.expression()) if ctx.expression() else []
         statements = [self.visit(stat) for stat in ctx.statement()]
         return ast.WhenBlockNode(conditions=conditions, statements=statements)
 
@@ -192,7 +192,11 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitSelfAccessExpr(self, ctx: AgentarParser.SelfAccessExprContext):
-        return ast.SelfAccessNode(path=["self"] + [id_.getText() for id_ in ctx.ID()])
+        if type(ctx.ID()) is list:
+            path = ["self"] + [id_.getText() for id_ in ctx.ID()]
+        else: 
+            path = ['self', ctx.ID().getText()]
+        return ast.SelfAccessNode(path=path)
 
 
     def visitLeqExpr(self, ctx:AgentarParser.LeqExprContext):
@@ -214,7 +218,10 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitMessageAccessExpr(self, ctx:AgentarParser.MessageAccessExprContext):
-        path = ['msg'] + [id_.getText() for id_ in ctx.ID()]
+        if type(ctx.ID()) is list:
+            path = ['msg'] + [id_.getText() for id_ in ctx.ID()]
+        else: 
+            path = ['msg', ctx.ID().getText()]
         return ast.MsgAccessNode(path=path)
 
 
@@ -336,3 +343,4 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitMsgTypeValue(self, ctx:AgentarParser.MsgTypeValueContext):
         return ast.LiteralNode(value=ctx.getText())  # Return the message type value as a literal
+    

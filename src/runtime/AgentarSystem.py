@@ -47,8 +47,13 @@ class AgentarSystem:
         logging.info("Agentar system stopped.")
 
 
-    def send_message(self, message_to_send):
-        pass
+    def send_message(self, message):
+        receiverId = message.receiver.path
+        with self._lock:
+            if receiverId in self.agents:
+                receiver = self.agents[receiverId]
+        if receiver is not None:
+            receiver.inbox.put(message)
 
 
     def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None):

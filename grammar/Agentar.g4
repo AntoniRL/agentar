@@ -53,7 +53,8 @@ receiveSection
     ;
 
 whenBlock
-    : 'when' '(' expression* ')' 'then' '{' statement* '}'
+    : 'when' '(' expression ')' 'then' '{' statement* '}'
+    | 'when' '(' ')' 'then' '{' statement* '}'
     ;
 
 actionSection
@@ -124,29 +125,29 @@ doStmt
 type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
 
 expression
-    : NOT expression                         # NotExpr
-    | expression AND expression              # AndExpr
-    | expression OR expression               # OrExpr
-    | expression XOR expression              # XorExpr
-    | expression op=('*'|'/') expression     # MulDivExpr
-    | expression op=('+'|'-') expression     # AddSubExpr
-    | expression EQ expression               # EqExpr
-    | expression NEQ expression              # NeqExpr
-    | expression LT expression               # LtExpr
-    | expression GT expression               # GtExpr
-    | expression LEQ expression              # LeqExpr
-    | expression GEQ expression              # GeqExpr
-    | MSG ('.' ID)+                          # MessageAccessExpr
-    | SELF ('.' ID)+                         # SelfAccessExpr
-    | listLiteral                            # ListExpr
-    | mapLiteral                             # MapExpr
-    | literal                                # LiteralExpr
-    | ID                                     # VarReference
-    | '(' expression ')'                     # ParenExpr
-    | expression '[' expression ']'          # IndexExpr
-    | AGENTID                                # AgentIdExpr
-    | messageInit                            # MessageInitExpr
-    | msgTypeValue                           # MsgTypeValueExpr
+    : expression op=OR expression     # OrExpr
+    | expression op=AND expression    # AndExpr
+    | expression op=XOR expression    # XorExpr
+    | expression op=EQ expression     # EqExpr
+    | expression op=NEQ expression    # NeqExpr
+    | expression op=LT expression     # LtExpr
+    | expression op=GT expression     # GtExpr
+    | expression op=LEQ expression    # LeqExpr
+    | expression op=GEQ expression    # GeqExpr
+    | expression op=('+'|'-') expression # AddSubExpr
+    | expression op=('*'|'/') expression # MulDivExpr
+    | NOT expression                  # NotExpr
+    | expression '[' expression ']'  # IndexExpr
+    | '(' expression ')'             # ParenExpr
+    | MSG '.' ID                     # MessageAccessExpr
+    | SELF '.' ID                    # SelfAccessExpr
+    | messageInit                    # MessageInitExpr
+    | msgTypeValue                   # MsgTypeValueExpr
+    | listLiteral                    # ListExpr
+    | mapLiteral                     # MapExpr
+    | literal                        # LiteralExpr
+    | ID                             # VarReference
+    | AGENTID                        # AgentIdExpr
     ;
 
 listLiteral
@@ -215,10 +216,10 @@ LT: '<';
 GT: '>';
 LEQ: '<=';
 GEQ: '>=';
-NOT: 'NOT';
-AND: 'AND';
-OR: 'OR';
-XOR: 'XOR';
+NOT: '!';
+AND: '&&';
+OR: '||';
+XOR: '^';
 
 // Whitespace and comments
 BLOCK_COMMENT: '/*' .*? '*/' -> skip;
