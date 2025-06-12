@@ -1,0 +1,33 @@
+message ping{
+    string text;
+}
+
+message pong{
+    string text;
+}
+
+agent child {
+    receive ping {
+        when () then {
+            print("I received:", msg.text);
+            msg_ = pong(text="Yes I am!");
+            send(self.parent, msg_, msg_type=inform);
+        }
+    }
+}
+
+agent mother {
+    initialize {
+        agentid agentid_;
+        agentid_ = spawn(child);
+        msg_ = ping(text="Are you there?");
+        send(agentid_, msg_, msg_type=request);
+    }
+    receive pong {
+        when () then {
+            print("I received:", msg.text);
+            print("Ping-pong is working!!!");
+            kill();
+        }
+    }
+}
