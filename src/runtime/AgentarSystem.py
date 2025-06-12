@@ -29,6 +29,7 @@ class AgentarSystem:
         # Create mother
         self.mother_id = AgentId(".1")
         self.mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id)
+        self.agents[self.mother_id.path] = self.mother_instance  # Add mother instance to agents dict
         self.threads[self.mother_id.path] = AgentRunner(self.mother_instance, system=self, agent_id=self.mother_id)
         
 
