@@ -23,3 +23,14 @@ class AgentarMessage:
             f"<AgentarMessage name='{self.name}' "
             f"content={self.content}>"
         )
+
+
+def get_message_type(expr):
+    mapping = {
+        "inform": MessageType.INFORM,
+        "ask": MessageType.ASK,  # Zakładam, że chodziło o ASK, a nie REPLY
+        "request": MessageType.REQUEST,
+        "confirm": MessageType.CONFIRM,
+        "deny": MessageType.DENY,
+    }
+    return mapping.get(expr.value)  # Można dodać domyślną wartość np. .get(expr.value, MessageType.DEFAULT)

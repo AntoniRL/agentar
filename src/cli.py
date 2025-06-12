@@ -15,12 +15,12 @@ def show_help():
     print("========================================")
     print("Usage: agentar <command> [options]")
     print("\nCommands:")
-    print("  help       Show this help message")
-    print("  run        Execute a .agar file")
-    print("    -r       Log output to console")
-    print("    -to_file Log output to agentar.log")
-    print("    -t       <seconds>  Set maximum runtime for the script (default is 5 seconds)")
-    print("  tree       Print the AST of a .agar file")
+    print("  help         Show this help message")
+    print("  run          Execute a .agar file")
+    print("    -r         Log output to console")
+    print("    -f / -file    Log output to agentar.log")
+    print("    -t <seconds>  Set maximum runtime for the script (default is 5 seconds)")
+    print("  tree         Print the AST of a .agar file")
     print("\nExamples:")
     print("  agentar run examples/hello.agar -r -t 10")
 
@@ -106,6 +106,10 @@ def main():
     elif command == 'tree':
         if len(sys.argv) < 3:
             print("Error: No file specified for 'run'.\n")
+            show_help()
+            return 1    
+        elif len(sys.argv) > 3:
+            print("Error: Too many arguments for 'tree' command.\n")
             show_help()
             return 1
         with open(sys.argv[2], "r") as f:
