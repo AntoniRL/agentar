@@ -37,6 +37,7 @@ class AgentInstance:
         self.fields["id"] = self.id   # Set the agent's id in its fields (Make it issier to access)
         self.fields_type["id"] = AgentId
 
+        self.return_flag = False  # Flag to indicate if a return statement was executed
 
     def __repr__(self):
         return (
@@ -70,12 +71,9 @@ class AgentInstance:
                 del self.runtime.agents[self.id.path]
                 del self.runtime.threads[self.id.path]    
 
-    def execute_action(self, action_name):
-        logging.info(f"{self.id.path}:: Executing action...")
-
 
     def process_messages(self, message):
-        logging.info(f"{self.id.path}:: I received message from {message.sender.path}") # TODO: message.sender to str a nie AgentId
+        logging.info(f"{self.id.path}:: Received message from {message.sender.path}")
         # comper the name of the message with the agent's receive method
         if message.name in self.agent.receive:
             # Get the corresponding method from the agent's receive method
@@ -103,6 +101,32 @@ class AgentInstance:
                 if bin_op:
                     for stmt in when_node.statements:
                         self.execute_stmt(stmt, local_var, local_var_type, message=message)
+
+
+    def execute_action(self, action_node, variables=None):
+        logging.info(f"{self.id.path}:: Executing action '{action_node.name}'...")
+        if variables != None:    
+            local_var = {}
+            local_var_type = {}
+            for i, stmt in enumerate(action_node.parameters):
+                if type(variables[i]) == AGENTAR_TYPE_MAP.get(stmt.param_type):
+                    # Initialize local variables from action parameters
+                    local_var[stmt.name] = variables[i]
+                    local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.param_type)
+                else:
+                    raise TypeError(f"Type mismatch in action parameter '{stmt.name}': expected {AGENTAR_TYPE_MAP.get(stmt.param_type)}, got {type(variables[i])}")
+        return_type = action_node.return_type
+        if return_type == "void":
+            for stmt in action_node.body:
+                self.execute_stmt(stmt, local_var, local_var_type)
+        if return_type != "void":
+            for stmt in action_node.body:
+                if self.return_flag:
+                    self.return_flag = False
+                    break
+                to_return =  self.execute_stmt(stmt, local_var, local_var_type)
+            return to_return
+
 
 
     def execute_stmt(self, stmt, local_var, local_var_type, message=None):
@@ -157,10 +181,14 @@ class AgentInstance:
                     content[key] = val
                 value = MessageInstance(name=message.message_type, content=content)
 
+            # When do action return a value 
+            elif isinstance(stmt.value, DoNode):
+                value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
+
             else:
                 if stmt.target not in local_var_type:
                     raise NameError(f"Variable '{stmt.target}' is not declared.")
-                value = self.eval_expr(stmt.value)
+                value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
                 if not local_var_type[stmt.target] == type(value):
                     raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
             
@@ -182,25 +210,51 @@ class AgentInstance:
         elif isinstance(stmt, PrintNode):
             to_print = [self.eval_expr(value, local_var, local_var_type, message) for value in stmt.values]
             print(f"AGENT {self.id}::", " ".join(str(v) for v in to_print))
-            logging.info(f"{self.id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))  # TODO: remove logging
+            logging.info(f"{self.id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
 
         # KillNode handles agent termination
         elif isinstance(stmt, KillNode):
-            if self.isMother:
-                self.runtime.killMother()
+            if stmt.agent_id is not None:
+                agent_id = self.eval_expr(stmt.agent_id, local_var, local_var_type)
+                self.runtime.killAgent(agent_id)
             else:
-                self.runtime.killAgent(self.id)
+                if self.isMother:
+                    self.runtime.killMother()
+                else:
+                    self.runtime.killAgent(self.id)
 
+        # SllepNode handles sleeping for a specified duration
         elif isinstance(stmt, SleepNode):
             duration = self.eval_expr(stmt.duration, local_var, local_var_type)
-            logging.info(f"{self.id.path}:: Sleeping for {duration}s...") # TODO: remove logging
+            logging.info(f"{self.id.path}:: Sleeping for {duration}s...")
             time.sleep(duration)
+
+        # DoNode handles executing actions
+        elif isinstance(stmt, DoNode):
+            if stmt.name in self.agent.actions:
+                variables = []
+                for param in stmt.variables:
+                    variables.append(self.eval_expr(param))
+                action = self.agent.actions[stmt.name]
+                if isinstance(action, ActionNode):
+                    if action.return_type == "void":
+                        self.execute_action(action, variables)
+                    else:
+                        return self.execute_action(action, variables)
+                    
+        # ReturnNode handles returning values from actions        
+        elif isinstance(stmt, ReturnNode):
+            if stmt.value is not None:
+                self.return_flag = True
+                return self.eval_expr(stmt.value, local_var, local_var_type, message=message)
+            else:
+                return None
 
 
 
     def eval_expr(self, expr, local_var=None, local_var_type=None, message=None):
         # TODO: add type checking for local_var and local_var_type
-        
+
         if isinstance(expr, LiteralNode):
             if expr.value == 'inform':
                 return MessageType.INFORM
@@ -251,14 +305,14 @@ class AgentInstance:
             operator = expr.op
 
             if isinstance(left, BinaryOpNode):
-                left = self.eval_expr(left, message=message)
+                left = self.eval_expr(left, local_var, local_var_type, message=message)
             if isinstance(right, BinaryOpNode):
-                right = self.eval_expr(right, message=message)
+                right = self.eval_expr(right, local_var, local_var_type, message=message)
 
             if not isinstance(left, bool):
-                left = self.eval_expr(left, message=message)
+                left = self.eval_expr(left, local_var, local_var_type, message=message)
             if not isinstance(right, bool):
-                right = self.eval_expr(right, message=message)
+                right = self.eval_expr(right, local_var, local_var_type, message=message)
 
             if operator == '+':
                 return left + right

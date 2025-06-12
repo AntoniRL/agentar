@@ -15,6 +15,7 @@ statement
     | killStmt
     | doStmt
     | sleepStmt
+    | returnStmt
     ;
 
 // === Mother declaration
@@ -86,11 +87,15 @@ spawnStmt
     ;
 
 killStmt  
-    : 'kill' '('')' ';'
+    : 'kill' '(' expression? ')' ';'
     ;
 
 sleepStmt  
     : 'sleep' '('expression')' ';'
+    ;
+
+returnStmt
+    : 'return' expression ';'
     ;
 
 
@@ -108,18 +113,19 @@ printStmt
 
 variableDecl
     : type ID ('=' expression)? ';'                       # VarDecl
-    | type expression ('=' expression)? ';'               # SelfDecl
     ;
 
 assignment
     : ID '=' expression ';'                               # SimpleAssign
     | ID '[' expression ']' '=' expression ';'            # IndexAssign
     | ID '=' spawnStmt                                    # SpawnAssign
+    | ID '=' doStmt                                       # DoAssign
+    | expression '=' doStmt                               # DoSelfAssign
     | expression '=' expression ';'                       # SelfAssign
     ;
 
 doStmt
-    : 'do' ID '(' (expression (',' expression)*)? ')' ';'
+    : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
     ;
 
 type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';

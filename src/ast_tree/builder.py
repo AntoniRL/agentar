@@ -105,12 +105,19 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitKillStmt(self, ctx:AgentarParser.KillStmtContext):
-        return ast.KillNode()
+        if ctx.expression() is None:
+            agent_id = None
+        else:
+            agent_id = self.visit(ctx.expression())
+        return ast.KillNode(agent_id=agent_id)
 
 
     def visitSleepStmt(self, ctx:AgentarParser.SleepStmtContext):
         return ast.SleepNode(duration=self.visit(ctx.expression()))
-    # TODO: Handle sleep duration, currently just returns the expression
+
+
+    def visitReturnStmt(self, ctx:AgentarParser.ReturnStmtContext):
+        return ast.ReturnNode(value=self.visit(ctx.expression()) if ctx.expression() else None)
 
 
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
@@ -138,11 +145,6 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.VariableDeclNode(var_type=var_type, name=name, value=value)
 
 
-    def visitSelfDecl(self, ctx:AgentarParser.SelfDeclContext):
-        pass 
-    # TODO: Handle self declaration if needed, currently not used in the grammar
-
-
     def visitSimpleAssign(self, ctx: AgentarParser.SimpleAssignContext):
         target = ctx.ID().getText()
         value = self.visit(ctx.expression())
@@ -159,6 +161,18 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitSpawnAssign(self, ctx: AgentarParser.SpawnAssignContext):
         target = ctx.ID().getText()
         value = self.visit(ctx.spawnStmt())
+        return ast.AssignmentNode(target=target, value=value)
+    
+       
+    def visitDoAssign(self, ctx:AgentarParser.DoAssignContext):
+        target = ctx.ID().getText()
+        value = self.visit(ctx.doStmt())
+        return ast.AssignmentNode(target=target, value=value)
+
+
+    def visitDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
+        target = self.visit(ctx.expression())
+        value = self.visit(ctx.doStmt())
         return ast.AssignmentNode(target=target, value=value)
 
 

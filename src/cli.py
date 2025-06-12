@@ -80,7 +80,7 @@ def main():
         else:
             raport_flag = False
 
-        if "-to_file" in sys.argv:
+        if "-file" in sys.argv or "-f" in sys.argv:
             to_file = True
         else:
             to_file = False

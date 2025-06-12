@@ -10,26 +10,31 @@ agent tok{
 
 agent tic {
     initialize{
-        agentid agentid_;
-        sleep(1);
+        //agentid agentid_;
+        //sleep(1);
         //agentid_ = spawn(tok);
         //agentid_ = spawn(tok);
         //agentid_ = spawn(tok);
         //agentid_ = spawn(tok);
-        sleep(1);
         //kill();
     }
     receive clean_room {
         when((msg.type == request) && (msg.sender == self.parent)) then {
             print("I get message from", self.parent, "msg.task=",msg.task);
-            do clean();
+            int results;
+            results = do(clean, [6, 5, "string"]);
+            print(results);
         }
+        /*
         when() then {
             print(5+4);
         }
+        */
     }
-    action clean(int c): void {
-        print("Akcion clean");
+    action clean(int c, int d, string s): int {
+        c = c-1;
+        return c;
+        int dd;
     }
 }
 
@@ -46,7 +51,7 @@ agent mother {
         self.nazwisko = "radomin";
         msg_ = clean_room(task = 10, value = 10.0);
         send(agentid_, msg_, msg_type=request);
-        //kill();
+        //kill(agentid_);
     }
     destroy{
         print("Destroy myself...");

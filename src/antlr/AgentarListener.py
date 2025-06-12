@@ -170,6 +170,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#returnStmt.
+    def enterReturnStmt(self, ctx:AgentarParser.ReturnStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#returnStmt.
+    def exitReturnStmt(self, ctx:AgentarParser.ReturnStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#messageInit.
     def enterMessageInit(self, ctx:AgentarParser.MessageInitContext):
         pass
@@ -239,6 +248,24 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#SpawnAssign.
     def exitSpawnAssign(self, ctx:AgentarParser.SpawnAssignContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#DoAssign.
+    def enterDoAssign(self, ctx:AgentarParser.DoAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#DoAssign.
+    def exitDoAssign(self, ctx:AgentarParser.DoAssignContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#DoSelfAssign.
+    def enterDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#DoSelfAssign.
+    def exitDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
         pass
 
 

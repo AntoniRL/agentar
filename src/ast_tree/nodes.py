@@ -109,13 +109,15 @@ class SpawnNode(ASTNode):
 
 @dataclass
 class KillNode(ASTNode):
-    pass
+    agent_id: ASTNode
+
 
 
 @dataclass
 class DoNode(ASTNode):
     name: str
     variables: List[ASTNode]
+
 
 
 # === Expressions ===
@@ -181,3 +183,8 @@ class AgentIdNode(ASTNode):
 @dataclass
 class SleepNode(ASTNode):
     duration: ASTNode
+
+
+@dataclass
+class ReturnNode(ASTNode):
+    value: Optional[ASTNode] = None
