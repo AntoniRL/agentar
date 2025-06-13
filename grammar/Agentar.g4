@@ -37,6 +37,10 @@ agentBody
     : fieldSection? 
     initialSection?
     destroySection?
+    beliefsSection?
+    senseSection?
+    golesSection?
+    rulesSection?
     receiveSection*
     actionSection*
     ;
@@ -51,6 +55,26 @@ initialSection
 
 destroySection
     : 'destroy' '{' statement* '}'
+    ;
+
+beliefsSection
+    : 'beliefs' '{' variableDecl* '}'
+    ;
+
+senseSection
+    : 'sense' '{' statement* '}'
+    ;
+
+golesSection
+    : 'goals' '{' goleBlock* '}'
+    ;
+
+goleBlock
+    : ID ':' expression ';'
+    ;
+
+rulesSection
+    : 'rules' '{' whenBlock* '}'
     ;
 
 receiveSection
@@ -116,8 +140,15 @@ printStmt
     ;
 
 ifStmt
-    : 'if' '(' expression ')' '{' statement* '}' (elseStmt)?
+    : 'if' '(' expression ')' blockOrStmt (elseStmt)?
     ;   
+
+
+blockOrStmt 
+    : '{' statement* '}'
+    | statement
+    ;
+
 
 elseStmt
     : 'else' '{' statement* '}'
@@ -180,7 +211,7 @@ expression
     | expression op=GEQ expression    # GeqExpr
     | expression op=('+'|'-') expression # AddSubExpr
     | expression op=('*'|'/') expression # MulDivExpr
-    | NOT expression                  # NotExpr
+    | NOT expression                 # NotExpr
     | '(' expression ')'             # ParenExpr
     | MSG '.' ID                     # MessageAccessExpr
     | SELF '.' ID                    # SelfAccessExpr

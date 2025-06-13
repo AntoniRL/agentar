@@ -251,6 +251,7 @@ class AgentInstance:
 
         # DoNode handles executing actions
         elif isinstance(stmt, DoNode):
+            logging.info(f"{self.id.path}:: Executing action '{stmt.name}'")
             if stmt.name in self.agent.actions:
                 variables = []
                 for param in stmt.variables:
@@ -297,6 +298,14 @@ class AgentInstance:
                 update_loop_var()
 
 
+        elif isinstance(stmt, WhileLoopNode):
+            def check_condition():
+                return self.eval_expr(stmt.condition, local_var, local_var_type)
+            while check_condition():
+                for statement in stmt.body:
+                    self.execute_stmt(statement, local_var, local_var_type)
+
+
 
 # ---EVAL_EXPR-----------------------------------
     def eval_expr(self, expr, local_var=None, local_var_type=None, message=None):
@@ -306,7 +315,7 @@ class AgentInstance:
             if expr.value == 'inform':
                 return MessageType.INFORM
             elif expr.value == 'ask':
-                return MessageType.REPLY
+                return MessageType.ASK
             elif expr.value == 'request':
                 return MessageType.REQUEST
             elif expr.value == 'confirm':

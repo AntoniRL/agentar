@@ -10,56 +10,24 @@ message task_done {
 
 agent cleaner {
     beliefs {
-        x = 0;
-        y = 7;
+        int x = 0;
+        int y = 7;
     }
     goals {
-        (x == 100 && y==7) || y==3;
+        g1: 5==6;
+        g2: (3==4) || (5==5);
     }
     rules {
         when (
-            not goals;
         ) then {
-            clean();
         }
         when (
-            not goals;
         ) then {
-            clean();
-        }
-    }
-    action clean(): void {
-        print("Cleaning room...");
-        beliefs("dirty") = false;
-        drop_goal("clean_room");
-        done = task_done(status = "done");
-        send_to_parent(done, msg_type=confirm);
-    }
-    receive clean_room {
-        when (
-            msg.type == "request" &&
-            msg.content.task == "clean"
-        ) then {
-            beliefs("dirty") = true;
-            adopt_goal("clean_room");
         }
     }
 }
 
 agent mother {
     initialize {
-        agentid id_;
-        id_ = spawn(cleaner);
-        msg = clean_room(task = "clean");
-        send(id_, msg, msg_type=request);
-    }
-    receive task_done {
-        when (
-            msg.type == confirm &&
-            msg.content.status == "done"
-        ) then {
-            print("Cleaner completed task.");
-            kill();
-        }
     }
 }

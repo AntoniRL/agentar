@@ -10,7 +10,7 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 * System oparty na komunikatach (wiadomościach) i reaktywnych regułach.
 * Dostęp do pól agenta poprzez `self.name`
 * Agent matka `mother` (Tworzony jako pierwszy, zarządza działaniem systemu)
-* Agent czas `time` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
+* (TODO?) Agent czas `time` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
 * Koniec działania systemu kiedy brak agentów (mother: `kill()`) LUB minie czas symulacji
 
 ---
@@ -19,11 +19,11 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 
 1. `initialize` — konfiguracja i inicjalizacja (np. tworzenie dzieci)
 2. Pętla działania:
-   - odbiór wiadomości
-   - aktualizacja przekonań (`beliefs`)
-   - postępowanie zgodnie z regułami (`rules`) 
-        - dążenie do osiągnięcia celu `goals`
-        - wykonanie akcji (`action`)
+   - odbiór wiadomości `receive` (jeżeli jakieś w inbox)
+   - aktualizacja przekonań (`beliefs`) `sense`
+   - sprawdzenie celu (`goles`)
+   - jeżeli cel nie osiąfnięty:
+        - postępowanie zgodnie z regułami (`rules`) 
 3. `destroy` — sprzątanie przed śmiercią
 
 Agent umiera, gdy:
@@ -54,26 +54,34 @@ agent <agent_name> {
     }
 
     beliefs {
-        // Przekonania agenta (opcjonalne)
-        // np. b1 = true;
-        // np. b2 = 33;
+        // Przekonania agenta o świecie(opcjonalne)
+        // np. bool b1 = false;
+        // np. int b2 = 33;
+    }
+
+    sense {
+        // Agent cyklicznie sprawdza świat zgodnie z zapisanymi akcjami (w zależnośći od speocyfiki świata).
+        // Aktualizuje pola beliefs
+        // read_file()....
     }
 
     goals {
         // Cele agenta (opcjonalne)
-        // np. g1 = true;
-        // np. g2 = "Done";
+        // np. g1: b.b1 == true || b.b2 < 4;
+        // np. g2: b.b2 < 10;
     }
 
     rules {
         // Zasady postępowania agenta (opcjonalne)
         when <condition> then {
             <statements>;
+            // możliwość odwołania się do b.<nazwa_pola_blief> (zwraca wartość pola)
+            // do g.<zazwa pola w gole> (zwraca true/false czy spełnione)
         }
     }
 
     receive <msg_name> {
-        // Instrukcje po otrzumaniu wiadomości
+        // Instrukcje po otrzumaniu wiadomości typu <msg_name>
         when <pattern> then {
             <statements>;
         }
@@ -97,6 +105,7 @@ agent <agent_name> {
 | `initialize`            | Inicjalizacja - część wykonywana podczas inicjalizacji agenta |
 | `destroy`               | Zniszczenie - część wykonywana po śmierci agenta |
 | `beliefs`               | Przekonania - co agent uważa, że wie o świecie. Pochodzą z wiadomości lub sensorów. Typ danych `map` |
+| `sense`                 | Definicja w jaki sposób będziemy czytać świat |
 | `goals`                 | Cele - Co agent chce osiągnąć. Kierują działaniem agenta.   |
 | `rules`                 | Zasady - Kiedy coś się stanie wykonaj akcję. |
 | `receive`               | Otrzymywać - Kroki podjętet po otrzymaniu konkretnej wiadomości |
@@ -111,27 +120,33 @@ agent <agent_name> {
 | `self.parent`             | ID rodzica np. `.1.2`                        |
 | `self.children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
 | `self.next_child`         | ID następnego dziecka (inkremetowanie automatycznie po `spawn()`) |
-| `self.now`                | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) |
+| `self.` | |
+| (TODO?) `self.now`                | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) |
 
 ### Operacje
+
+Dostęp do przekonań (`beliefs`) poprzed odwołanie `b.<nazwa_pola>`
+
+Dostęp do celów cząstkowych (`goles`) poprzed odwółanie `g.<nazwa_pola>` (zwraca wartość true/false czy cel cząstkowy spełniony)
 
 | Operacje | Opis | Kontekst |
 |----------------|------|----------|
 | `when`         | Warunek wyzwolenia | `rules`, `receive` |
 | `then`         | Część wykonawcza reguły | `rules`, `receive` |
 | `send(...)`    | Wysyłanie wiadomości | dowolnie |
-| `belief(...)`  | Sprawdzenie przekonania | w `when` |
-| `goal(...)`    | Sprawdzenie celu | w `when` |
 | `adopt_goal(...)` | Przyjęcie nowego celu | `action`, `receive` |
 | `drop_goal(...)`  | Porzucenie celu | `action`, `receive` |
 | `adopt_belief`    | Pezyjęcie nowe przekonanie                         |
 | `drop_belief`     | Porzucenie przekonanie                                |
-| `get_time()`   | Aktualizacja `self.now` | `initialize`, `action` |
+| `get_time()`???   | Aktualizacja `self.now` | `initialize`, `action` |
 | `print(...)`   | Debugowanie | dowolnie |
 | `kill()`       | Zakończenie działania agenta | dowolnie |
-| `kill_child(child_id)` | Usunięcie dzieci | dowolnie |
+| `kill(child_id)` | Usunięcie dzieci | dowolnie |
+| `kill_children()` | Kończy działanie wszystkich dzieci |
+| `kill_children(childen_type_name)` | Kończy działanie wszystkich dzieci o podanym typie|
 | `spawn(agent_name, [fields_of_agent])`   | Tworzenie dzieci | `initialize`, `action` |
 | `sleep(ms)`    | Pauza w wykonaniu | `action`, `receive` |
+| `sense()`      | Możaliwość wywołania z dowolnego miejsca w ciele agenta. Wykonuje polecenia z `sense{}` |
 
 ### Kontrola przepływów
 
@@ -379,7 +394,3 @@ agent mother {
     }
 }
 ```
-
-
-### Rozwój 
-`sense()` możliwość czytania ze świata (world)

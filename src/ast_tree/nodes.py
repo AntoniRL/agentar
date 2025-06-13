@@ -39,6 +39,32 @@ class FieldSectionNode(ASTNode):
 
 
 @dataclass
+class BeliefSectionNode(ASTNode):
+    declarations: List[VariableDeclNode]
+
+
+@dataclass
+class SeanseSectionNode(ASTNode):
+    statements: List[ASTNode]
+
+
+@dataclass
+class GoleSectionNode(ASTNode):
+    goles: List[VariableDeclNode]
+
+
+@dataclass
+class GoleBlockNode(ASTNode):
+    name: str
+    condition: List[ASTNode]
+
+
+@dataclass
+class RulesSectionNode(ASTNode):
+    rules: List[ASTNode]
+
+
+@dataclass
 class InitSectionNode(ASTNode):
     statements: List[ASTNode]
 

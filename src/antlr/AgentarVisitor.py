@@ -49,6 +49,31 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#beliefsSection.
+    def visitBeliefsSection(self, ctx:AgentarParser.BeliefsSectionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#senseSection.
+    def visitSenseSection(self, ctx:AgentarParser.SenseSectionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#golesSection.
+    def visitGolesSection(self, ctx:AgentarParser.GolesSectionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#goleBlock.
+    def visitGoleBlock(self, ctx:AgentarParser.GoleBlockContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#rulesSection.
+    def visitRulesSection(self, ctx:AgentarParser.RulesSectionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#receiveSection.
     def visitReceiveSection(self, ctx:AgentarParser.ReceiveSectionContext):
         return self.visitChildren(ctx)
@@ -121,6 +146,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#ifStmt.
     def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#blockOrStmt.
+    def visitBlockOrStmt(self, ctx:AgentarParser.BlockOrStmtContext):
         return self.visitChildren(ctx)
 
 

@@ -1,27 +1,23 @@
 message ping{
-    list myList;
 }
-/*
+
 agent child {
     receive ping {
-        when () then {
-            list myList = msg.myList;
-            myList[] = 10;
-            print("I received:", myList);
+        when (msg.type == ask) then {
+            msg_ = ping();
+            send(self.parent, msg_, msg_type=inform);
         }
     }
 }
-*/
+
 agent mother {
     fields{
         list mmList;
     }
     initialize{
-        int i = 5;
-        for (int j = 0; j < i; j=j+1) {
-            self.mmList[] = j;
-            print("Adding to list:", j);
-        }
-        print(self.mmList);
+        agentid agentid_;
+        agentid_ = spawn(child);
+        msg_ = ping();
+        send(agentid_, msg_,  msg_type=ask);
     }
 }

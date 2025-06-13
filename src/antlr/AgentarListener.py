@@ -80,6 +80,51 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#beliefsSection.
+    def enterBeliefsSection(self, ctx:AgentarParser.BeliefsSectionContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#beliefsSection.
+    def exitBeliefsSection(self, ctx:AgentarParser.BeliefsSectionContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#senseSection.
+    def enterSenseSection(self, ctx:AgentarParser.SenseSectionContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#senseSection.
+    def exitSenseSection(self, ctx:AgentarParser.SenseSectionContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#golesSection.
+    def enterGolesSection(self, ctx:AgentarParser.GolesSectionContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#golesSection.
+    def exitGolesSection(self, ctx:AgentarParser.GolesSectionContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#goleBlock.
+    def enterGoleBlock(self, ctx:AgentarParser.GoleBlockContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#goleBlock.
+    def exitGoleBlock(self, ctx:AgentarParser.GoleBlockContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#rulesSection.
+    def enterRulesSection(self, ctx:AgentarParser.RulesSectionContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#rulesSection.
+    def exitRulesSection(self, ctx:AgentarParser.RulesSectionContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#receiveSection.
     def enterReceiveSection(self, ctx:AgentarParser.ReceiveSectionContext):
         pass
@@ -212,6 +257,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#ifStmt.
     def exitIfStmt(self, ctx:AgentarParser.IfStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#blockOrStmt.
+    def enterBlockOrStmt(self, ctx:AgentarParser.BlockOrStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#blockOrStmt.
+    def exitBlockOrStmt(self, ctx:AgentarParser.BlockOrStmtContext):
         pass
 
 

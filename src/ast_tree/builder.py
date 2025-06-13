@@ -49,6 +49,33 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.DestroySectionNode(statements=stats)
 
 
+    def visitBeliefsSection(self, ctx:AgentarParser.BeliefsSectionContext):
+        decls = [self.visit(decl) for decl in ctx.variableDecl()]
+        return ast.BeliefSectionNode(declarations=decls)
+
+
+    def visitSenseSection(self, ctx:AgentarParser.SenseSectionContext):
+        stats = [self.visit(stat) for stat in ctx.statement()]
+        return ast.SeanseSectionNode(statements=stats)
+
+
+    def visitGolesSection(self, ctx:AgentarParser.GolesSectionContext):
+        goles = [self.visit(gole) for gole in ctx.goleBlock()]
+        return ast.GoleSectionNode(goles=goles)
+    
+
+    def visitGoleBlock(self, ctx:AgentarParser.GoleBlockContext):
+        print(ctx.getText())
+        name = ctx.ID().getText()
+        conditions = self.visit(ctx.expression()) if ctx.expression() else []
+        return ast.GoleBlockNode(name=name, condition=conditions)
+
+
+    def visitRulesSection(self, ctx:AgentarParser.RulesSectionContext):
+        rules = [self.visit(rule) for rule in ctx.whenBlock()]
+        return ast.RulesSectionNode(rules=rules)
+
+
     def visitReceiveSection(self, ctx:AgentarParser.ReceiveSectionContext):
         name = ctx.ID().getText()
         blocks = [self.visit(block) for block in ctx.whenBlock()]
@@ -140,9 +167,13 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
         conditions = self.visit(ctx.expression()) if ctx.expression() else []
-        statements = [self.visit(stat) for stat in ctx.statement()]
+        statements = self.visit(ctx.blockOrStmt()) if ctx.blockOrStmt() else []
         elseStmt = self.visit(ctx.elseStmt()) if ctx.elseStmt() else None
         return ast.IfStmtNode(conditions=conditions, statements=statements, elseStmt=elseStmt)
+
+
+    def visitBlockOrStmt(self, ctx:AgentarParser.BlockOrStmtContext):
+        return [self.visit(stat) for stat in ctx.statement()]
 
 
     def visitElseStmt(self, ctx:AgentarParser.ElseStmtContext):
@@ -171,7 +202,11 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitWhileStmt(self, ctx:AgentarParser.WhileStmtContext):
-        pass
+        condition = self.visit(ctx.expression()) if ctx.expression() else None
+        body = [self.visit(stat) for stat in ctx.statement()]
+        if not condition or not body:
+            raise ValueError("While loop requires a condition and a body.")
+        return ast.WhileLoopNode(condition=condition, body=body)
 
 
     def visitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
