@@ -58,6 +58,7 @@ class AgentInstance:
         # logging.info(f"Agent {self.id} stepping at time {self.now}") #TODO : remove logging
         if not self.inbox.empty():
             self.process_messages(self.inbox.get())
+        
 
 
     def destroy(self):
@@ -127,8 +128,6 @@ class AgentInstance:
                 to_return =  self.execute_stmt(stmt, local_var, local_var_type)
             return to_return
 
-
-
     def execute_stmt(self, stmt, local_var, local_var_type, message=None):
         # logging.info(f"{self.id.path}:: Executing statement...{stmt}") # TODO: remove logging
 
@@ -139,9 +138,9 @@ class AgentInstance:
                 local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type)
 
             elif stmt.value is not None:
-                value = self.eval_expr(stmt.value)
+                value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
                 if not AGENTAR_TYPE_MAP[stmt.var_type] == type(value):
-                    raise TypeError(f"Type mismatch in variable declaration for {stmt.target}: expected {AGENTAR_TYPE_MAP[stmt.type]}, got {type(value)}")
+                    raise TypeError(f"Type mismatch in variable declaration for {stmt.name}: expected {AGENTAR_TYPE_MAP[stmt.var_type]}, got {type(value)}")
                 local_var[stmt.name] = value
                 local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type)
 
@@ -151,13 +150,30 @@ class AgentInstance:
             if isinstance(stmt.target, SelfAccessNode):
                 target = stmt.target.path[1]
                 value = self.eval_expr(stmt.value)
-                if not self.fields_type[target] == type(value):
-                    raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
-                self.fields[target] = value
+                if stmt.index is None:
+                    if not self.fields_type[target] == type(value):
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
+                    self.fields[target] = value
+                elif stmt.index == "add":
+                    if not self.fields_type[target] == list:
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self.fields[target])}")
+                    self.fields[target].append(value)
+                else: 
+                    if not self.fields_type[target] == list:
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self.fields[target])}")
+                    index = self.eval_expr(stmt.index, local_var, local_var_type)
+                    self.fields[target][index] = value
                 return 0
             
             elif stmt.index is not None:
-                pass # TODO: handle indexed assignment
+                target = stmt.target
+                value = self.eval_expr(stmt.value, local_var, local_var_type)
+                if stmt.index == "add":
+                    local_var[target].append(value)
+                else:
+                    index = self.eval_expr(stmt.index, local_var, local_var_type)
+                    local_var[target][index] = value
+                return 0
 
             elif isinstance(stmt.value, SpawnNode):
                 if stmt.target not in local_var_type:
@@ -277,6 +293,13 @@ class AgentInstance:
             else:
                 raise NameError(f"Variable '{expr.name}' is not declared.")
             
+        elif isinstance(expr, IndexAccessNode):
+            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            index = self.eval_expr(expr.index, local_var, local_var_type, message=message)
+            if index < 0 or index >= len(base):
+                raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
+            return base[index]
+            
         elif isinstance(expr, SelfAccessNode):
             name = expr.path[1]
             if hasattr(self, name) or name in self.fields:
@@ -298,6 +321,9 @@ class AgentInstance:
                 )
             else:
                 raise NameError(f"Variable '{name}' is not declared.")  
+            
+        elif isinstance(expr, ListLiteralNode):
+            return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]
 
         elif isinstance(expr, BinaryOpNode): 
             left = expr.left

@@ -118,10 +118,14 @@ variableDecl
 assignment
     : ID '=' expression ';'                               # SimpleAssign
     | ID '[' expression ']' '=' expression ';'            # IndexAssign
+    | ID '['']' '=' expression ';'                        # ListAddAssign
     | ID '=' spawnStmt                                    # SpawnAssign
     | ID '=' doStmt                                       # DoAssign
     | expression '=' doStmt                               # DoSelfAssign
+    | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
+    | expression'['']' '=' expression ';'                 # SelfListAddAssign
     | expression '=' expression ';'                       # SelfAssign
+ 
     ;
 
 doStmt
@@ -143,10 +147,10 @@ expression
     | expression op=('+'|'-') expression # AddSubExpr
     | expression op=('*'|'/') expression # MulDivExpr
     | NOT expression                  # NotExpr
-    | expression '[' expression ']'  # IndexExpr
     | '(' expression ')'             # ParenExpr
     | MSG '.' ID                     # MessageAccessExpr
     | SELF '.' ID                    # SelfAccessExpr
+    | expression '[' expression ']'  # IndexExpr
     | messageInit                    # MessageInitExpr
     | msgTypeValue                   # MsgTypeValueExpr
     | listLiteral                    # ListExpr
@@ -193,8 +197,8 @@ MSGTYPE_CONFIRM: 'confirm';
 MSGTYPE_DENY:    'deny';
 
 
-INT: [0-9]+;
-FLOAT: [0-9]+ '.' [0-9]+;
+INT: '-'? [0-9]+;
+FLOAT: '-'? [0-9]+ '.' [0-9]+;
 AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
 BOOL: 'true' | 'false';
 STRING: '"' .*? '"';

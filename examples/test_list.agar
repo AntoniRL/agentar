@@ -1,0 +1,28 @@
+message ping{
+    list myList;
+}
+
+agent child {
+    receive ping {
+        when () then {
+            list myList = msg.myList;
+            myList[] = 10;
+            print("I received:", myList);
+        }
+    }
+}
+
+agent mother {
+    fields{
+        list mmList;
+    }
+    initialize{
+        self.mmList = [[1, 2], 
+                       [3, 4]];
+        print(mmList[1][0]);
+        agentid agentid_;
+        agentid_ = spawn(child);
+        msg_ = ping(myList=[[1, 2], [3, 4]]);
+        send(agentid_, msg_, msg_type=request);
+    }
+}

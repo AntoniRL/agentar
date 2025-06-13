@@ -215,15 +215,6 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#SelfDecl.
-    def enterSelfDecl(self, ctx:AgentarParser.SelfDeclContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#SelfDecl.
-    def exitSelfDecl(self, ctx:AgentarParser.SelfDeclContext):
-        pass
-
-
     # Enter a parse tree produced by AgentarParser#SimpleAssign.
     def enterSimpleAssign(self, ctx:AgentarParser.SimpleAssignContext):
         pass
@@ -239,6 +230,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#IndexAssign.
     def exitIndexAssign(self, ctx:AgentarParser.IndexAssignContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#ListAddAssign.
+    def enterListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#ListAddAssign.
+    def exitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
         pass
 
 
@@ -266,6 +266,24 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#DoSelfAssign.
     def exitDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#SelfIndexAssign.
+    def enterSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SelfIndexAssign.
+    def exitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#SelfListAddAssign.
+    def enterSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SelfListAddAssign.
+    def exitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
         pass
 
 

@@ -152,10 +152,17 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitIndexAssign(self, ctx: AgentarParser.IndexAssignContext):
-        base = ctx.ID().getText()    # np. x
+        target = ctx.ID().getText()    # np. x
         index = self.visit(ctx.expression(0))   # np. 3
         value = self.visit(ctx.expression(1))   # np. 10
-        return ast.AssignmentNode(target=base, index=index, value=value)
+        return ast.AssignmentNode(target=target, index=index, value=value)
+
+
+    def visitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
+        target = ctx.ID().getText()
+        value = self.visit(ctx.expression())
+        index = "add"
+        return ast.AssignmentNode(target=target, index=index, value=value)
 
 
     def visitSpawnAssign(self, ctx: AgentarParser.SpawnAssignContext):
@@ -180,6 +187,20 @@ class AgentarToASTBuilder(AgentarVisitor):
         target = self.visit(ctx.expression(0))
         value = self.visit(ctx.expression(1))
         return ast.AssignmentNode(target=target, value=value)
+
+
+    def visitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
+        target = self.visit(ctx.expression(0))
+        index = self.visit(ctx.expression(1))
+        value = self.visit(ctx.expression(2))
+        return ast.AssignmentNode(target=target, index=index, value=value)
+
+
+    def visitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
+        target = self.visit(ctx.expression(0))
+        index = "add"
+        value = self.visit(ctx.expression(1))
+        return ast.AssignmentNode(target=target, index=index, value=value)
 
 
     def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):

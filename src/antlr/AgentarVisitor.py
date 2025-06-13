@@ -124,11 +124,6 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#SelfDecl.
-    def visitSelfDecl(self, ctx:AgentarParser.SelfDeclContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by AgentarParser#SimpleAssign.
     def visitSimpleAssign(self, ctx:AgentarParser.SimpleAssignContext):
         return self.visitChildren(ctx)
@@ -136,6 +131,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#IndexAssign.
     def visitIndexAssign(self, ctx:AgentarParser.IndexAssignContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#ListAddAssign.
+    def visitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
         return self.visitChildren(ctx)
 
 
@@ -151,6 +151,16 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#DoSelfAssign.
     def visitDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#SelfIndexAssign.
+    def visitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#SelfListAddAssign.
+    def visitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
         return self.visitChildren(ctx)
 
 

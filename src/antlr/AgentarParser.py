@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,67,483,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,67,495,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
         7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
@@ -35,73 +35,74 @@ def serializedATN():
         19,1,19,1,19,1,19,1,19,5,19,285,8,19,10,19,12,19,288,9,19,3,19,290,
         8,19,1,19,1,19,1,20,1,20,1,20,1,20,1,21,1,21,1,21,1,21,1,21,5,21,
         303,8,21,10,21,12,21,306,9,21,1,21,1,21,1,21,1,22,1,22,1,22,1,22,
-        3,22,315,8,22,1,22,1,22,1,22,1,22,1,22,1,22,3,22,323,8,22,1,22,1,
-        22,3,22,327,8,22,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,
-        23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,
-        23,1,23,1,23,1,23,1,23,1,23,3,23,357,8,23,1,24,1,24,1,24,1,24,1,
-        24,1,24,1,24,5,24,366,8,24,10,24,12,24,369,9,24,1,24,1,24,3,24,373,
-        8,24,1,24,1,24,1,24,1,25,1,25,1,26,1,26,1,26,1,26,1,26,1,26,1,26,
+        3,22,315,8,22,1,22,1,22,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,
+        1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,
+        1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,
+        1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,
+        1,23,1,23,1,23,3,23,369,8,23,1,24,1,24,1,24,1,24,1,24,1,24,1,24,
+        5,24,378,8,24,10,24,12,24,381,9,24,1,24,1,24,3,24,385,8,24,1,24,
+        1,24,1,24,1,25,1,25,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,
+        1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,3,26,412,
+        8,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,
         1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,
-        3,26,400,8,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,
         1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,
-        1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,
-        1,26,1,26,5,26,440,8,26,10,26,12,26,443,9,26,1,27,1,27,1,27,1,27,
-        5,27,449,8,27,10,27,12,27,452,9,27,3,27,454,8,27,1,27,1,27,1,28,
-        1,28,1,28,1,28,1,28,1,28,1,28,1,28,5,28,466,8,28,10,28,12,28,469,
-        9,28,3,28,471,8,28,1,28,1,28,1,29,1,29,1,29,1,29,3,29,479,8,29,1,
-        30,1,30,1,30,0,1,52,31,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,
-        32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,0,4,1,0,18,25,1,0,51,
-        52,1,0,53,54,1,0,30,34,525,0,67,1,0,0,0,2,81,1,0,0,0,4,83,1,0,0,
-        0,6,89,1,0,0,0,8,96,1,0,0,0,10,116,1,0,0,0,12,126,1,0,0,0,14,136,
-        1,0,0,0,16,146,1,0,0,0,18,183,1,0,0,0,20,185,1,0,0,0,22,203,1,0,
-        0,0,24,211,1,0,0,0,26,214,1,0,0,0,28,225,1,0,0,0,30,241,1,0,0,0,
-        32,261,1,0,0,0,34,269,1,0,0,0,36,275,1,0,0,0,38,279,1,0,0,0,40,293,
-        1,0,0,0,42,297,1,0,0,0,44,326,1,0,0,0,46,356,1,0,0,0,48,358,1,0,
-        0,0,50,377,1,0,0,0,52,399,1,0,0,0,54,444,1,0,0,0,56,457,1,0,0,0,
-        58,478,1,0,0,0,60,480,1,0,0,0,62,66,3,4,2,0,63,66,3,6,3,0,64,66,
-        3,26,13,0,65,62,1,0,0,0,65,63,1,0,0,0,65,64,1,0,0,0,66,69,1,0,0,
-        0,67,65,1,0,0,0,67,68,1,0,0,0,68,70,1,0,0,0,69,67,1,0,0,0,70,71,
-        5,0,0,1,71,1,1,0,0,0,72,82,3,42,21,0,73,82,3,44,22,0,74,82,3,46,
-        23,0,75,82,3,28,14,0,76,82,3,30,15,0,77,82,3,32,16,0,78,82,3,48,
-        24,0,79,82,3,34,17,0,80,82,3,36,18,0,81,72,1,0,0,0,81,73,1,0,0,0,
-        81,74,1,0,0,0,81,75,1,0,0,0,81,76,1,0,0,0,81,77,1,0,0,0,81,78,1,
-        0,0,0,81,79,1,0,0,0,81,80,1,0,0,0,82,3,1,0,0,0,83,84,5,1,0,0,84,
-        85,5,2,0,0,85,86,5,45,0,0,86,87,3,8,4,0,87,88,5,46,0,0,88,5,1,0,
-        0,0,89,90,5,1,0,0,90,91,5,40,0,0,91,92,5,45,0,0,92,93,3,8,4,0,93,
-        94,5,46,0,0,94,7,1,0,0,0,95,97,3,10,5,0,96,95,1,0,0,0,96,97,1,0,
-        0,0,97,99,1,0,0,0,98,100,3,12,6,0,99,98,1,0,0,0,99,100,1,0,0,0,100,
-        102,1,0,0,0,101,103,3,14,7,0,102,101,1,0,0,0,102,103,1,0,0,0,103,
-        107,1,0,0,0,104,106,3,16,8,0,105,104,1,0,0,0,106,109,1,0,0,0,107,
-        105,1,0,0,0,107,108,1,0,0,0,108,113,1,0,0,0,109,107,1,0,0,0,110,
-        112,3,20,10,0,111,110,1,0,0,0,112,115,1,0,0,0,113,111,1,0,0,0,113,
-        114,1,0,0,0,114,9,1,0,0,0,115,113,1,0,0,0,116,117,5,3,0,0,117,121,
-        5,45,0,0,118,120,3,44,22,0,119,118,1,0,0,0,120,123,1,0,0,0,121,119,
-        1,0,0,0,121,122,1,0,0,0,122,124,1,0,0,0,123,121,1,0,0,0,124,125,
-        5,46,0,0,125,11,1,0,0,0,126,127,5,4,0,0,127,131,5,45,0,0,128,130,
-        3,2,1,0,129,128,1,0,0,0,130,133,1,0,0,0,131,129,1,0,0,0,131,132,
-        1,0,0,0,132,134,1,0,0,0,133,131,1,0,0,0,134,135,5,46,0,0,135,13,
-        1,0,0,0,136,137,5,5,0,0,137,141,5,45,0,0,138,140,3,2,1,0,139,138,
-        1,0,0,0,140,143,1,0,0,0,141,139,1,0,0,0,141,142,1,0,0,0,142,144,
-        1,0,0,0,143,141,1,0,0,0,144,145,5,46,0,0,145,15,1,0,0,0,146,147,
-        5,6,0,0,147,148,5,40,0,0,148,152,5,45,0,0,149,151,3,18,9,0,150,149,
-        1,0,0,0,151,154,1,0,0,0,152,150,1,0,0,0,152,153,1,0,0,0,153,155,
-        1,0,0,0,154,152,1,0,0,0,155,156,5,46,0,0,156,17,1,0,0,0,157,158,
-        5,7,0,0,158,159,5,41,0,0,159,160,3,52,26,0,160,161,5,42,0,0,161,
-        162,5,8,0,0,162,166,5,45,0,0,163,165,3,2,1,0,164,163,1,0,0,0,165,
-        168,1,0,0,0,166,164,1,0,0,0,166,167,1,0,0,0,167,169,1,0,0,0,168,
-        166,1,0,0,0,169,170,5,46,0,0,170,184,1,0,0,0,171,172,5,7,0,0,172,
-        173,5,41,0,0,173,174,5,42,0,0,174,175,5,8,0,0,175,179,5,45,0,0,176,
-        178,3,2,1,0,177,176,1,0,0,0,178,181,1,0,0,0,179,177,1,0,0,0,179,
-        180,1,0,0,0,180,182,1,0,0,0,181,179,1,0,0,0,182,184,5,46,0,0,183,
-        157,1,0,0,0,183,171,1,0,0,0,184,19,1,0,0,0,185,186,5,9,0,0,186,187,
-        5,40,0,0,187,189,5,41,0,0,188,190,3,22,11,0,189,188,1,0,0,0,189,
-        190,1,0,0,0,190,191,1,0,0,0,191,192,5,42,0,0,192,193,5,48,0,0,193,
-        194,3,50,25,0,194,198,5,45,0,0,195,197,3,2,1,0,196,195,1,0,0,0,197,
-        200,1,0,0,0,198,196,1,0,0,0,198,199,1,0,0,0,199,201,1,0,0,0,200,
-        198,1,0,0,0,201,202,5,46,0,0,202,21,1,0,0,0,203,208,3,24,12,0,204,
-        205,5,47,0,0,205,207,3,24,12,0,206,204,1,0,0,0,207,210,1,0,0,0,208,
-        206,1,0,0,0,208,209,1,0,0,0,209,23,1,0,0,0,210,208,1,0,0,0,211,212,
-        3,50,25,0,212,213,5,40,0,0,213,25,1,0,0,0,214,215,5,27,0,0,215,216,
+        5,26,452,8,26,10,26,12,26,455,9,26,1,27,1,27,1,27,1,27,5,27,461,
+        8,27,10,27,12,27,464,9,27,3,27,466,8,27,1,27,1,27,1,28,1,28,1,28,
+        1,28,1,28,1,28,1,28,1,28,5,28,478,8,28,10,28,12,28,481,9,28,3,28,
+        483,8,28,1,28,1,28,1,29,1,29,1,29,1,29,3,29,491,8,29,1,30,1,30,1,
+        30,0,1,52,31,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,
+        38,40,42,44,46,48,50,52,54,56,58,60,0,4,1,0,18,25,1,0,51,52,1,0,
+        53,54,1,0,30,34,538,0,67,1,0,0,0,2,81,1,0,0,0,4,83,1,0,0,0,6,89,
+        1,0,0,0,8,96,1,0,0,0,10,116,1,0,0,0,12,126,1,0,0,0,14,136,1,0,0,
+        0,16,146,1,0,0,0,18,183,1,0,0,0,20,185,1,0,0,0,22,203,1,0,0,0,24,
+        211,1,0,0,0,26,214,1,0,0,0,28,225,1,0,0,0,30,241,1,0,0,0,32,261,
+        1,0,0,0,34,269,1,0,0,0,36,275,1,0,0,0,38,279,1,0,0,0,40,293,1,0,
+        0,0,42,297,1,0,0,0,44,310,1,0,0,0,46,368,1,0,0,0,48,370,1,0,0,0,
+        50,389,1,0,0,0,52,411,1,0,0,0,54,456,1,0,0,0,56,469,1,0,0,0,58,490,
+        1,0,0,0,60,492,1,0,0,0,62,66,3,4,2,0,63,66,3,6,3,0,64,66,3,26,13,
+        0,65,62,1,0,0,0,65,63,1,0,0,0,65,64,1,0,0,0,66,69,1,0,0,0,67,65,
+        1,0,0,0,67,68,1,0,0,0,68,70,1,0,0,0,69,67,1,0,0,0,70,71,5,0,0,1,
+        71,1,1,0,0,0,72,82,3,42,21,0,73,82,3,44,22,0,74,82,3,46,23,0,75,
+        82,3,28,14,0,76,82,3,30,15,0,77,82,3,32,16,0,78,82,3,48,24,0,79,
+        82,3,34,17,0,80,82,3,36,18,0,81,72,1,0,0,0,81,73,1,0,0,0,81,74,1,
+        0,0,0,81,75,1,0,0,0,81,76,1,0,0,0,81,77,1,0,0,0,81,78,1,0,0,0,81,
+        79,1,0,0,0,81,80,1,0,0,0,82,3,1,0,0,0,83,84,5,1,0,0,84,85,5,2,0,
+        0,85,86,5,45,0,0,86,87,3,8,4,0,87,88,5,46,0,0,88,5,1,0,0,0,89,90,
+        5,1,0,0,90,91,5,40,0,0,91,92,5,45,0,0,92,93,3,8,4,0,93,94,5,46,0,
+        0,94,7,1,0,0,0,95,97,3,10,5,0,96,95,1,0,0,0,96,97,1,0,0,0,97,99,
+        1,0,0,0,98,100,3,12,6,0,99,98,1,0,0,0,99,100,1,0,0,0,100,102,1,0,
+        0,0,101,103,3,14,7,0,102,101,1,0,0,0,102,103,1,0,0,0,103,107,1,0,
+        0,0,104,106,3,16,8,0,105,104,1,0,0,0,106,109,1,0,0,0,107,105,1,0,
+        0,0,107,108,1,0,0,0,108,113,1,0,0,0,109,107,1,0,0,0,110,112,3,20,
+        10,0,111,110,1,0,0,0,112,115,1,0,0,0,113,111,1,0,0,0,113,114,1,0,
+        0,0,114,9,1,0,0,0,115,113,1,0,0,0,116,117,5,3,0,0,117,121,5,45,0,
+        0,118,120,3,44,22,0,119,118,1,0,0,0,120,123,1,0,0,0,121,119,1,0,
+        0,0,121,122,1,0,0,0,122,124,1,0,0,0,123,121,1,0,0,0,124,125,5,46,
+        0,0,125,11,1,0,0,0,126,127,5,4,0,0,127,131,5,45,0,0,128,130,3,2,
+        1,0,129,128,1,0,0,0,130,133,1,0,0,0,131,129,1,0,0,0,131,132,1,0,
+        0,0,132,134,1,0,0,0,133,131,1,0,0,0,134,135,5,46,0,0,135,13,1,0,
+        0,0,136,137,5,5,0,0,137,141,5,45,0,0,138,140,3,2,1,0,139,138,1,0,
+        0,0,140,143,1,0,0,0,141,139,1,0,0,0,141,142,1,0,0,0,142,144,1,0,
+        0,0,143,141,1,0,0,0,144,145,5,46,0,0,145,15,1,0,0,0,146,147,5,6,
+        0,0,147,148,5,40,0,0,148,152,5,45,0,0,149,151,3,18,9,0,150,149,1,
+        0,0,0,151,154,1,0,0,0,152,150,1,0,0,0,152,153,1,0,0,0,153,155,1,
+        0,0,0,154,152,1,0,0,0,155,156,5,46,0,0,156,17,1,0,0,0,157,158,5,
+        7,0,0,158,159,5,41,0,0,159,160,3,52,26,0,160,161,5,42,0,0,161,162,
+        5,8,0,0,162,166,5,45,0,0,163,165,3,2,1,0,164,163,1,0,0,0,165,168,
+        1,0,0,0,166,164,1,0,0,0,166,167,1,0,0,0,167,169,1,0,0,0,168,166,
+        1,0,0,0,169,170,5,46,0,0,170,184,1,0,0,0,171,172,5,7,0,0,172,173,
+        5,41,0,0,173,174,5,42,0,0,174,175,5,8,0,0,175,179,5,45,0,0,176,178,
+        3,2,1,0,177,176,1,0,0,0,178,181,1,0,0,0,179,177,1,0,0,0,179,180,
+        1,0,0,0,180,182,1,0,0,0,181,179,1,0,0,0,182,184,5,46,0,0,183,157,
+        1,0,0,0,183,171,1,0,0,0,184,19,1,0,0,0,185,186,5,9,0,0,186,187,5,
+        40,0,0,187,189,5,41,0,0,188,190,3,22,11,0,189,188,1,0,0,0,189,190,
+        1,0,0,0,190,191,1,0,0,0,191,192,5,42,0,0,192,193,5,48,0,0,193,194,
+        3,50,25,0,194,198,5,45,0,0,195,197,3,2,1,0,196,195,1,0,0,0,197,200,
+        1,0,0,0,198,196,1,0,0,0,198,199,1,0,0,0,199,201,1,0,0,0,200,198,
+        1,0,0,0,201,202,5,46,0,0,202,21,1,0,0,0,203,208,3,24,12,0,204,205,
+        5,47,0,0,205,207,3,24,12,0,206,204,1,0,0,0,207,210,1,0,0,0,208,206,
+        1,0,0,0,208,209,1,0,0,0,209,23,1,0,0,0,210,208,1,0,0,0,211,212,3,
+        50,25,0,212,213,5,40,0,0,213,25,1,0,0,0,214,215,5,27,0,0,215,216,
         5,40,0,0,216,220,5,45,0,0,217,219,3,44,22,0,218,217,1,0,0,0,219,
         222,1,0,0,0,220,218,1,0,0,0,220,221,1,0,0,0,221,223,1,0,0,0,222,
         220,1,0,0,0,223,224,5,46,0,0,224,27,1,0,0,0,225,226,5,10,0,0,226,
@@ -130,62 +131,66 @@ def serializedATN():
         0,304,305,1,0,0,0,305,307,1,0,0,0,306,304,1,0,0,0,307,308,5,42,0,
         0,308,309,5,49,0,0,309,43,1,0,0,0,310,311,3,50,25,0,311,314,5,40,
         0,0,312,313,5,50,0,0,313,315,3,52,26,0,314,312,1,0,0,0,314,315,1,
-        0,0,0,315,316,1,0,0,0,316,317,5,49,0,0,317,327,1,0,0,0,318,319,3,
-        50,25,0,319,322,3,52,26,0,320,321,5,50,0,0,321,323,3,52,26,0,322,
-        320,1,0,0,0,322,323,1,0,0,0,323,324,1,0,0,0,324,325,5,49,0,0,325,
-        327,1,0,0,0,326,310,1,0,0,0,326,318,1,0,0,0,327,45,1,0,0,0,328,329,
-        5,40,0,0,329,330,5,50,0,0,330,331,3,52,26,0,331,332,5,49,0,0,332,
-        357,1,0,0,0,333,334,5,40,0,0,334,335,5,43,0,0,335,336,3,52,26,0,
-        336,337,5,44,0,0,337,338,5,50,0,0,338,339,3,52,26,0,339,340,5,49,
-        0,0,340,357,1,0,0,0,341,342,5,40,0,0,342,343,5,50,0,0,343,357,3,
-        30,15,0,344,345,5,40,0,0,345,346,5,50,0,0,346,357,3,48,24,0,347,
-        348,3,52,26,0,348,349,5,50,0,0,349,350,3,48,24,0,350,357,1,0,0,0,
-        351,352,3,52,26,0,352,353,5,50,0,0,353,354,3,52,26,0,354,355,5,49,
-        0,0,355,357,1,0,0,0,356,328,1,0,0,0,356,333,1,0,0,0,356,341,1,0,
-        0,0,356,344,1,0,0,0,356,347,1,0,0,0,356,351,1,0,0,0,357,47,1,0,0,
-        0,358,359,5,17,0,0,359,372,5,40,0,0,360,361,5,47,0,0,361,362,5,43,
-        0,0,362,367,3,52,26,0,363,364,5,47,0,0,364,366,3,52,26,0,365,363,
-        1,0,0,0,366,369,1,0,0,0,367,365,1,0,0,0,367,368,1,0,0,0,368,370,
-        1,0,0,0,369,367,1,0,0,0,370,371,5,44,0,0,371,373,1,0,0,0,372,360,
-        1,0,0,0,372,373,1,0,0,0,373,374,1,0,0,0,374,375,5,42,0,0,375,376,
-        5,49,0,0,376,49,1,0,0,0,377,378,7,0,0,0,378,51,1,0,0,0,379,380,6,
-        26,-1,0,380,381,5,61,0,0,381,400,3,52,26,12,382,383,5,41,0,0,383,
-        384,3,52,26,0,384,385,5,42,0,0,385,400,1,0,0,0,386,387,5,28,0,0,
-        387,388,5,26,0,0,388,400,5,40,0,0,389,390,5,29,0,0,390,391,5,26,
-        0,0,391,400,5,40,0,0,392,400,3,38,19,0,393,400,3,60,30,0,394,400,
-        3,54,27,0,395,400,3,56,28,0,396,400,3,58,29,0,397,400,5,40,0,0,398,
-        400,5,37,0,0,399,379,1,0,0,0,399,382,1,0,0,0,399,386,1,0,0,0,399,
-        389,1,0,0,0,399,392,1,0,0,0,399,393,1,0,0,0,399,394,1,0,0,0,399,
-        395,1,0,0,0,399,396,1,0,0,0,399,397,1,0,0,0,399,398,1,0,0,0,400,
-        441,1,0,0,0,401,402,10,23,0,0,402,403,5,63,0,0,403,440,3,52,26,24,
-        404,405,10,22,0,0,405,406,5,62,0,0,406,440,3,52,26,23,407,408,10,
-        21,0,0,408,409,5,64,0,0,409,440,3,52,26,22,410,411,10,20,0,0,411,
-        412,5,55,0,0,412,440,3,52,26,21,413,414,10,19,0,0,414,415,5,56,0,
-        0,415,440,3,52,26,20,416,417,10,18,0,0,417,418,5,57,0,0,418,440,
-        3,52,26,19,419,420,10,17,0,0,420,421,5,58,0,0,421,440,3,52,26,18,
-        422,423,10,16,0,0,423,424,5,59,0,0,424,440,3,52,26,17,425,426,10,
-        15,0,0,426,427,5,60,0,0,427,440,3,52,26,16,428,429,10,14,0,0,429,
-        430,7,1,0,0,430,440,3,52,26,15,431,432,10,13,0,0,432,433,7,2,0,0,
-        433,440,3,52,26,14,434,435,10,11,0,0,435,436,5,43,0,0,436,437,3,
-        52,26,0,437,438,5,44,0,0,438,440,1,0,0,0,439,401,1,0,0,0,439,404,
-        1,0,0,0,439,407,1,0,0,0,439,410,1,0,0,0,439,413,1,0,0,0,439,416,
-        1,0,0,0,439,419,1,0,0,0,439,422,1,0,0,0,439,425,1,0,0,0,439,428,
-        1,0,0,0,439,431,1,0,0,0,439,434,1,0,0,0,440,443,1,0,0,0,441,439,
-        1,0,0,0,441,442,1,0,0,0,442,53,1,0,0,0,443,441,1,0,0,0,444,453,5,
-        43,0,0,445,450,3,52,26,0,446,447,5,47,0,0,447,449,3,52,26,0,448,
-        446,1,0,0,0,449,452,1,0,0,0,450,448,1,0,0,0,450,451,1,0,0,0,451,
-        454,1,0,0,0,452,450,1,0,0,0,453,445,1,0,0,0,453,454,1,0,0,0,454,
-        455,1,0,0,0,455,456,5,44,0,0,456,55,1,0,0,0,457,470,5,45,0,0,458,
-        459,5,40,0,0,459,460,5,48,0,0,460,467,3,52,26,0,461,462,5,47,0,0,
-        462,463,5,40,0,0,463,464,5,48,0,0,464,466,3,52,26,0,465,461,1,0,
-        0,0,466,469,1,0,0,0,467,465,1,0,0,0,467,468,1,0,0,0,468,471,1,0,
-        0,0,469,467,1,0,0,0,470,458,1,0,0,0,470,471,1,0,0,0,471,472,1,0,
-        0,0,472,473,5,46,0,0,473,57,1,0,0,0,474,479,5,35,0,0,475,479,5,36,
-        0,0,476,479,5,39,0,0,477,479,5,38,0,0,478,474,1,0,0,0,478,475,1,
-        0,0,0,478,476,1,0,0,0,478,477,1,0,0,0,479,59,1,0,0,0,480,481,7,3,
-        0,0,481,61,1,0,0,0,41,65,67,81,96,99,102,107,113,121,131,141,152,
-        166,179,183,189,198,208,220,234,236,251,256,264,286,289,304,314,
-        322,326,356,367,372,399,439,441,450,453,467,470,478
+        0,0,0,315,316,1,0,0,0,316,317,5,49,0,0,317,45,1,0,0,0,318,319,5,
+        40,0,0,319,320,5,50,0,0,320,321,3,52,26,0,321,322,5,49,0,0,322,369,
+        1,0,0,0,323,324,5,40,0,0,324,325,5,43,0,0,325,326,3,52,26,0,326,
+        327,5,44,0,0,327,328,5,50,0,0,328,329,3,52,26,0,329,330,5,49,0,0,
+        330,369,1,0,0,0,331,332,5,40,0,0,332,333,5,43,0,0,333,334,5,44,0,
+        0,334,335,5,50,0,0,335,336,3,52,26,0,336,337,5,49,0,0,337,369,1,
+        0,0,0,338,339,5,40,0,0,339,340,5,50,0,0,340,369,3,30,15,0,341,342,
+        5,40,0,0,342,343,5,50,0,0,343,369,3,48,24,0,344,345,3,52,26,0,345,
+        346,5,50,0,0,346,347,3,48,24,0,347,369,1,0,0,0,348,349,3,52,26,0,
+        349,350,5,43,0,0,350,351,3,52,26,0,351,352,5,44,0,0,352,353,5,50,
+        0,0,353,354,3,52,26,0,354,355,5,49,0,0,355,369,1,0,0,0,356,357,3,
+        52,26,0,357,358,5,43,0,0,358,359,5,44,0,0,359,360,5,50,0,0,360,361,
+        3,52,26,0,361,362,5,49,0,0,362,369,1,0,0,0,363,364,3,52,26,0,364,
+        365,5,50,0,0,365,366,3,52,26,0,366,367,5,49,0,0,367,369,1,0,0,0,
+        368,318,1,0,0,0,368,323,1,0,0,0,368,331,1,0,0,0,368,338,1,0,0,0,
+        368,341,1,0,0,0,368,344,1,0,0,0,368,348,1,0,0,0,368,356,1,0,0,0,
+        368,363,1,0,0,0,369,47,1,0,0,0,370,371,5,17,0,0,371,384,5,40,0,0,
+        372,373,5,47,0,0,373,374,5,43,0,0,374,379,3,52,26,0,375,376,5,47,
+        0,0,376,378,3,52,26,0,377,375,1,0,0,0,378,381,1,0,0,0,379,377,1,
+        0,0,0,379,380,1,0,0,0,380,382,1,0,0,0,381,379,1,0,0,0,382,383,5,
+        44,0,0,383,385,1,0,0,0,384,372,1,0,0,0,384,385,1,0,0,0,385,386,1,
+        0,0,0,386,387,5,42,0,0,387,388,5,49,0,0,388,49,1,0,0,0,389,390,7,
+        0,0,0,390,51,1,0,0,0,391,392,6,26,-1,0,392,393,5,61,0,0,393,412,
+        3,52,26,12,394,395,5,41,0,0,395,396,3,52,26,0,396,397,5,42,0,0,397,
+        412,1,0,0,0,398,399,5,28,0,0,399,400,5,26,0,0,400,412,5,40,0,0,401,
+        402,5,29,0,0,402,403,5,26,0,0,403,412,5,40,0,0,404,412,3,38,19,0,
+        405,412,3,60,30,0,406,412,3,54,27,0,407,412,3,56,28,0,408,412,3,
+        58,29,0,409,412,5,40,0,0,410,412,5,37,0,0,411,391,1,0,0,0,411,394,
+        1,0,0,0,411,398,1,0,0,0,411,401,1,0,0,0,411,404,1,0,0,0,411,405,
+        1,0,0,0,411,406,1,0,0,0,411,407,1,0,0,0,411,408,1,0,0,0,411,409,
+        1,0,0,0,411,410,1,0,0,0,412,453,1,0,0,0,413,414,10,23,0,0,414,415,
+        5,63,0,0,415,452,3,52,26,24,416,417,10,22,0,0,417,418,5,62,0,0,418,
+        452,3,52,26,23,419,420,10,21,0,0,420,421,5,64,0,0,421,452,3,52,26,
+        22,422,423,10,20,0,0,423,424,5,55,0,0,424,452,3,52,26,21,425,426,
+        10,19,0,0,426,427,5,56,0,0,427,452,3,52,26,20,428,429,10,18,0,0,
+        429,430,5,57,0,0,430,452,3,52,26,19,431,432,10,17,0,0,432,433,5,
+        58,0,0,433,452,3,52,26,18,434,435,10,16,0,0,435,436,5,59,0,0,436,
+        452,3,52,26,17,437,438,10,15,0,0,438,439,5,60,0,0,439,452,3,52,26,
+        16,440,441,10,14,0,0,441,442,7,1,0,0,442,452,3,52,26,15,443,444,
+        10,13,0,0,444,445,7,2,0,0,445,452,3,52,26,14,446,447,10,8,0,0,447,
+        448,5,43,0,0,448,449,3,52,26,0,449,450,5,44,0,0,450,452,1,0,0,0,
+        451,413,1,0,0,0,451,416,1,0,0,0,451,419,1,0,0,0,451,422,1,0,0,0,
+        451,425,1,0,0,0,451,428,1,0,0,0,451,431,1,0,0,0,451,434,1,0,0,0,
+        451,437,1,0,0,0,451,440,1,0,0,0,451,443,1,0,0,0,451,446,1,0,0,0,
+        452,455,1,0,0,0,453,451,1,0,0,0,453,454,1,0,0,0,454,53,1,0,0,0,455,
+        453,1,0,0,0,456,465,5,43,0,0,457,462,3,52,26,0,458,459,5,47,0,0,
+        459,461,3,52,26,0,460,458,1,0,0,0,461,464,1,0,0,0,462,460,1,0,0,
+        0,462,463,1,0,0,0,463,466,1,0,0,0,464,462,1,0,0,0,465,457,1,0,0,
+        0,465,466,1,0,0,0,466,467,1,0,0,0,467,468,5,44,0,0,468,55,1,0,0,
+        0,469,482,5,45,0,0,470,471,5,40,0,0,471,472,5,48,0,0,472,479,3,52,
+        26,0,473,474,5,47,0,0,474,475,5,40,0,0,475,476,5,48,0,0,476,478,
+        3,52,26,0,477,473,1,0,0,0,478,481,1,0,0,0,479,477,1,0,0,0,479,480,
+        1,0,0,0,480,483,1,0,0,0,481,479,1,0,0,0,482,470,1,0,0,0,482,483,
+        1,0,0,0,483,484,1,0,0,0,484,485,5,46,0,0,485,57,1,0,0,0,486,491,
+        5,35,0,0,487,491,5,36,0,0,488,491,5,39,0,0,489,491,5,38,0,0,490,
+        486,1,0,0,0,490,487,1,0,0,0,490,488,1,0,0,0,490,489,1,0,0,0,491,
+        59,1,0,0,0,492,493,7,3,0,0,493,61,1,0,0,0,39,65,67,81,96,99,102,
+        107,113,121,131,141,152,166,179,183,189,198,208,220,234,236,251,
+        256,264,286,289,304,314,368,379,384,411,451,453,462,465,479,482,
+        490
     ]
 
 class AgentarParser ( Parser ):
@@ -2233,41 +2238,6 @@ class AgentarParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-    class SelfDeclContext(VariableDeclContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a AgentarParser.VariableDeclContext
-            super().__init__(parser)
-            self.copyFrom(ctx)
-
-        def type_(self):
-            return self.getTypedRuleContext(AgentarParser.TypeContext,0)
-
-        def expression(self, i:int=None):
-            if i is None:
-                return self.getTypedRuleContexts(AgentarParser.ExpressionContext)
-            else:
-                return self.getTypedRuleContext(AgentarParser.ExpressionContext,i)
-
-        def SEMI(self):
-            return self.getToken(AgentarParser.SEMI, 0)
-        def ASSIGN(self):
-            return self.getToken(AgentarParser.ASSIGN, 0)
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterSelfDecl" ):
-                listener.enterSelfDecl(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitSelfDecl" ):
-                listener.exitSelfDecl(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSelfDecl" ):
-                return visitor.visitSelfDecl(self)
-            else:
-                return visitor.visitChildren(self)
-
-
 
     def variableDecl(self):
 
@@ -2275,52 +2245,24 @@ class AgentarParser ( Parser ):
         self.enterRule(localctx, 44, self.RULE_variableDecl)
         self._la = 0 # Token type
         try:
-            self.state = 326
+            localctx = AgentarParser.VarDeclContext(self, localctx)
+            self.enterOuterAlt(localctx, 1)
+            self.state = 310
+            self.type_()
+            self.state = 311
+            self.match(AgentarParser.ID)
+            self.state = 314
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,29,self._ctx)
-            if la_ == 1:
-                localctx = AgentarParser.VarDeclContext(self, localctx)
-                self.enterOuterAlt(localctx, 1)
-                self.state = 310
-                self.type_()
-                self.state = 311
-                self.match(AgentarParser.ID)
-                self.state = 314
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if _la==50:
-                    self.state = 312
-                    self.match(AgentarParser.ASSIGN)
-                    self.state = 313
-                    self.expression(0)
-
-
-                self.state = 316
-                self.match(AgentarParser.SEMI)
-                pass
-
-            elif la_ == 2:
-                localctx = AgentarParser.SelfDeclContext(self, localctx)
-                self.enterOuterAlt(localctx, 2)
-                self.state = 318
-                self.type_()
-                self.state = 319
+            _la = self._input.LA(1)
+            if _la==50:
+                self.state = 312
+                self.match(AgentarParser.ASSIGN)
+                self.state = 313
                 self.expression(0)
-                self.state = 322
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if _la==50:
-                    self.state = 320
-                    self.match(AgentarParser.ASSIGN)
-                    self.state = 321
-                    self.expression(0)
 
 
-                self.state = 324
-                self.match(AgentarParser.SEMI)
-                pass
-
-
+            self.state = 316
+            self.match(AgentarParser.SEMI)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2345,6 +2287,41 @@ class AgentarParser ( Parser ):
         def copyFrom(self, ctx:ParserRuleContext):
             super().copyFrom(ctx)
 
+
+
+    class ListAddAssignContext(AssignmentContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a AgentarParser.AssignmentContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def ID(self):
+            return self.getToken(AgentarParser.ID, 0)
+        def LBRACK(self):
+            return self.getToken(AgentarParser.LBRACK, 0)
+        def RBRACK(self):
+            return self.getToken(AgentarParser.RBRACK, 0)
+        def ASSIGN(self):
+            return self.getToken(AgentarParser.ASSIGN, 0)
+        def expression(self):
+            return self.getTypedRuleContext(AgentarParser.ExpressionContext,0)
+
+        def SEMI(self):
+            return self.getToken(AgentarParser.SEMI, 0)
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterListAddAssign" ):
+                listener.enterListAddAssign(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitListAddAssign" ):
+                listener.exitListAddAssign(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitListAddAssign" ):
+                return visitor.visitListAddAssign(self)
+            else:
+                return visitor.visitChildren(self)
 
 
     class DoAssignContext(AssignmentContext):
@@ -2477,6 +2454,42 @@ class AgentarParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
+    class SelfListAddAssignContext(AssignmentContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a AgentarParser.AssignmentContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def expression(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(AgentarParser.ExpressionContext)
+            else:
+                return self.getTypedRuleContext(AgentarParser.ExpressionContext,i)
+
+        def LBRACK(self):
+            return self.getToken(AgentarParser.LBRACK, 0)
+        def RBRACK(self):
+            return self.getToken(AgentarParser.RBRACK, 0)
+        def ASSIGN(self):
+            return self.getToken(AgentarParser.ASSIGN, 0)
+        def SEMI(self):
+            return self.getToken(AgentarParser.SEMI, 0)
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterSelfListAddAssign" ):
+                listener.enterSelfListAddAssign(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitSelfListAddAssign" ):
+                listener.exitSelfListAddAssign(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSelfListAddAssign" ):
+                return visitor.visitSelfListAddAssign(self)
+            else:
+                return visitor.visitChildren(self)
+
+
     class SpawnAssignContext(AssignmentContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a AgentarParser.AssignmentContext
@@ -2536,90 +2549,179 @@ class AgentarParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
+    class SelfIndexAssignContext(AssignmentContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a AgentarParser.AssignmentContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def expression(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(AgentarParser.ExpressionContext)
+            else:
+                return self.getTypedRuleContext(AgentarParser.ExpressionContext,i)
+
+        def LBRACK(self):
+            return self.getToken(AgentarParser.LBRACK, 0)
+        def RBRACK(self):
+            return self.getToken(AgentarParser.RBRACK, 0)
+        def ASSIGN(self):
+            return self.getToken(AgentarParser.ASSIGN, 0)
+        def SEMI(self):
+            return self.getToken(AgentarParser.SEMI, 0)
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterSelfIndexAssign" ):
+                listener.enterSelfIndexAssign(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitSelfIndexAssign" ):
+                listener.exitSelfIndexAssign(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSelfIndexAssign" ):
+                return visitor.visitSelfIndexAssign(self)
+            else:
+                return visitor.visitChildren(self)
+
+
 
     def assignment(self):
 
         localctx = AgentarParser.AssignmentContext(self, self._ctx, self.state)
         self.enterRule(localctx, 46, self.RULE_assignment)
         try:
-            self.state = 356
+            self.state = 368
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,30,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,28,self._ctx)
             if la_ == 1:
                 localctx = AgentarParser.SimpleAssignContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 328
+                self.state = 318
                 self.match(AgentarParser.ID)
-                self.state = 329
+                self.state = 319
                 self.match(AgentarParser.ASSIGN)
-                self.state = 330
+                self.state = 320
                 self.expression(0)
-                self.state = 331
+                self.state = 321
                 self.match(AgentarParser.SEMI)
                 pass
 
             elif la_ == 2:
                 localctx = AgentarParser.IndexAssignContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 333
+                self.state = 323
                 self.match(AgentarParser.ID)
-                self.state = 334
+                self.state = 324
                 self.match(AgentarParser.LBRACK)
-                self.state = 335
+                self.state = 325
                 self.expression(0)
-                self.state = 336
+                self.state = 326
                 self.match(AgentarParser.RBRACK)
-                self.state = 337
+                self.state = 327
                 self.match(AgentarParser.ASSIGN)
-                self.state = 338
+                self.state = 328
                 self.expression(0)
-                self.state = 339
+                self.state = 329
                 self.match(AgentarParser.SEMI)
                 pass
 
             elif la_ == 3:
-                localctx = AgentarParser.SpawnAssignContext(self, localctx)
+                localctx = AgentarParser.ListAddAssignContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
+                self.state = 331
+                self.match(AgentarParser.ID)
+                self.state = 332
+                self.match(AgentarParser.LBRACK)
+                self.state = 333
+                self.match(AgentarParser.RBRACK)
+                self.state = 334
+                self.match(AgentarParser.ASSIGN)
+                self.state = 335
+                self.expression(0)
+                self.state = 336
+                self.match(AgentarParser.SEMI)
+                pass
+
+            elif la_ == 4:
+                localctx = AgentarParser.SpawnAssignContext(self, localctx)
+                self.enterOuterAlt(localctx, 4)
+                self.state = 338
+                self.match(AgentarParser.ID)
+                self.state = 339
+                self.match(AgentarParser.ASSIGN)
+                self.state = 340
+                self.spawnStmt()
+                pass
+
+            elif la_ == 5:
+                localctx = AgentarParser.DoAssignContext(self, localctx)
+                self.enterOuterAlt(localctx, 5)
                 self.state = 341
                 self.match(AgentarParser.ID)
                 self.state = 342
                 self.match(AgentarParser.ASSIGN)
                 self.state = 343
-                self.spawnStmt()
+                self.doStmt()
                 pass
 
-            elif la_ == 4:
-                localctx = AgentarParser.DoAssignContext(self, localctx)
-                self.enterOuterAlt(localctx, 4)
+            elif la_ == 6:
+                localctx = AgentarParser.DoSelfAssignContext(self, localctx)
+                self.enterOuterAlt(localctx, 6)
                 self.state = 344
-                self.match(AgentarParser.ID)
+                self.expression(0)
                 self.state = 345
                 self.match(AgentarParser.ASSIGN)
                 self.state = 346
                 self.doStmt()
                 pass
 
-            elif la_ == 5:
-                localctx = AgentarParser.DoSelfAssignContext(self, localctx)
-                self.enterOuterAlt(localctx, 5)
-                self.state = 347
-                self.expression(0)
+            elif la_ == 7:
+                localctx = AgentarParser.SelfIndexAssignContext(self, localctx)
+                self.enterOuterAlt(localctx, 7)
                 self.state = 348
-                self.match(AgentarParser.ASSIGN)
-                self.state = 349
-                self.doStmt()
-                pass
-
-            elif la_ == 6:
-                localctx = AgentarParser.SelfAssignContext(self, localctx)
-                self.enterOuterAlt(localctx, 6)
-                self.state = 351
                 self.expression(0)
+                self.state = 349
+                self.match(AgentarParser.LBRACK)
+                self.state = 350
+                self.expression(0)
+                self.state = 351
+                self.match(AgentarParser.RBRACK)
                 self.state = 352
                 self.match(AgentarParser.ASSIGN)
                 self.state = 353
                 self.expression(0)
                 self.state = 354
+                self.match(AgentarParser.SEMI)
+                pass
+
+            elif la_ == 8:
+                localctx = AgentarParser.SelfListAddAssignContext(self, localctx)
+                self.enterOuterAlt(localctx, 8)
+                self.state = 356
+                self.expression(0)
+                self.state = 357
+                self.match(AgentarParser.LBRACK)
+                self.state = 358
+                self.match(AgentarParser.RBRACK)
+                self.state = 359
+                self.match(AgentarParser.ASSIGN)
+                self.state = 360
+                self.expression(0)
+                self.state = 361
+                self.match(AgentarParser.SEMI)
+                pass
+
+            elif la_ == 9:
+                localctx = AgentarParser.SelfAssignContext(self, localctx)
+                self.enterOuterAlt(localctx, 9)
+                self.state = 363
+                self.expression(0)
+                self.state = 364
+                self.match(AgentarParser.ASSIGN)
+                self.state = 365
+                self.expression(0)
+                self.state = 366
                 self.match(AgentarParser.SEMI)
                 pass
 
@@ -2695,39 +2797,39 @@ class AgentarParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 358
+            self.state = 370
             self.match(AgentarParser.T__16)
-            self.state = 359
+            self.state = 371
             self.match(AgentarParser.ID)
-            self.state = 372
+            self.state = 384
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==47:
-                self.state = 360
+                self.state = 372
                 self.match(AgentarParser.COMMA)
-                self.state = 361
+                self.state = 373
                 self.match(AgentarParser.LBRACK)
-                self.state = 362
+                self.state = 374
                 self.expression(0)
-                self.state = 367
+                self.state = 379
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==47:
-                    self.state = 363
+                    self.state = 375
                     self.match(AgentarParser.COMMA)
-                    self.state = 364
+                    self.state = 376
                     self.expression(0)
-                    self.state = 369
+                    self.state = 381
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
-                self.state = 370
+                self.state = 382
                 self.match(AgentarParser.RBRACK)
 
 
-            self.state = 374
+            self.state = 386
             self.match(AgentarParser.RPAREN)
-            self.state = 375
+            self.state = 387
             self.match(AgentarParser.SEMI)
         except RecognitionException as re:
             localctx.exception = re
@@ -2773,7 +2875,7 @@ class AgentarParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 377
+            self.state = 389
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 66846720) != 0)):
                 self._errHandler.recoverInline(self)
@@ -3474,17 +3576,17 @@ class AgentarParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 399
+            self.state = 411
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,33,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,31,self._ctx)
             if la_ == 1:
                 localctx = AgentarParser.NotExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
 
-                self.state = 380
+                self.state = 392
                 self.match(AgentarParser.NOT)
-                self.state = 381
+                self.state = 393
                 self.expression(12)
                 pass
 
@@ -3492,11 +3594,11 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.ParenExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 382
+                self.state = 394
                 self.match(AgentarParser.LPAREN)
-                self.state = 383
+                self.state = 395
                 self.expression(0)
-                self.state = 384
+                self.state = 396
                 self.match(AgentarParser.RPAREN)
                 pass
 
@@ -3504,11 +3606,11 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.MessageAccessExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 386
+                self.state = 398
                 self.match(AgentarParser.MSG)
-                self.state = 387
+                self.state = 399
                 self.match(AgentarParser.T__25)
-                self.state = 388
+                self.state = 400
                 self.match(AgentarParser.ID)
                 pass
 
@@ -3516,11 +3618,11 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.SelfAccessExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 389
+                self.state = 401
                 self.match(AgentarParser.SELF)
-                self.state = 390
+                self.state = 402
                 self.match(AgentarParser.T__25)
-                self.state = 391
+                self.state = 403
                 self.match(AgentarParser.ID)
                 pass
 
@@ -3528,7 +3630,7 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.MessageInitExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 392
+                self.state = 404
                 self.messageInit()
                 pass
 
@@ -3536,7 +3638,7 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.MsgTypeValueExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 393
+                self.state = 405
                 self.msgTypeValue()
                 pass
 
@@ -3544,7 +3646,7 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.ListExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 394
+                self.state = 406
                 self.listLiteral()
                 pass
 
@@ -3552,7 +3654,7 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.MapExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 395
+                self.state = 407
                 self.mapLiteral()
                 pass
 
@@ -3560,7 +3662,7 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.LiteralExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 396
+                self.state = 408
                 self.literal()
                 pass
 
@@ -3568,7 +3670,7 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.VarReferenceContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 397
+                self.state = 409
                 self.match(AgentarParser.ID)
                 pass
 
@@ -3576,148 +3678,148 @@ class AgentarParser ( Parser ):
                 localctx = AgentarParser.AgentIdExprContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 398
+                self.state = 410
                 self.match(AgentarParser.AGENTID)
                 pass
 
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 441
+            self.state = 453
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,33,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    self.state = 439
+                    self.state = 451
                     self._errHandler.sync(self)
-                    la_ = self._interp.adaptivePredict(self._input,34,self._ctx)
+                    la_ = self._interp.adaptivePredict(self._input,32,self._ctx)
                     if la_ == 1:
                         localctx = AgentarParser.OrExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 401
+                        self.state = 413
                         if not self.precpred(self._ctx, 23):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 23)")
-                        self.state = 402
+                        self.state = 414
                         localctx.op = self.match(AgentarParser.OR)
-                        self.state = 403
+                        self.state = 415
                         self.expression(24)
                         pass
 
                     elif la_ == 2:
                         localctx = AgentarParser.AndExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 404
+                        self.state = 416
                         if not self.precpred(self._ctx, 22):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 22)")
-                        self.state = 405
+                        self.state = 417
                         localctx.op = self.match(AgentarParser.AND)
-                        self.state = 406
+                        self.state = 418
                         self.expression(23)
                         pass
 
                     elif la_ == 3:
                         localctx = AgentarParser.XorExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 407
+                        self.state = 419
                         if not self.precpred(self._ctx, 21):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 21)")
-                        self.state = 408
+                        self.state = 420
                         localctx.op = self.match(AgentarParser.XOR)
-                        self.state = 409
+                        self.state = 421
                         self.expression(22)
                         pass
 
                     elif la_ == 4:
                         localctx = AgentarParser.EqExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 410
+                        self.state = 422
                         if not self.precpred(self._ctx, 20):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 20)")
-                        self.state = 411
+                        self.state = 423
                         localctx.op = self.match(AgentarParser.EQ)
-                        self.state = 412
+                        self.state = 424
                         self.expression(21)
                         pass
 
                     elif la_ == 5:
                         localctx = AgentarParser.NeqExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 413
+                        self.state = 425
                         if not self.precpred(self._ctx, 19):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 19)")
-                        self.state = 414
+                        self.state = 426
                         localctx.op = self.match(AgentarParser.NEQ)
-                        self.state = 415
+                        self.state = 427
                         self.expression(20)
                         pass
 
                     elif la_ == 6:
                         localctx = AgentarParser.LtExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 416
+                        self.state = 428
                         if not self.precpred(self._ctx, 18):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 18)")
-                        self.state = 417
+                        self.state = 429
                         localctx.op = self.match(AgentarParser.LT)
-                        self.state = 418
+                        self.state = 430
                         self.expression(19)
                         pass
 
                     elif la_ == 7:
                         localctx = AgentarParser.GtExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 419
+                        self.state = 431
                         if not self.precpred(self._ctx, 17):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 17)")
-                        self.state = 420
+                        self.state = 432
                         localctx.op = self.match(AgentarParser.GT)
-                        self.state = 421
+                        self.state = 433
                         self.expression(18)
                         pass
 
                     elif la_ == 8:
                         localctx = AgentarParser.LeqExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 422
+                        self.state = 434
                         if not self.precpred(self._ctx, 16):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 16)")
-                        self.state = 423
+                        self.state = 435
                         localctx.op = self.match(AgentarParser.LEQ)
-                        self.state = 424
+                        self.state = 436
                         self.expression(17)
                         pass
 
                     elif la_ == 9:
                         localctx = AgentarParser.GeqExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 425
+                        self.state = 437
                         if not self.precpred(self._ctx, 15):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 15)")
-                        self.state = 426
+                        self.state = 438
                         localctx.op = self.match(AgentarParser.GEQ)
-                        self.state = 427
+                        self.state = 439
                         self.expression(16)
                         pass
 
                     elif la_ == 10:
                         localctx = AgentarParser.AddSubExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 428
+                        self.state = 440
                         if not self.precpred(self._ctx, 14):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 14)")
-                        self.state = 429
+                        self.state = 441
                         localctx.op = self._input.LT(1)
                         _la = self._input.LA(1)
                         if not(_la==51 or _la==52):
@@ -3725,18 +3827,18 @@ class AgentarParser ( Parser ):
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 430
+                        self.state = 442
                         self.expression(15)
                         pass
 
                     elif la_ == 11:
                         localctx = AgentarParser.MulDivExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 431
+                        self.state = 443
                         if not self.precpred(self._ctx, 13):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 13)")
-                        self.state = 432
+                        self.state = 444
                         localctx.op = self._input.LT(1)
                         _la = self._input.LA(1)
                         if not(_la==53 or _la==54):
@@ -3744,29 +3846,29 @@ class AgentarParser ( Parser ):
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 433
+                        self.state = 445
                         self.expression(14)
                         pass
 
                     elif la_ == 12:
                         localctx = AgentarParser.IndexExprContext(self, AgentarParser.ExpressionContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 434
-                        if not self.precpred(self._ctx, 11):
+                        self.state = 446
+                        if not self.precpred(self._ctx, 8):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 11)")
-                        self.state = 435
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 8)")
+                        self.state = 447
                         self.match(AgentarParser.LBRACK)
-                        self.state = 436
+                        self.state = 448
                         self.expression(0)
-                        self.state = 437
+                        self.state = 449
                         self.match(AgentarParser.RBRACK)
                         pass
 
              
-                self.state = 443
+                self.state = 455
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,33,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -3830,29 +3932,29 @@ class AgentarParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 444
+            self.state = 456
             self.match(AgentarParser.LBRACK)
-            self.state = 453
+            self.state = 465
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2305891387456880640) != 0):
-                self.state = 445
+                self.state = 457
                 self.expression(0)
-                self.state = 450
+                self.state = 462
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==47:
-                    self.state = 446
+                    self.state = 458
                     self.match(AgentarParser.COMMA)
-                    self.state = 447
+                    self.state = 459
                     self.expression(0)
-                    self.state = 452
+                    self.state = 464
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
 
 
-            self.state = 455
+            self.state = 467
             self.match(AgentarParser.RBRACK)
         except RecognitionException as re:
             localctx.exception = re
@@ -3928,37 +4030,37 @@ class AgentarParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 457
+            self.state = 469
             self.match(AgentarParser.LBRACE)
-            self.state = 470
+            self.state = 482
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==40:
-                self.state = 458
+                self.state = 470
                 self.match(AgentarParser.ID)
-                self.state = 459
+                self.state = 471
                 self.match(AgentarParser.COLON)
-                self.state = 460
+                self.state = 472
                 self.expression(0)
-                self.state = 467
+                self.state = 479
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==47:
-                    self.state = 461
+                    self.state = 473
                     self.match(AgentarParser.COMMA)
-                    self.state = 462
+                    self.state = 474
                     self.match(AgentarParser.ID)
-                    self.state = 463
+                    self.state = 475
                     self.match(AgentarParser.COLON)
-                    self.state = 464
+                    self.state = 476
                     self.expression(0)
-                    self.state = 469
+                    self.state = 481
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
 
 
-            self.state = 472
+            self.state = 484
             self.match(AgentarParser.RBRACE)
         except RecognitionException as re:
             localctx.exception = re
@@ -4088,31 +4190,31 @@ class AgentarParser ( Parser ):
         localctx = AgentarParser.LiteralContext(self, self._ctx, self.state)
         self.enterRule(localctx, 58, self.RULE_literal)
         try:
-            self.state = 478
+            self.state = 490
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [35]:
                 localctx = AgentarParser.IntLiteralContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 474
+                self.state = 486
                 self.match(AgentarParser.INT)
                 pass
             elif token in [36]:
                 localctx = AgentarParser.FloatLiteralContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 475
+                self.state = 487
                 self.match(AgentarParser.FLOAT)
                 pass
             elif token in [39]:
                 localctx = AgentarParser.StringLiteralContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
-                self.state = 476
+                self.state = 488
                 self.match(AgentarParser.STRING)
                 pass
             elif token in [38]:
                 localctx = AgentarParser.BoolLiteralContext(self, localctx)
                 self.enterOuterAlt(localctx, 4)
-                self.state = 477
+                self.state = 489
                 self.match(AgentarParser.BOOL)
                 pass
             else:
@@ -4176,7 +4278,7 @@ class AgentarParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 480
+            self.state = 492
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 33285996544) != 0)):
                 self._errHandler.recoverInline(self)
@@ -4249,7 +4351,7 @@ class AgentarParser ( Parser ):
          
 
             if predIndex == 11:
-                return self.precpred(self._ctx, 11)
+                return self.precpred(self._ctx, 8)
          
 
 

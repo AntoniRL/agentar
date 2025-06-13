@@ -9,4 +9,6 @@ AGENTAR_TYPE_MAP = {
     "string": str,
     "bool": bool,
     "agentid": AgentId,
+    "list": list,
+    "dict": dict
 }

@@ -1,22 +1,29 @@
 message clean_room {
     string task;
+    int value;
 }
 
 message task_done {
     string status;
+
 }
 
 agent cleaner {
     beliefs {
-        dirty;
+        x = 0;
+        y = 7;
     }
     goals {
-        clean_room = true;
+        (x == 100 && y==7) || y==3;
     }
     rules {
         when (
-            belief("dirty") && 
-            goal("clean_room")
+            not goals;
+        ) then {
+            clean();
+        }
+        when (
+            not goals;
         ) then {
             clean();
         }

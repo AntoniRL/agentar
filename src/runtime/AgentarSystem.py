@@ -20,7 +20,7 @@ class AgentarSystem:
         self.terminated = threading.Event()     # Event to signal termination of the system
         self.terminated.clear()                 # Clear the termination event
 
-        self._lock= threading.Lock()
+        self._lock = threading.Lock()
 
         # create agent time
         # self.time_id = AgentId(".2")

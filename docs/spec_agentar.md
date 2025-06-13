@@ -161,16 +161,16 @@ agent <agent_name> {
 W AGENTAR listy i mapy (słowniki) są podstawowymi strukturami danych. Wersja języka prototypowego obsługuje je prostą składnią.
 
 Deklaracja listy:
-`list myList = {1, 2, 3};`
+`list myList = [1, 2, 3];`
 
 Odwołanie do elementu:
-`let first = myList[0];  // wartość: 1`
+`first = myList[0];  // wartość: 1`
 
 Dodanie na koniec:
-`myList[] = 4;  // teraz myList = {1, 2, 3, 4}`
+`myList[] = 4;  // teraz myList = [1, 2, 3, 4]`
 
 Aktualizacja elementu:
-`myList[1] = 10;  // teraz myList = {1, 10, 3, 4}`
+`myList[1] = 10;  // teraz myList = [1, 10, 3, 4]`
 
 Deklaracja mapy:
 ```
