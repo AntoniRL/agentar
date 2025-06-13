@@ -1,7 +1,7 @@
 message ping{
     list myList;
 }
-
+/*
 agent child {
     receive ping {
         when () then {
@@ -11,18 +11,17 @@ agent child {
         }
     }
 }
-
+*/
 agent mother {
     fields{
         list mmList;
     }
     initialize{
-        self.mmList = [[1, 2], 
-                       [3, 4]];
-        print(mmList[1][0]);
-        agentid agentid_;
-        agentid_ = spawn(child);
-        msg_ = ping(myList=[[1, 2], [3, 4]]);
-        send(agentid_, msg_, msg_type=request);
+        int i = 5;
+        for (int j = 0; j < i; j=j+1) {
+            self.mmList[] = j;
+            print("Adding to list:", j);
+        }
+        print(self.mmList);
     }
 }

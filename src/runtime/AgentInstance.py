@@ -128,6 +128,7 @@ class AgentInstance:
                 to_return =  self.execute_stmt(stmt, local_var, local_var_type)
             return to_return
 
+
     def execute_stmt(self, stmt, local_var, local_var_type, message=None):
         # logging.info(f"{self.id.path}:: Executing statement...{stmt}") # TODO: remove logging
 
@@ -142,14 +143,14 @@ class AgentInstance:
                 if not AGENTAR_TYPE_MAP[stmt.var_type] == type(value):
                     raise TypeError(f"Type mismatch in variable declaration for {stmt.name}: expected {AGENTAR_TYPE_MAP[stmt.var_type]}, got {type(value)}")
                 local_var[stmt.name] = value
-                local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type)
-
+                local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type) 
+                
 
         # AssignmentNode handles different types of assignments
         elif isinstance(stmt, AssignmentNode):
             if isinstance(stmt.target, SelfAccessNode):
                 target = stmt.target.path[1]
-                value = self.eval_expr(stmt.value)
+                value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
                 if stmt.index is None:
                     if not self.fields_type[target] == type(value):
                         raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
@@ -228,6 +229,7 @@ class AgentInstance:
             print(f"AGENT {self.id}::", " ".join(str(v) for v in to_print))
             logging.info(f"{self.id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
 
+
         # KillNode handles agent termination
         elif isinstance(stmt, KillNode):
             if stmt.agent_id is not None:
@@ -239,11 +241,13 @@ class AgentInstance:
                 else:
                     self.runtime.killAgent(self.id)
 
+
         # SllepNode handles sleeping for a specified duration
         elif isinstance(stmt, SleepNode):
             duration = self.eval_expr(stmt.duration, local_var, local_var_type)
             logging.info(f"{self.id.path}:: Sleeping for {duration}s...")
             time.sleep(duration)
+
 
         # DoNode handles executing actions
         elif isinstance(stmt, DoNode):
@@ -257,7 +261,8 @@ class AgentInstance:
                         self.execute_action(action, variables)
                     else:
                         return self.execute_action(action, variables)
-                    
+
+
         # ReturnNode handles returning values from actions        
         elif isinstance(stmt, ReturnNode):
             if stmt.value is not None:
@@ -267,7 +272,33 @@ class AgentInstance:
                 return None
 
 
+        # IfStmtNode handles conditional statements
+        elif isinstance(stmt, IfStmtNode):
+            condition = self.eval_expr(stmt.conditions, local_var, local_var_type)
+            if condition:
+                for statement in stmt.statements:
+                    self.execute_stmt(statement, local_var, local_var_type)
+            else:
+                if stmt.elseStmt is not None:
+                    for statement in stmt.elseStmt.statements:
+                        self.execute_stmt(statement, local_var, local_var_type)
 
+        
+        # ForLoopNode handles for loops
+        elif isinstance(stmt, ForLoopNode):
+            self.execute_stmt(stmt.initialize, local_var, local_var_type)
+            def check_condition():
+                return self.eval_expr(stmt.condition, local_var, local_var_type)
+            def update_loop_var():
+                self.execute_stmt(stmt.update, local_var, local_var_type)
+            while check_condition():
+                for statement in stmt.body:
+                    self.execute_stmt(statement, local_var, local_var_type)
+                update_loop_var()
+
+
+
+# ---EVAL_EXPR-----------------------------------
     def eval_expr(self, expr, local_var=None, local_var_type=None, message=None):
         # TODO: add type checking for local_var and local_var_type
 

@@ -8,6 +8,10 @@ program
 
 statement
     : printStmt
+    | ifStmt
+    | forStmt
+    | whileStmt
+    | breakStmt
     | variableDecl
     | assignment
     | sendStmt
@@ -111,6 +115,36 @@ printStmt
     : 'print' '(' expression (',' expression)* ')' ';'
     ;
 
+ifStmt
+    : 'if' '(' expression ')' '{' statement* '}' (elseStmt)?
+    ;   
+
+elseStmt
+    : 'else' '{' statement* '}'
+    ;
+
+
+forStmt
+    : 'for' '(' variableDecl expression ';' forAssignExpr ')' '{' forBody '}'
+    ;
+
+forBody
+    : statement*
+    ;
+
+forAssignExpr
+    : ID '=' expression
+    ;
+
+whileStmt
+    : 'while' '(' expression ')' '{' statement* '}'
+    ;
+
+breakStmt
+    : 'break' ';'
+    ;
+    
+
 variableDecl
     : type ID ('=' expression)? ';'                       # VarDecl
     ;
@@ -186,6 +220,7 @@ msgTypeValue
 // === End of parser rules
 
 
+
 // LEXER RULES --------------------------------------
 MESSAGE: 'message';
 MSG: 'msg';
@@ -196,14 +231,6 @@ MSGTYPE_REQUEST: 'request';
 MSGTYPE_CONFIRM: 'confirm';
 MSGTYPE_DENY:    'deny';
 
-
-INT: '-'? [0-9]+;
-FLOAT: '-'? [0-9]+ '.' [0-9]+;
-AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
-BOOL: 'true' | 'false';
-STRING: '"' .*? '"';
-// function and variables names 
-ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
 // Symbols
 LPAREN: '(';
@@ -230,6 +257,30 @@ NOT: '!';
 AND: '&&';
 OR: '||';
 XOR: '^';
+IF: 'if';
+ELSE: 'else';
+FOR: 'for';
+WHILE: 'while';
+BREAK: 'break';
+PRINT: 'print';
+AGENT: 'agent';
+VOID: 'void';
+KILL: 'kill';
+SEND: 'send';
+SPAWN: 'spawn';
+DO: 'do';
+SLEEP: 'sleep';
+RETURN: 'return';
+
+
+
+INT: '-'? [0-9]+;
+FLOAT: '-'? [0-9]+ '.' [0-9]+;
+AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
+BOOL: 'true' | 'false';
+STRING: '"' .*? '"';
+// function and variables names 
+ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
 // Whitespace and comments
 BLOCK_COMMENT: '/*' .*? '*/' -> skip;

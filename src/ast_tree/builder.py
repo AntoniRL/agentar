@@ -138,6 +138,46 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.PrintNode(values=[self.visit(expr) for expr in ctx.expression()])
 
 
+    def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
+        conditions = self.visit(ctx.expression()) if ctx.expression() else []
+        statements = [self.visit(stat) for stat in ctx.statement()]
+        elseStmt = self.visit(ctx.elseStmt()) if ctx.elseStmt() else None
+        return ast.IfStmtNode(conditions=conditions, statements=statements, elseStmt=elseStmt)
+
+
+    def visitElseStmt(self, ctx:AgentarParser.ElseStmtContext):
+        statements = [self.visit(stat) for stat in ctx.statement()]
+        return ast.ElseStmtNode(statements=statements)
+
+
+    def visitForStmt(self, ctx:AgentarParser.ForStmtContext):
+        initialize = self.visit(ctx.variableDecl())
+        condition = self.visit(ctx.expression()) if ctx.expression() else None
+        update = self.visit(ctx.forAssignExpr()) if ctx.forAssignExpr() else None
+        body = self.visit(ctx.forBody()) if ctx.forBody() else []
+        if not initialize or not condition or not update or not body:
+            raise ValueError("For loop requires initialization, condition, update, and body.")
+        return ast.ForLoopNode(initialize=initialize, condition=condition, update=update, body=body)
+        
+
+    def visitForBody(self, ctx:AgentarParser.ForBodyContext):
+        return [self.visit(stat) for stat in ctx.statement()]
+
+
+    def visitForAssignExpr(self, ctx:AgentarParser.ForAssignExprContext):
+        target = ctx.ID().getText()
+        value = self.visit(ctx.expression())
+        return ast.AssignmentNode(target=target, value=value)
+
+
+    def visitWhileStmt(self, ctx:AgentarParser.WhileStmtContext):
+        pass
+
+
+    def visitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
+        return ast.BreakNode()
+
+
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
         var_type = ctx.type_().getText()
         name = ctx.ID().getText()

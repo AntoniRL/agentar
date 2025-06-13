@@ -73,6 +73,11 @@ class AgentarSystem:
             self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)
             self.threads[id.path].start()
             return id
+        
+    
+    def killChildren(self, agent_id: AgentId):
+        pass
+        # kill all children of the agent_id
 
 
     def killAgent(self, agent_id: AgentId):

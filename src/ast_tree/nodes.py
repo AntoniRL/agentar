@@ -188,3 +188,34 @@ class SleepNode(ASTNode):
 @dataclass
 class ReturnNode(ASTNode):
     value: Optional[ASTNode] = None
+
+
+@dataclass
+class IfStmtNode(ASTNode):
+    conditions: List[ASTNode]
+    statements: List[ASTNode]
+    elseStmt: ASTNode
+
+
+@dataclass
+class ElseStmtNode(ASTNode):
+    statements: List[ASTNode]
+
+
+@dataclass
+class ForLoopNode(ASTNode):
+    initialize: ASTNode
+    condition: ASTNode
+    update: ASTNode
+    body: List[ASTNode]
+
+
+@dataclass
+class WhileLoopNode(ASTNode):
+    condition: ASTNode
+    body: List[ASTNode]
+
+
+@dataclass
+class BreakNode(ASTNode):
+    pass

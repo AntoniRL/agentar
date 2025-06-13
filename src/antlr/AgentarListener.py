@@ -206,6 +206,69 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#ifStmt.
+    def enterIfStmt(self, ctx:AgentarParser.IfStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#ifStmt.
+    def exitIfStmt(self, ctx:AgentarParser.IfStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#elseStmt.
+    def enterElseStmt(self, ctx:AgentarParser.ElseStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#elseStmt.
+    def exitElseStmt(self, ctx:AgentarParser.ElseStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#forStmt.
+    def enterForStmt(self, ctx:AgentarParser.ForStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#forStmt.
+    def exitForStmt(self, ctx:AgentarParser.ForStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#forBody.
+    def enterForBody(self, ctx:AgentarParser.ForBodyContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#forBody.
+    def exitForBody(self, ctx:AgentarParser.ForBodyContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#forAssignExpr.
+    def enterForAssignExpr(self, ctx:AgentarParser.ForAssignExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#forAssignExpr.
+    def exitForAssignExpr(self, ctx:AgentarParser.ForAssignExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#whileStmt.
+    def enterWhileStmt(self, ctx:AgentarParser.WhileStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#whileStmt.
+    def exitWhileStmt(self, ctx:AgentarParser.WhileStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#breakStmt.
+    def enterBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#breakStmt.
+    def exitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#VarDecl.
     def enterVarDecl(self, ctx:AgentarParser.VarDeclContext):
         pass

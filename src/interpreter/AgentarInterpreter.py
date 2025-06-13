@@ -2,6 +2,7 @@
 # agentar/interpreter/interpreter.py
 # main pypeline for runing the Agentar interpreter
 
+import sys
 from core.agent import AgentarAgent
 from core.message import AgentarMessage
 from core.agentid import AgentId
@@ -13,6 +14,12 @@ from antlr.AgentarParser import AgentarParser
 from dataclasses import is_dataclass
 from dataclasses import dataclass, fields
 from core.agentarTypes import AGENTAR_TYPE_MAP
+from antlr4.error.ErrorListener import ErrorListener
+
+class ThrowingErrorListener(ErrorListener):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        raise SyntaxError(f"Line {line}:{column} {msg}")
+
 
 class AgentarInterpreter:
     def __init__(self):
@@ -23,11 +30,20 @@ class AgentarInterpreter:
         self.messages_decl = {}     # Dict of messages declarations
 
     def runAgentar(self, file_path):
-        input_stream = FileStream(file_path)
-        lexer = AgentarLexer(input_stream)
-        tokens = CommonTokenStream(lexer)
-        parser = AgentarParser(tokens)
-        tree = parser.program()
+        try:
+            input_stream = FileStream(file_path)
+            lexer = AgentarLexer(input_stream)
+            tokens = CommonTokenStream(lexer)
+            parser = AgentarParser(tokens)
+
+            # delete default error listeners
+            parser.removeErrorListeners()
+            # add custom error listener that throws exceptions
+            parser.addErrorListener(ThrowingErrorListener())
+            tree = parser.program()
+        except SyntaxError as e:
+            print(f"ERROR: Syntax error in the file {file_path}: {e}")
+            sys.exit(1)
 
         builder = AgentarToASTBuilder()
         ast_root = builder.visit(tree)

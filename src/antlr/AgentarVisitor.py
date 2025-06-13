@@ -119,6 +119,41 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#ifStmt.
+    def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#elseStmt.
+    def visitElseStmt(self, ctx:AgentarParser.ElseStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#forStmt.
+    def visitForStmt(self, ctx:AgentarParser.ForStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#forBody.
+    def visitForBody(self, ctx:AgentarParser.ForBodyContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#forAssignExpr.
+    def visitForAssignExpr(self, ctx:AgentarParser.ForAssignExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#whileStmt.
+    def visitWhileStmt(self, ctx:AgentarParser.WhileStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#breakStmt.
+    def visitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#VarDecl.
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
         return self.visitChildren(ctx)
