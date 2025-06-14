@@ -98,21 +98,21 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#golesSection.
-    def enterGolesSection(self, ctx:AgentarParser.GolesSectionContext):
+    # Enter a parse tree produced by AgentarParser#goalsSection.
+    def enterGoalsSection(self, ctx:AgentarParser.GoalsSectionContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#golesSection.
-    def exitGolesSection(self, ctx:AgentarParser.GolesSectionContext):
+    # Exit a parse tree produced by AgentarParser#goalsSection.
+    def exitGoalsSection(self, ctx:AgentarParser.GoalsSectionContext):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#goleBlock.
-    def enterGoleBlock(self, ctx:AgentarParser.GoleBlockContext):
+    # Enter a parse tree produced by AgentarParser#goalBlock.
+    def enterGoalBlock(self, ctx:AgentarParser.GoalBlockContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#goleBlock.
-    def exitGoleBlock(self, ctx:AgentarParser.GoleBlockContext):
+    # Exit a parse tree produced by AgentarParser#goalBlock.
+    def exitGoalBlock(self, ctx:AgentarParser.GoalBlockContext):
         pass
 
 

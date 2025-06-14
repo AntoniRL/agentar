@@ -19,8 +19,8 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 
 1. `initialize` — konfiguracja i inicjalizacja (np. tworzenie dzieci)
 2. Pętla działania:
-   - odbiór wiadomości `receive` (jeżeli jakieś w inbox)
    - aktualizacja przekonań (`beliefs`) `sense`
+   - odbiór wiadomości `receive` (jeżeli jakieś w inbox)
    - sprawdzenie celu (`goles`)
    - jeżeli cel nie osiąfnięty:
         - postępowanie zgodnie z regułami (`rules`) 

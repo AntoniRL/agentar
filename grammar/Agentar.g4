@@ -39,7 +39,7 @@ agentBody
     destroySection?
     beliefsSection?
     senseSection?
-    golesSection?
+    goalsSection?
     rulesSection?
     receiveSection*
     actionSection*
@@ -65,11 +65,11 @@ senseSection
     : 'sense' '{' statement* '}'
     ;
 
-golesSection
-    : 'goals' '{' goleBlock* '}'
+goalsSection
+    : 'goals' '{' goalBlock* '}'
     ;
 
-goleBlock
+goalBlock
     : ID ':' expression ';'
     ;
 

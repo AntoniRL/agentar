@@ -31,7 +31,10 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitAgentBody(self, ctx:AgentarParser.AgentBodyContext):
-        return [self.visit(child) for child in ctx.children]
+        if ctx.children is None:
+            return []
+        else:
+            return [self.visit(child) for child in ctx.children ]
 
 
     def visitFieldSection(self, ctx:AgentarParser.FieldSectionContext):
@@ -59,16 +62,15 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.SeanseSectionNode(statements=stats)
 
 
-    def visitGolesSection(self, ctx:AgentarParser.GolesSectionContext):
-        goles = [self.visit(gole) for gole in ctx.goleBlock()]
-        return ast.GoleSectionNode(goles=goles)
+    def visitGoalsSection(self, ctx:AgentarParser.GoalsSectionContext):
+        goals = [self.visit(gole) for gole in ctx.goalBlock()]
+        return ast.GoalSectionNode(goals=goals)
     
 
-    def visitGoleBlock(self, ctx:AgentarParser.GoleBlockContext):
-        print(ctx.getText())
+    def visitGoalBlock(self, ctx:AgentarParser.GoalBlockContext):
         name = ctx.ID().getText()
         conditions = self.visit(ctx.expression()) if ctx.expression() else []
-        return ast.GoleBlockNode(name=name, condition=conditions)
+        return ast.GoalBlockNode(name=name, condition=conditions)
 
 
     def visitRulesSection(self, ctx:AgentarParser.RulesSectionContext):

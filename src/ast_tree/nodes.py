@@ -49,12 +49,12 @@ class SeanseSectionNode(ASTNode):
 
 
 @dataclass
-class GoleSectionNode(ASTNode):
-    goles: List[VariableDeclNode]
+class GoalSectionNode(ASTNode):
+    goals: List[ASTNode]
 
 
 @dataclass
-class GoleBlockNode(ASTNode):
+class GoalBlockNode(ASTNode):
     name: str
     condition: List[ASTNode]
 

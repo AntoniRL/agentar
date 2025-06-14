@@ -49,7 +49,7 @@ class AgentarInterpreter:
         ast_root = builder.visit(tree)
 
         self.visitAST(ast_root)
-        
+
         return self.mother_decl, self.agents_decl, self.messages_decl
 
 
@@ -82,6 +82,14 @@ class AgentarInterpreter:
                 self.InitDeclare(body)
             elif isinstance(body, DestroySectionNode):
                 self.DestroyDeclare(body)
+            elif isinstance(body, BeliefSectionNode):
+                self.BeliefDeclare(body)
+            elif isinstance(body, SeanseSectionNode):
+                self.SenseDeclare(body)
+            elif isinstance(body, GoalSectionNode):
+                self.GoalDeclare(body)
+            elif isinstance(body, RulesSectionNode):
+                self.RulesDeclare(body)
             elif isinstance(body, ReceiveSectionNode):
                 self.ReceiveDeclare(body)
             elif isinstance(body, ActionNode):
@@ -114,13 +122,56 @@ class AgentarInterpreter:
             else:
                 raise ValueError(f"Unsupported field value type: {type(field.value)}")
 
+
     def InitDeclare(self, node):
         for statement in node.statements:
             self.agent.initialize.append(statement)
 
+
     def DestroyDeclare(self, node):
         for statement in node.statements:
             self.agent.destroy.append(statement)
+
+
+    def BeliefDeclare(self, node):
+        for belief in node.declarations:
+            # chek if field has value or not then make sure it is correct class
+            if belief.value is None:
+                type_name = AGENTAR_TYPE_MAP.get(belief.var_type)
+                default_value = None
+                if type_name in (int, float):
+                    default_value = type_name(0)
+                elif type_name is str:
+                    default_value = ""
+                elif type_name is bool:
+                    default_value = False
+                elif type_name is list:
+                    default_value = []
+                elif type_name is dict:
+                    default_value = {}                
+                self.agent.beliefs[belief.name] = default_value
+                self.agent.beliefs_type[belief.name] = type_name  # np. int, str, bool
+            elif isinstance(belief.value, LiteralNode):
+                self.agent.beliefs[belief.name] = belief.value.value  # np. 42, "hello", True
+                self.agent.beliefs_type[belief.name] = AGENTAR_TYPE_MAP.get(belief.var_type)  # np. int, str, bool
+            else:
+                raise ValueError(f"Unsupported field value type: {type(belief.value)}")
+
+
+    def SenseDeclare(self, node):
+        for statement in node.statements:
+            self.agent.sense.append(statement)
+
+
+    def GoalDeclare(self, node):
+        for goal in node.goals:
+            self.agent.goals[goal.name] = goal.condition
+
+
+    def RulesDeclare(self, node):
+        for rule in node.rules:
+            self.agent.rules.append(rule)
+
 
     def ReceiveDeclare(self, node):
         list_of_blocks = []

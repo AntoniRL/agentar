@@ -8,8 +8,9 @@ class AgentarAgent:
         self.fields_type = {}
         self.beliefs = {}
         self.beliefs_type = {}
-        self.goles = {}
-        self.rules = {}
+        self.sense = []
+        self.goals = {}
+        self.rules = []
         self.receive = {}
         self.actions = {}
         self.initialize = []

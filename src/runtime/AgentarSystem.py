@@ -22,10 +22,6 @@ class AgentarSystem:
 
         self._lock = threading.Lock()
 
-        # create agent time
-        # self.time_id = AgentId(".2")
-        # self.AgentTime = AgentInstance(AgentarAgent(), agent_id=self.time_id)
-
         # Create mother
         self.mother_id = AgentId(".1")
         self.mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id)

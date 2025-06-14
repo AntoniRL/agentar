@@ -59,13 +59,13 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#golesSection.
-    def visitGolesSection(self, ctx:AgentarParser.GolesSectionContext):
+    # Visit a parse tree produced by AgentarParser#goalsSection.
+    def visitGoalsSection(self, ctx:AgentarParser.GoalsSectionContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#goleBlock.
-    def visitGoleBlock(self, ctx:AgentarParser.GoleBlockContext):
+    # Visit a parse tree produced by AgentarParser#goalBlock.
+    def visitGoalBlock(self, ctx:AgentarParser.GoalBlockContext):
         return self.visitChildren(ctx)
 
 

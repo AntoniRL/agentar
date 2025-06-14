@@ -300,8 +300,8 @@ class AgentarParser ( Parser ):
     RULE_destroySection = 7
     RULE_beliefsSection = 8
     RULE_senseSection = 9
-    RULE_golesSection = 10
-    RULE_goleBlock = 11
+    RULE_goalsSection = 10
+    RULE_goalBlock = 11
     RULE_rulesSection = 12
     RULE_receiveSection = 13
     RULE_whenBlock = 14
@@ -337,7 +337,7 @@ class AgentarParser ( Parser ):
 
     ruleNames =  [ "program", "statement", "motherDecl", "agentDecl", "agentBody", 
                    "fieldSection", "initialSection", "destroySection", "beliefsSection", 
-                   "senseSection", "golesSection", "goleBlock", "rulesSection", 
+                   "senseSection", "goalsSection", "goalBlock", "rulesSection", 
                    "receiveSection", "whenBlock", "actionSection", "parameterList", 
                    "parameter", "messageDecl", "sendStmt", "spawnStmt", 
                    "killStmt", "sleepStmt", "returnStmt", "messageInit", 
@@ -855,8 +855,8 @@ class AgentarParser ( Parser ):
             return self.getTypedRuleContext(AgentarParser.SenseSectionContext,0)
 
 
-        def golesSection(self):
-            return self.getTypedRuleContext(AgentarParser.GolesSectionContext,0)
+        def goalsSection(self):
+            return self.getTypedRuleContext(AgentarParser.GoalsSectionContext,0)
 
 
         def rulesSection(self):
@@ -949,7 +949,7 @@ class AgentarParser ( Parser ):
             _la = self._input.LA(1)
             if _la==7:
                 self.state = 140
-                self.golesSection()
+                self.goalsSection()
 
 
             self.state = 144
@@ -1349,7 +1349,7 @@ class AgentarParser ( Parser ):
         return localctx
 
 
-    class GolesSectionContext(ParserRuleContext):
+    class GoalsSectionContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1362,37 +1362,37 @@ class AgentarParser ( Parser ):
         def RBRACE(self):
             return self.getToken(AgentarParser.RBRACE, 0)
 
-        def goleBlock(self, i:int=None):
+        def goalBlock(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(AgentarParser.GoleBlockContext)
+                return self.getTypedRuleContexts(AgentarParser.GoalBlockContext)
             else:
-                return self.getTypedRuleContext(AgentarParser.GoleBlockContext,i)
+                return self.getTypedRuleContext(AgentarParser.GoalBlockContext,i)
 
 
         def getRuleIndex(self):
-            return AgentarParser.RULE_golesSection
+            return AgentarParser.RULE_goalsSection
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterGolesSection" ):
-                listener.enterGolesSection(self)
+            if hasattr( listener, "enterGoalsSection" ):
+                listener.enterGoalsSection(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitGolesSection" ):
-                listener.exitGolesSection(self)
+            if hasattr( listener, "exitGoalsSection" ):
+                listener.exitGoalsSection(self)
 
         def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitGolesSection" ):
-                return visitor.visitGolesSection(self)
+            if hasattr( visitor, "visitGoalsSection" ):
+                return visitor.visitGoalsSection(self)
             else:
                 return visitor.visitChildren(self)
 
 
 
 
-    def golesSection(self):
+    def goalsSection(self):
 
-        localctx = AgentarParser.GolesSectionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 20, self.RULE_golesSection)
+        localctx = AgentarParser.GoalsSectionContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 20, self.RULE_goalsSection)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -1405,7 +1405,7 @@ class AgentarParser ( Parser ):
             _la = self._input.LA(1)
             while _la==74:
                 self.state = 210
-                self.goleBlock()
+                self.goalBlock()
                 self.state = 215
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
@@ -1421,7 +1421,7 @@ class AgentarParser ( Parser ):
         return localctx
 
 
-    class GoleBlockContext(ParserRuleContext):
+    class GoalBlockContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1442,29 +1442,29 @@ class AgentarParser ( Parser ):
             return self.getToken(AgentarParser.SEMI, 0)
 
         def getRuleIndex(self):
-            return AgentarParser.RULE_goleBlock
+            return AgentarParser.RULE_goalBlock
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterGoleBlock" ):
-                listener.enterGoleBlock(self)
+            if hasattr( listener, "enterGoalBlock" ):
+                listener.enterGoalBlock(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitGoleBlock" ):
-                listener.exitGoleBlock(self)
+            if hasattr( listener, "exitGoalBlock" ):
+                listener.exitGoalBlock(self)
 
         def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitGoleBlock" ):
-                return visitor.visitGoleBlock(self)
+            if hasattr( visitor, "visitGoalBlock" ):
+                return visitor.visitGoalBlock(self)
             else:
                 return visitor.visitChildren(self)
 
 
 
 
-    def goleBlock(self):
+    def goalBlock(self):
 
-        localctx = AgentarParser.GoleBlockContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 22, self.RULE_goleBlock)
+        localctx = AgentarParser.GoalBlockContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 22, self.RULE_goalBlock)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 218

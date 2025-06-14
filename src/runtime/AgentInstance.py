@@ -15,6 +15,8 @@ import time
 
 class AgentInstance:
     def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
+        for key, value in agent_ast.__dict__.items():  # Copy all attributes from the agent_AST to the instance
+            setattr(self, key, value)
         self.agent = agent_ast
         self.isMother = self.agent.isMother
         self.id = id        
@@ -23,11 +25,11 @@ class AgentInstance:
         self.next_child = 1
         self.now = 1                        # time step counter (Agent perception time)
         self.inbox = Queue()                # Queue for incoming messages
+        self.isGoalAchieved = False         # Flag to indicate if the agent's goal is achieved        
 
         self.runtime = system               # Reference to the AgentarSystem instance
-        self.fields = self.agent.fields                   # Agent Instance fields (variables)
-        self.fields_type = self.agent.fields_type         # Agent Instance fields types (variables types)
 
+        # Initialize agent fields from the agent declaration
         if fields is not None:
             for key, value, val_type in zip(self.agent.fields.keys(), fields, self.agent.fields_type.values()):
                 if type(value) == val_type:
@@ -46,31 +48,41 @@ class AgentInstance:
         )
 
 
-    def initialize(self):
+    def initializeAgent(self):
         logging.info(f"{self.id}:: Initializing agent")
         local_var = {}
         local_var_type = {}
-        for stmt in self.agent.initialize:
+        for stmt in self.agent.initialize:          # Execute the agent's initialization statements
             self.execute_stmt(stmt, local_var, local_var_type)
 
 
     def step(self):
-        # logging.info(f"Agent {self.id} stepping at time {self.now}") #TODO : remove logging
+        self.sense_world()                          # Sense the world and update beliefs
         if not self.inbox.empty():
-            self.process_messages(self.inbox.get())
-        
+            self.process_messages(self.inbox.get()) # Process incoming messages (first from the inbox)
+        self.check_goals()                          # Check if the agent's goals are achieved
+        if not self.isGoalAchieved:                 # If the goal is not achieved, follow rules
+            self.follow_rules()
 
 
-    def destroy(self):
+    def destroyAgent(self):
         local_var = {}
         local_var_type = {}
-        for stmt in self.agent.destroy:
+        for stmt in self.agent.destroy:             # Execute the agent's destruction statements
             self.execute_stmt(stmt, local_var, local_var_type)
 
         with self.runtime._lock:
             if not self.isMother:
                 del self.runtime.agents[self.id.path]
                 del self.runtime.threads[self.id.path]    
+
+    
+    def sense_world(self):
+        if self.sense != []:        # If the agent has any sense statements, execute them
+            local_var = {}
+            local_var_type = {}
+            for stmt in self.sense:
+                self.execute_stmt(stmt, local_var, local_var_type)
 
 
     def process_messages(self, message):
@@ -80,19 +92,40 @@ class AgentInstance:
             # Get the corresponding method from the agent's receive method
             receive_method = self.agent.receive[message.name]
 
-            for when_met in receive_method:
+            for when_met in receive_method:          # Iterate over all when blocks in the receive method
                 self.when_block(when_met, message)
         else:
             logging.warning(f"{self.id.path}:: No receive method for message '{message.name}' found in agent {self.agent.name}. Ignoring message.")
 
 
+    def check_goals(self):
+        if self.agent.goals == {}:
+            self.isGoalAchieved = True
+            return
+        else:
+            for goal, conditions in self.agent.goals.items():
+                check_the_condition = self.eval_expr(conditions)  # Evaluate the goal conditions
+                if not check_the_condition:  # If the goal conditions are met
+                    self.isGoalAchieved = False
+                    break
+                else:
+                    self.isGoalAchieved = True
+                    
+
+    def follow_rules(self):
+        for rule in self.rules:
+            if isinstance(rule, WhenBlockNode):
+                self.when_block(rule, None)  # Execute the when block if it exists
+
+
     def when_block(self, when_node, message):
             local_var = {}
             local_var_type = {}
-            for stmt in message.content.items():
-                # Initialize local variables from message content
-                local_var[stmt[0]] = stmt[1]
-                local_var_type[stmt[0]] = type(stmt[1])
+            if message is not None:
+                for stmt in message.content.items():
+                    # Initialize local variables from message content
+                    local_var[stmt[0]] = stmt[1]
+                    local_var_type[stmt[0]] = type(stmt[1])
             if when_node.conditions == []:
                 # If there is no condition, execute the statements directly
                 for stmt in when_node.statements:
