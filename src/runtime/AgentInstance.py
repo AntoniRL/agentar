@@ -11,6 +11,8 @@ from ast_tree.nodes import *
 from queue import Queue
 import logging
 import time
+from copy import deepcopy
+
 
 
 class AgentInstance:
@@ -40,6 +42,7 @@ class AgentInstance:
         self.fields_type["id"] = AgentId
 
         self.return_flag = False  # Flag to indicate if a return statement was executed
+        self.break_flag = False   # Flag to indicate if a break statement was executed
 
     def __repr__(self):
         return (
@@ -129,7 +132,7 @@ class AgentInstance:
             if when_node.conditions == []:
                 # If there is no condition, execute the statements directly
                 for stmt in when_node.statements:
-                    self.execute_stmt(stmt,local_var, local_var_type, message=message)
+                    self.execute_stmt(stmt, local_var, local_var_type, message=message)
             else:
                 bin_op = self.eval_expr(when_node.conditions, message=message)
                 if bin_op:
@@ -160,6 +163,20 @@ class AgentInstance:
                     break
                 to_return =  self.execute_stmt(stmt, local_var, local_var_type)
             return to_return
+
+
+    def check_goal(self, stmt, local_var, local_var_type):
+        goal_to_check = stmt.goal_name
+        if goal_to_check in self.agent.goals:
+            conditions = self.goals[goal_to_check]
+            check_the_condition = self.eval_expr(conditions, local_var, local_var_type)
+            if check_the_condition:
+                return True
+            else:
+                return False
+        else:
+            raise NameError(f"Goal '{goal_to_check}' is not declared.")
+
 
 
     def execute_stmt(self, stmt, local_var, local_var_type, message=None):
@@ -215,6 +232,7 @@ class AgentInstance:
                 fields = [self.eval_expr(arg) for arg in stmt.value.args] if stmt.value.args else []
                 value = self.runtime.spawn_agent(parentInstance = self , agent_type = stmt.value.agent_type, fields = fields)
 
+
             elif isinstance(stmt.value, MessageInitNode):
                 message = stmt.value
                 if message.message_type not in self.runtime.messages_decl:
@@ -234,6 +252,9 @@ class AgentInstance:
             # When do action return a value 
             elif isinstance(stmt.value, DoNode):
                 value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
+            
+            elif isinstance(stmt.value, GoalCheckNode):
+                value = self.check_goal(stmt.value, local_var, local_var_type)
 
             else:
                 if stmt.target not in local_var_type:
@@ -243,22 +264,55 @@ class AgentInstance:
                     raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
             
             local_var[stmt.target] = value
-
+        # end of AssignmentNode ----
 
         # SendNode handles sending messages
         elif isinstance(stmt, SendNode):
-            logging.info(f"{self.id.path}:: Sending message to {self.eval_expr(stmt.to, local_var, local_var_type)}...")
             msg = self.eval_expr(stmt.message, local_var, local_var_type)
             msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
             msg.sender = self.id
-            msg.receiver = self.eval_expr(stmt.to, local_var, local_var_type)
+            if stmt.to == "PARENT":
+                msg.receiver = self.parent
+            else:
+                msg.receiver = self.eval_expr(stmt.to, local_var, local_var_type)
             # TODO: msg.send_time = ...
             self.runtime.send_message(msg)
+
+
+        # SendToChildrenNode handles sending messages to children
+        elif isinstance(stmt, SendToChildrenNode):
+            msg = self.eval_expr(stmt.message, local_var, local_var_type)
+            msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
+            msg.sender = self.id
+            # TODO: msg.send_time = ...
+            agent_type = stmt.agent_type.name
+            agent_type = agent_type if agent_type in self.runtime.agents_decl else "_"
+            # Prepare the message to be sent to children
+            msg_to_send = []
+            with self.runtime._lock:
+                for child in self.children:
+                    if agent_type != "_" and agent_type == self.runtime.agents[child].name:
+                        new_msg = deepcopy(msg)
+                        new_msg.receiver = AgentId(child)
+                        msg_to_send.append(new_msg)
+                    elif agent_type == "_":
+                        new_msg = deepcopy(msg)
+                        new_msg.receiver = AgentId(child)
+                        msg_to_send.append(new_msg)
+
+            for msg in msg_to_send:
+                self.runtime.send_message(msg)
             
 
         # print statement
         elif isinstance(stmt, PrintNode):
             to_print = [self.eval_expr(value, local_var, local_var_type, message) for value in stmt.values]
+            # make printing id of AgentId objects more readable
+            for i, value in enumerate(to_print):
+                if type(value) is list:
+                    for j, val in enumerate(value):
+                        if type(val) == AgentId:
+                            to_print[i][j] = val.path                
             print(f"AGENT {self.id}::", " ".join(str(v) for v in to_print))
             logging.info(f"{self.id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
 
@@ -325,18 +379,33 @@ class AgentInstance:
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
             def update_loop_var():
                 self.execute_stmt(stmt.update, local_var, local_var_type)
-            while check_condition():
+            while check_condition() and not self.break_flag:
                 for statement in stmt.body:
                     self.execute_stmt(statement, local_var, local_var_type)
                 update_loop_var()
+            self.break_flag = False  # Reset break flag after loop execution
 
 
         elif isinstance(stmt, WhileLoopNode):
             def check_condition():
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
-            while check_condition():
+            while check_condition() and not self.break_flag:
                 for statement in stmt.body:
                     self.execute_stmt(statement, local_var, local_var_type)
+            self.break_flag = False  # Reset break flag after loop execution
+
+
+        elif isinstance(stmt, BreakNode):
+            self.break_flag = True
+
+
+        elif isinstance(stmt, SenseNode):
+            self.sense_world()  # Sense the world and update beliefs
+
+    
+        elif isinstance(stmt, KillChildrenNode):
+            agent_type = stmt.agent_type.name if stmt.agent_type is not None else None
+            self.runtime.killChildren(self.id, agent_type)  # Kill all children of the agent with the specified type
 
 
 
@@ -363,6 +432,8 @@ class AgentInstance:
                 return self.fields[expr.name]
             elif expr.name in local_var:
                 return local_var[expr.name]
+            elif expr.name == "_":
+                return "_"
             else:
                 raise NameError(f"Variable '{expr.name}' is not declared.")
             
@@ -394,6 +465,13 @@ class AgentInstance:
                 )
             else:
                 raise NameError(f"Variable '{name}' is not declared.")  
+
+        elif isinstance(expr, BelAccessNode):
+            name = expr.path[1]
+            if name in self.beliefs:
+                return (self.beliefs[name])
+            else:
+                raise NameError(f"Variable '{name}' is not declared.") 
             
         elif isinstance(expr, ListLiteralNode):
             return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]

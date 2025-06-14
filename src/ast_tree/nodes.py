@@ -128,6 +128,13 @@ class SendNode(ASTNode):
 
 
 @dataclass
+class SendToChildrenNode(ASTNode):
+    agent_type: ASTNode
+    message: ASTNode
+    msg_type: Optional[str] = None
+
+
+@dataclass
 class SpawnNode(ASTNode):
     agent_type: str
     args: List[ASTNode]
@@ -137,6 +144,10 @@ class SpawnNode(ASTNode):
 class KillNode(ASTNode):
     agent_id: ASTNode
 
+
+@dataclass
+class KillChildrenNode(ASTNode):
+    agent_type: ASTNode
 
 
 @dataclass
@@ -183,12 +194,17 @@ class MessageInitNode(ASTNode):
 
 @dataclass
 class SelfAccessNode(ASTNode):
-    path: List[str]  # e.g., ['msg', 'content', 'text']
+    path: List[str]  # e.g., ['self.', 'text', ...]
 
 
 @dataclass
 class MsgAccessNode(ASTNode):
     path: List[str]  # e.g., ['msg', 'content', 'text']
+
+
+@dataclass
+class BelAccessNode(ASTNode):
+    path: List[str]  # e.g., ['bel', 'text', ...]
 
 
 @dataclass
@@ -245,3 +261,13 @@ class WhileLoopNode(ASTNode):
 @dataclass
 class BreakNode(ASTNode):
     pass
+
+
+@dataclass
+class SenseNode(ASTNode):
+    pass
+
+
+@dataclass
+class GoalCheckNode(ASTNode):
+    goal_name: str

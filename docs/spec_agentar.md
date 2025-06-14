@@ -125,20 +125,21 @@ agent <agent_name> {
 
 ### Operacje
 
-Dostęp do przekonań (`beliefs`) poprzed odwołanie `b.<nazwa_pola>`
+Dostęp do przekonań (`beliefs`) poprzed odwołanie `bel.<nazwa_pola>`
 
-Dostęp do celów cząstkowych (`goles`) poprzed odwółanie `g.<nazwa_pola>` (zwraca wartość true/false czy cel cząstkowy spełniony)
+Możliwość sprawdzenia celu cząstkowego `goal_check(<gole_name>)`
 
 | Operacje | Opis | Kontekst |
 |----------------|------|----------|
 | `when`         | Warunek wyzwolenia | `rules`, `receive` |
 | `then`         | Część wykonawcza reguły | `rules`, `receive` |
 | `send(...)`    | Wysyłanie wiadomości | dowolnie |
-| `adopt_goal(...)` | Przyjęcie nowego celu | `action`, `receive` |
-| `drop_goal(...)`  | Porzucenie celu | `action`, `receive` |
-| `adopt_belief`    | Pezyjęcie nowe przekonanie                         |
-| `drop_belief`     | Porzucenie przekonanie                                |
-| `get_time()`???   | Aktualizacja `self.now` | `initialize`, `action` |
+| ???`adopt_goal(...)` | Przyjęcie nowego celu | `action`, `receive` |
+| ???`drop_goal(...)`  | Porzucenie celu | `action`, `receive` |
+| ???`adopt_belief`    | Pezyjęcie nowe przekonanie                         |
+| ???`drop_belief`     | Porzucenie przekonanie                                |
+| ???`get_time()`      | Aktualizacja `self.now` | `initialize`, `action` |
+| `goal_check(<goal_name>)` | Sprawdzenie celu cząstkowego |
 | `print(...)`   | Debugowanie | dowolnie |
 | `kill()`       | Zakończenie działania agenta | dowolnie |
 | `kill(child_id)` | Usunięcie dzieci | dowolnie |

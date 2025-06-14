@@ -51,29 +51,48 @@ class AgentarSystem:
                 receiver = self.agents[receiverId]
         if receiver is not None:
             receiver.inbox.put(message)
+        logging.info(f"{message.sender.path}:: Sending message to {receiverId}...")
+
+        
 
 
     def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None):
         if self.terminated.is_set():
             return None
         
+        if agent_type not in self.agents_decl:
+            raise ValueError(f"Agent type {agent_type} not found in system declarations.")
+        id = parentInstance.id.child(parentInstance.next_child)     # Create new AgentId for the child agent
+        parentInstance.next_child += 1                              # Increment child index for next spawn
+        parentInstance.children.append(id)                          # Add child id to parent's children list
+        new_agent_inst = self.agents_decl[agent_type]               # Get the agent declaration from the system
+        agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
+        
         with self._lock:
-            if agent_type not in self.agents_decl:
-                raise ValueError(f"Agent type {agent_type} not found in system declarations.")
-            id = parentInstance.id.child(parentInstance.next_child)     # Create new AgentId for the child agent
-            parentInstance.next_child += 1                              # Increment child index for next spawn
-            parentInstance.children.append(id)                          # Add child id to parent's children list
-            new_agent_inst = self.agents_decl[agent_type]               # Get the agent declaration from the system
-            agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
             self.agents[id.path] = agent
             self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)
             self.threads[id.path].start()
-            return id
+        return id
         
     
-    def killChildren(self, agent_id: AgentId):
-        pass
-        # kill all children of the agent_id
+    def killChildren(self, agent_id: AgentId, agent_type):
+        # Kill all children of the agent
+        if agent_type == None: # 
+            with self._lock:
+                agents_to_kill = []
+                for child in self.agents[agent_id.path].children:
+                    agents_to_kill.append(child)
+            for aid in agents_to_kill:
+                self.killAgent(AgentId(aid))
+        # Kill only children of the specified type
+        else: 
+            with self._lock:
+                agents_to_kill = []
+                for child in self.agents[agent_id.path].children:
+                    if self.agents[child].name == agent_type:
+                        agents_to_kill.append(child)
+            for aid in agents_to_kill:
+                self.killAgent(AgentId(aid))
 
 
     def killAgent(self, agent_id: AgentId):

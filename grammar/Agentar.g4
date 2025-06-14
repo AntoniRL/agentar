@@ -15,11 +15,16 @@ statement
     | variableDecl
     | assignment
     | sendStmt
+    | sendParentStmt
+    | sendChildrenStmt
     | spawnStmt
     | killStmt
+    | killchildrenStmt
     | doStmt
     | sleepStmt
     | returnStmt
+    | senseStmt
+    | goalCheckStmt
     ;
 
 // === Mother declaration
@@ -110,6 +115,17 @@ sendStmt
     : 'send' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'  
     ;
 
+
+sendParentStmt
+    : 'send2parent' '(' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    ;
+
+
+sendChildrenStmt
+    : 'send2children' '(' expression? ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    ;
+
+
 spawnStmt
     : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
     ;
@@ -118,12 +134,28 @@ killStmt
     : 'kill' '(' expression? ')' ';'
     ;
 
+
+killchildrenStmt
+    : 'kill_children' '(' expression? ')' ';'
+    ;
+
+
 sleepStmt  
     : 'sleep' '('expression')' ';'
     ;
 
 returnStmt
     : 'return' expression ';'
+    ;
+
+
+senseStmt
+    : 'sense' '('')' ';'
+    ;
+
+
+goalCheckStmt
+    : 'goal_check' '(' ID ')' ';'
     ;
 
 
@@ -186,11 +218,12 @@ assignment
     | ID '['']' '=' expression ';'                        # ListAddAssign
     | ID '=' spawnStmt                                    # SpawnAssign
     | ID '=' doStmt                                       # DoAssign
+    | ID '=' goalCheckStmt                                # GoalCheckAssign
     | expression '=' doStmt                               # DoSelfAssign
     | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
     | expression'['']' '=' expression ';'                 # SelfListAddAssign
     | expression '=' expression ';'                       # SelfAssign
- 
+    | expression '=' goalCheckStmt                        # SelfGoalCheckAssign
     ;
 
 doStmt
@@ -211,10 +244,12 @@ expression
     | expression op=GEQ expression    # GeqExpr
     | expression op=('+'|'-') expression # AddSubExpr
     | expression op=('*'|'/') expression # MulDivExpr
+    | expression op=MODULO expression # ModuloExpr
     | NOT expression                 # NotExpr
     | '(' expression ')'             # ParenExpr
     | MSG '.' ID                     # MessageAccessExpr
     | SELF '.' ID                    # SelfAccessExpr
+    | BELIEF '.' ID                       # BeliefAccessExpr
     | expression '[' expression ']'  # IndexExpr
     | messageInit                    # MessageInitExpr
     | msgTypeValue                   # MsgTypeValueExpr
@@ -256,6 +291,7 @@ msgTypeValue
 MESSAGE: 'message';
 MSG: 'msg';
 SELF: 'self';
+BELIEF: 'bel';
 MSGTYPE_INFORM:  'inform';
 MSGTYPE_ASK:     'ask';
 MSGTYPE_REQUEST: 'request';
@@ -278,6 +314,7 @@ PLUS: '+';
 MINUS: '-';
 STAR: '*';
 SLASH: '/';
+MODULO: '%';
 EQ: '==';
 NEQ: '!=';
 LT: '<';
