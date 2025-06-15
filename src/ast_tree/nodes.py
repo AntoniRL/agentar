@@ -112,6 +112,11 @@ class AssignmentNode(ASTNode):
     value: ASTNode
     index: Optional[ASTNode] = None
 
+@dataclass
+class IndexRangeNode(ASTNode):
+    start: Optional[ASTNode] = None
+    end: Optional[ASTNode] = None
+
 
 @dataclass
 class VariableDeclNode(ASTNode):
@@ -129,6 +134,13 @@ class SendNode(ASTNode):
 
 @dataclass
 class SendToChildrenNode(ASTNode):
+    agent_type: ASTNode
+    message: ASTNode
+    msg_type: Optional[str] = None
+
+
+@dataclass
+class SendToSiblingsNode(ASTNode):
     agent_type: ASTNode
     message: ASTNode
     msg_type: Optional[str] = None
@@ -184,6 +196,12 @@ class NotNode(ASTNode):
 class IndexAccessNode(ASTNode):
     base: ASTNode
     index: ASTNode
+
+@dataclass
+class SliceAccessNode(ASTNode):
+    base: ASTNode
+    start: Optional[ASTNode] = None
+    end: Optional[ASTNode] = None
 
 
 @dataclass

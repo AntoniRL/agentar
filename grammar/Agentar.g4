@@ -17,6 +17,7 @@ statement
     | sendStmt
     | sendParentStmt
     | sendChildrenStmt
+    | sendSiblingStmt
     | spawnStmt
     | killStmt
     | killchildrenStmt
@@ -122,7 +123,12 @@ sendParentStmt
 
 
 sendChildrenStmt
-    : 'send2children' '(' expression? ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    : 'send2children' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    ;
+
+
+sendSiblingStmt
+    : 'send2siblings' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
     ;
 
 
@@ -233,31 +239,34 @@ doStmt
 type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
 
 expression
-    : expression op=OR expression     # OrExpr
-    | expression op=AND expression    # AndExpr
-    | expression op=XOR expression    # XorExpr
-    | expression op=EQ expression     # EqExpr
-    | expression op=NEQ expression    # NeqExpr
-    | expression op=LT expression     # LtExpr
-    | expression op=GT expression     # GtExpr
-    | expression op=LEQ expression    # LeqExpr
-    | expression op=GEQ expression    # GeqExpr
-    | expression op=('+'|'-') expression # AddSubExpr
-    | expression op=('*'|'/') expression # MulDivExpr
-    | expression op=MODULO expression # ModuloExpr
-    | NOT expression                 # NotExpr
-    | '(' expression ')'             # ParenExpr
-    | MSG '.' ID                     # MessageAccessExpr
-    | SELF '.' ID                    # SelfAccessExpr
-    | BELIEF '.' ID                       # BeliefAccessExpr
-    | expression '[' expression ']'  # IndexExpr
-    | messageInit                    # MessageInitExpr
-    | msgTypeValue                   # MsgTypeValueExpr
-    | listLiteral                    # ListExpr
-    | mapLiteral                     # MapExpr
-    | literal                        # LiteralExpr
-    | ID                             # VarReference
-    | AGENTID                        # AgentIdExpr
+    : expression op=OR expression           # OrExpr
+    | expression op=AND expression          # AndExpr
+    | expression op=XOR expression          # XorExpr
+    | expression op=EQ expression           # EqExpr
+    | expression op=NEQ expression          # NeqExpr
+    | expression op=LT expression           # LtExpr
+    | expression op=GT expression           # GtExpr
+    | expression op=LEQ expression          # LeqExpr
+    | expression op=GEQ expression          # GeqExpr
+    | expression op=('+'|'-') expression    # AddSubExpr
+    | expression op=('*'|'/') expression    # MulDivExpr
+    | expression op=MODULO expression       # ModuloExpr
+    | NOT expression                        # NotExpr
+    | '(' expression ')'                    # ParenExpr
+    | MSG '.' ID                            # MessageAccessExpr
+    | SELF '.' ID                           # SelfAccessExpr
+    | BELIEF '.' ID                         # BeliefAccessExpr
+    | expression '[' expression ']'         # IndexExpr
+    | expression '[' ':' expression ']'     # SliceToExpr
+    | expression '[' expression ':' ']'     # SliceFromExpr
+    | expression '[' expression ':' expression ']' # SliceRangeExpr
+    | messageInit                           # MessageInitExpr
+    | msgTypeValue                          # MsgTypeValueExpr
+    | listLiteral                           # ListExpr
+    | mapLiteral                            # MapExpr
+    | literal                               # LiteralExpr
+    | ID                                    # VarReference
+    | AGENTID                               # AgentIdExpr
     ;
 
 listLiteral

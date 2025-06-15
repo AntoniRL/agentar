@@ -46,14 +46,12 @@ class AgentarSystem:
 
     def send_message(self, message):
         receiverId = message.receiver.path
+        logging.info(f"{message.sender.path}:: Sending message to {receiverId}...")        
         with self._lock:
             if receiverId in self.agents:
                 receiver = self.agents[receiverId]
         if receiver is not None:
             receiver.inbox.put(message)
-        logging.info(f"{message.sender.path}:: Sending message to {receiverId}...")
-
-        
 
 
     def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None):

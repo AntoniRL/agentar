@@ -206,6 +206,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#sendSiblingStmt.
+    def enterSendSiblingStmt(self, ctx:AgentarParser.SendSiblingStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#sendSiblingStmt.
+    def exitSendSiblingStmt(self, ctx:AgentarParser.SendSiblingStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#spawnStmt.
     def enterSpawnStmt(self, ctx:AgentarParser.SpawnStmtContext):
         pass
@@ -581,6 +590,33 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#VarReference.
     def exitVarReference(self, ctx:AgentarParser.VarReferenceContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#SliceToExpr.
+    def enterSliceToExpr(self, ctx:AgentarParser.SliceToExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SliceToExpr.
+    def exitSliceToExpr(self, ctx:AgentarParser.SliceToExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#SliceFromExpr.
+    def enterSliceFromExpr(self, ctx:AgentarParser.SliceFromExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SliceFromExpr.
+    def exitSliceFromExpr(self, ctx:AgentarParser.SliceFromExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#SliceRangeExpr.
+    def enterSliceRangeExpr(self, ctx:AgentarParser.SliceRangeExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SliceRangeExpr.
+    def exitSliceRangeExpr(self, ctx:AgentarParser.SliceRangeExprContext):
         pass
 
 

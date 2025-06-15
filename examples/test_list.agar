@@ -15,9 +15,9 @@ agent mother {
         list mmList;
     }
     initialize{
-        for (int i = 0; i < 10; i=i+1) {
-            print("Spawning child ", i);
-            if (i==5) break;
-        }
+        list myList = [1, 2, 3, 4, 5, 6];
+        list secondList;
+        secondList = myList[2:-2];
+        print(secondList);
     }
 }

@@ -209,6 +209,8 @@ class AgentInstance:
                     if not self.fields_type[target] == list:
                         raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self.fields[target])}")
                     self.fields[target].append(value)
+                elif isinstance(stmt.index, IndexRangeNode):
+                    pass # TODO: handle index range assignment
                 else: 
                     if not self.fields_type[target] == list:
                         raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self.fields[target])}")
@@ -291,6 +293,32 @@ class AgentInstance:
             msg_to_send = []
             with self.runtime._lock:
                 for child in self.children:
+                    if agent_type != "_" and agent_type == self.runtime.agents[child].name:
+                        new_msg = deepcopy(msg)
+                        new_msg.receiver = AgentId(child)
+                        msg_to_send.append(new_msg)
+                    elif agent_type == "_":
+                        new_msg = deepcopy(msg)
+                        new_msg.receiver = AgentId(child)
+                        msg_to_send.append(new_msg)
+
+            for msg in msg_to_send:
+                self.runtime.send_message(msg)
+
+
+        elif isinstance(stmt, SendToSiblingsNode):
+            msg = self.eval_expr(stmt.message, local_var, local_var_type)
+            msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
+            msg.sender = self.id
+            # TODO: msg.send_time = ...
+            agent_type = stmt.agent_type.name
+            agent_type = agent_type if agent_type in self.runtime.agents_decl else "_"
+            # Prepare the message to be sent to children
+            msg_to_send = []
+            with self.runtime._lock:
+                for child in self.runtime.agents[self.parent.path].children:
+                    if child == self.id.path:  # Skip sending message to self
+                        continue
                     if agent_type != "_" and agent_type == self.runtime.agents[child].name:
                         new_msg = deepcopy(msg)
                         new_msg.receiver = AgentId(child)
@@ -443,6 +471,18 @@ class AgentInstance:
             if index < 0 or index >= len(base):
                 raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
             return base[index]
+        
+
+        elif isinstance(expr, SliceAccessNode):
+            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            start = self.eval_expr(expr.start, local_var, local_var_type, message=message) if expr.start is not None else None
+            end = self.eval_expr(expr.end, local_var, local_var_type, message=message) if expr.end is not None else None
+            if start is not None and (start < 0 or start >= len(base)):
+                raise IndexError(f"Start index {start} out of bounds for list of length {len(base)}.")
+            if end is not None and (end < -len(base) or end > len(base)):
+                raise IndexError(f"End index {end} out of bounds for list of length {len(base)}.")
+            return base[start:end] if start is not None and end is not None else base[start:] if start is not None else base[:end] if end is not None else base
+
             
         elif isinstance(expr, SelfAccessNode):
             name = expr.path[1]

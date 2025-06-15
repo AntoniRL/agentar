@@ -23,9 +23,9 @@ class AgentRunner(threading.Thread):
         self.instance.initializeAgent()
 
         # TODO: just for testing, change later
-        self.instance.step()
-        while self.running.is_set():
-            # self.instance.step()
+        # self.instance.step()
+        while self.running.is_set() and not self.system.terminated.is_set():
+            self.instance.step()
             time.sleep(self.tick_interval)
         
         self.instance.destroyAgent()

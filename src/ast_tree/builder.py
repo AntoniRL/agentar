@@ -135,6 +135,13 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.SendToChildrenNode(agent_type=agent_type, message=message, msg_type=msg_type)
 
 
+    def visitSendSiblingStmt(self, ctx:AgentarParser.SendSiblingStmtContext):
+        agent_type = self.visit(ctx.expression(0))           # Sending to all siblings agents (when param _) or a specific child
+        message = self.visit(ctx.expression(1))
+        msg_type = ctx.msgTypeValue().getText() if ctx.msgTypeValue() else None
+        return ast.SendToSiblingsNode(agent_type=agent_type, message=message, msg_type=msg_type)
+
+
     def visitSpawnStmt(self, ctx:AgentarParser.SpawnStmtContext):
         agent_type = ctx.ID().getText()
         if not agent_type:
@@ -398,6 +405,27 @@ class AgentarToASTBuilder(AgentarVisitor):
         base = self.visit(ctx.expression(0))   # np. x
         index = self.visit(ctx.expression(1))  # np. 3
         return ast.IndexAccessNode(base=base, index=index)
+    
+
+    def visitSliceToExpr(self, ctx:AgentarParser.SliceToExprContext):
+        base = self.visit(ctx.expression(0))
+        start = None # means slice from the beginning
+        end = self.visit(ctx.expression(1))
+        return ast.SliceAccessNode(base=base, start=start, end=end)
+
+
+    def visitSliceFromExpr(self, ctx:AgentarParser.SliceFromExprContext):
+        base = self.visit(ctx.expression(0))
+        start = self.visit(ctx.expression(1))
+        end = None # means no end specified, slice to the end
+        return ast.SliceAccessNode(base=base, start=start, end=end)
+
+
+    def visitSliceRangeExpr(self, ctx:AgentarParser.SliceRangeExprContext):
+        base = self.visit(ctx.expression(0))
+        start = self.visit(ctx.expression(1))
+        end = self.visit(ctx.expression(2))
+        return ast.SliceAccessNode(base=base, start=start, end=end)
 
 
     def visitAgentIdExpr(self, ctx:AgentarParser.AgentIdExprContext):

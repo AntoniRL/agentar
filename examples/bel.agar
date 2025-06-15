@@ -8,8 +8,10 @@ message task_done {
 
 agent cleaner {
     initialize{
-        //msg_ = task_done();
+        sleep(1);
+        msg_ = task_done();
         //send2parent(msg_, inform);
+        send2siblings(cleaner, msg_, inform);
     }
 }
 agent tester {
@@ -38,12 +40,8 @@ agent mother {
         int x = 0;
         int y = 7;
     }
-    /*
     sense {
-        int x = 0;
-        x = x+1;
     }
-    */
     goals {
         g1: 5==6;
         g2: (3<4) || (5==5);
