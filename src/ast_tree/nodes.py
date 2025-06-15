@@ -297,7 +297,7 @@ class GetFromWorldNode(ASTNode):
     y: ASTNode
 
 @dataclass
-class SetToWorldNode(ASTNode):
+class SetInWorldNode(ASTNode):
     x: ASTNode
     y: ASTNode
     value: ASTNode

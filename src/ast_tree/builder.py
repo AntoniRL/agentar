@@ -192,7 +192,7 @@ class AgentarToASTBuilder(AgentarVisitor):
         x = self.visit(ctx.expression(0))
         y = self.visit(ctx.expression(1))
         value = self.visit(ctx.expression(2))
-        return ast.SetToWorldNode(x=x, y=y, value=value)
+        return ast.SetInWorldNode(x=x, y=y, value=value)
 
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
         message_type = ctx.ID().getText()

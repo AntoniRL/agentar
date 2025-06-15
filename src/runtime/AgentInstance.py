@@ -190,8 +190,20 @@ class AgentInstance:
             return False
         else:
             return None  # If the value is not 0 or 1, return None
+        
+
+    def set_in_world(self, x, y, value):
+        if not isinstance(x, int) or not isinstance(y, int):
+            raise TypeError(f"Coordinates must be integers, got {type(x)} and {type(y)}")
+        if x not in range(0, len(self.runtime.mother_instance.fields["WORLD"])) or y not in range(0, len(self.runtime.mother_instance.fields["WORLD"][0])):
+            raise IndexError(f"Coordinates ({x}, {y}) out of bounds for WORLD size {len(self.runtime.mother_instance.fields['WORLD'])}, {len(self.runtime.mother_instance.fields['WORLD'][0])}.")
+        if value not in [0, 1]:
+            raise ValueError(f"Value must be 0 or 1, got {value}")
+        self.runtime.mother_instance.fields["WORLD"][x][y] = value
+        logging.info(f"{self.id.path}:: Set WORLD[{x}][{y}] to {value}")
 
 
+# ---EXECUTE_STMT-----------------------------------
     def execute_stmt(self, stmt, local_var, local_var_type, message=None):
         # logging.info(f"{self.id.path}:: Executing statement...{stmt}") # TODO: remove logging
 
@@ -454,6 +466,12 @@ class AgentInstance:
             agent_type = stmt.agent_type.name if stmt.agent_type is not None else None
             self.runtime.killChildren(self.id, agent_type)  # Kill all children of the agent with the specified type
 
+
+        elif isinstance(stmt, SetInWorldNode):
+            x = self.eval_expr(stmt.x, local_var, local_var_type)
+            y = self.eval_expr(stmt.y, local_var, local_var_type)
+            value = self.eval_expr(stmt.value, local_var, local_var_type)
+            self.set_in_world(x, y, value)
 
 
 # ---EVAL_EXPR-----------------------------------

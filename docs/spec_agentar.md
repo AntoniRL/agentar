@@ -10,8 +10,8 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 * System oparty na komunikatach (wiadomościach) i reaktywnych regułach.
 * Dostęp do pól agenta poprzez `self.name`
 * Agent matka `mother` (Tworzony jako pierwszy, zarządza działaniem systemu)
-* (TODO?) Agent czas `time` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
-* Koniec działania systemu kiedy brak agentów (mother: `kill()`) LUB minie czas symulacji
+* (TODO?) Agent czas `time` `id=.0` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
+* Koniec działania systemu kiedy agent matka wywoła `kill()` LUB minie czas symulacji (parametr podczas uruchomienia)
 
 ---
 
@@ -19,8 +19,8 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 
 1. `initialize` — konfiguracja i inicjalizacja (np. tworzenie dzieci)
 2. Pętla działania:
-   - aktualizacja przekonań (`beliefs`) `sense`
-   - odbiór wiadomości `receive` (jeżeli jakieś w inbox)
+   - aktualizacja przekonań (`beliefs`). Według instrukcji z `sense`
+   - odbiór pierwszej wiadomości `receive` (jeżeli jakieś w inbox)
    - sprawdzenie celu (`goles`)
    - jeżeli cel nie osiąfnięty:
         - postępowanie zgodnie z regułami (`rules`) 
@@ -32,6 +32,8 @@ Agent umiera, gdy:
 
 ## Struktura agenta
 
+Wszystkie pola są obcjonalne. UWAGA: ważna kolejność występowania!!!
+
 ```agentar
 agent mother {
     // Agent matka uruchamiany podczas wywołania programu. On uruchamia pozostałych agentów. Struktura jak zwykłego agenta (zarezerwowana nazwa mother)
@@ -39,56 +41,53 @@ agent mother {
 
 agent <agent_name> {
     fields {
-        // Pola wbudowane patrz niżej.
+        // Pola wbudowane (opcjonalne; tylko jedna instancja)
         <type> <name> = <value>;     // np. int counter = 0;
     }
 
     initialize {
-        // Kod uruchamiany przy starcie agenta
+        // Kod uruchamiany przy starcie agenta (opcjonalne; tylko jedna instancja)
         // np. print("Hello!");
     }
 
     destroy {
-        // Kod uruchamiany przy śmierci agenta
+        // Kod uruchamiany przy śmierci agenta (opcjonalne; tylko jedna instancja)
         // np. print("Bye!");
     }
 
     beliefs {
-        // Przekonania agenta o świecie(opcjonalne)
+        // Przekonania agenta o świecie (opcjonalne; tylko jedna instancja)
         // np. bool b1 = false;
-        // np. int b2 = 33;
+        // np. int b2;
     }
 
     sense {
-        // Agent cyklicznie sprawdza świat zgodnie z zapisanymi akcjami (w zależnośći od speocyfiki świata).
-        // Aktualizuje pola beliefs
-        // read_file()....
+        // Agent cyklicznie sprawdza świat zgodnie z zapisanymi akcjami (w zależnośći od speocyfiki świata) i atualizuje pola beliefs (opcjonalnie; tylko jedna instancja)
+        // np. read_file()....
     }
 
     goals {
-        // Cele agenta (opcjonalne)
+        // Cele agenta (opcjonalne; tylko jedna instancja)
         // np. g1: b.b1 == true || b.b2 < 4;
         // np. g2: b.b2 < 10;
     }
 
     rules {
-        // Zasady postępowania agenta (opcjonalne)
+        // Zasady postępowania agenta (opcjonalne; tylko jedna instancja)
         when <condition> then {
             <statements>;
-            // możliwość odwołania się do b.<nazwa_pola_blief> (zwraca wartość pola)
-            // do g.<zazwa pola w gole> (zwraca true/false czy spełnione)
         }
     }
 
     receive <msg_name> {
-        // Instrukcje po otrzumaniu wiadomości typu <msg_name>
-        when <pattern> then {
+        // Instrukcje po otrzumaniu wiadomości typu <msg_name> (opcjonalnie; możliwe wiele instancji)
+        when <condition> then {
             <statements>;
         }
     }
 
     action <name>(<args>): <return_type> {
-        // Dfinicja akcji, które może podjąc agent (możliwość wywołania z poziomu bytu agenta)
+        // Dfinicja akcji, które może podjąc agent (możliwość wywołania z poziomu bytu agenta) (opcjonalnie; możliwe wiele instancji)
         <statements>;
     }
 }
@@ -96,7 +95,7 @@ agent <agent_name> {
 
 # Opis składni
 
-### Słowa kluczowe
+### Sekcje agenta
 
 | Słowo kluczowe          | Opis                                         |
 | ----------------------- | -------------------------------------------- |
@@ -112,22 +111,24 @@ agent <agent_name> {
 | `actions`               | Akcja - reprezentuje konkretne dostępne zadania |
 | `message`               | Definicja typu wiadomości  |
 
+
 ### Wbudowane pola agenta
+
+Dostęp do przekonań (`beliefs`) poprzed odwołanie `bel.<nazwa_pola>`
 
 | Pole                      | Opis                                         |
 | ------------------------- | -------------------------------------------- |
 | `self.id`                 | ID agenta np. `.1.2.1`                       |
 | `self.parent`             | ID rodzica np. `.1.2`                        |
 | `self.children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
-| `self.next_child`         | ID następnego dziecka (inkremetowanie automatycznie po `spawn()`) |
-| `self.` | |
-| (TODO?) `self.now`                | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) |
+| `self.name`               | nazwa rodzaju agenta (jedna ze zdefiniowanych przez programistę) |
+| `self.isGoalAchieved`     | flaga sprawdzająca czy sel został osiągnięty  aktualizowana co krop agenta |
+| (TODO?) `self.now`        | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) |
 
-### Operacje
+Zastrzeżone nazwy: `self.agent`, `self.isMother`, `self.next_child`, `self.inbox`, `self.runtime`, `self.return_flag`, `self.break_flag`, `self.fields`, `self.fields_type`, `self.beliefs`, `self.beliefs_type`, `self.sense`, `self.goals`, `self.rules`, `self.receive`, `self.actions`, `self.initialize`, `self.destroy`
 
-Dostęp do przekonań (`beliefs`) poprzed odwołanie `bel.<nazwa_pola>`
 
-Możliwość sprawdzenia celu cząstkowego `goal_check(<gole_name>)`
+## Operacje
 
 | Operacje | Opis | Kontekst |
 |----------------|------|----------|
@@ -293,105 +294,4 @@ Rodzaj wiadomości umożliwiają programiście rozszerzyć warunki komunikacji.
 
 ### Ping-pong
 
-```agentar
-message ping {
-    string content;
-}
-
-message pong {
-    string response;
-}
-
-agent responder {
-    receive ping {
-        when (msg.type == request) then {
-            print("Received ping: ", msg.content.content);
-            msg_ = pong(response = "PONG!!!");
-            send2parent(msg_);       // msg_type="inform" niepotrzebne (domyślna wartość)
-        }
-    }
-}
-
-agent mother {
-    initialize {
-        print("Starting ping-pong demo");
-        agentid id_;
-        id_ = spawn(responder);
-        mes_ping = ping(content = "ping!");
-        send(id_, mes_ping, msg_type=request);
-    }
-
-    receive pong {
-        print("Got pong: ", msg.content.response);
-        kill(); // Kończy system
-    }
-}
-```
-
-### beliefs, rules, goals
-
-```agentar
-message clean_room {
-    string task;
-}
-
-message task_done {
-    string status;
-}
-
-agent cleaner {
-    beliefs {
-        dirty;
-    }
-
-    goals {
-        clean_room = true;
-    }
-
-    rules {
-        when (
-            belief("dirty") && 
-            goal("clean_room")
-        ) then {
-            clean();
-        }
-    }
-
-    action clean(): void {
-        print("Cleaning room...");
-        beliefs("dirty") = false;
-        drop_goal("clean_room");
-        done = task_done(status = "done");
-        send_to_parent(done, msg_type=confirm);
-    }
-
-    receive clean_room {
-        when (
-            msg.type == "request" &&
-            msg.content.task == "clean"
-        ) then {
-            beliefs("dirty") = true;
-            adopt_goal("clean_room");
-        }
-    }
-}
-
-agent mother {
-    initialize {
-        agentid id_;
-        id_ = spawn(cleaner);
-        msg = clean_room(task = "clean");
-        send(id_, msg, msg_type=request);
-    }
-
-    receive task_done {
-        when (
-            msg.type == confirm &&
-            msg.content.status == "done"
-        ) then {
-            print("Cleaner completed task.");
-            kill();
-        }
-    }
-}
-```
+TODO: 

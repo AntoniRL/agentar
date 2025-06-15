@@ -27,11 +27,18 @@ class AgentarSystem:
         self.mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id)
         self.agents[self.mother_id.path] = self.mother_instance  # Add mother instance to agents dict
         self.threads[self.mother_id.path] = AgentRunner(self.mother_instance, system=self, agent_id=self.mother_id)
-        
+
+        # Create agent time
+        # self.agentTimeId = AgentId(".0")  # Unique ID for agent time
+        # self.agentTime = AgentInstance(AgentarAgent(), system=self, id=self.agentTimeId)
+        # self.agents[self.agentTimeId.path] = self.agentTime  # Add agent time instance to agents dict
+        # self.threads[self.agentTimeId.path] = AgentRunner(self.agentTime, system=self, agent_id=self.agentTimeId)
+        # self.create_agent_time()
 
     def start(self):
         logging.info("Starting Agentar system...")
         self.threads[self.mother_id.path].start()
+        # self.threads[self.agentTimeId.path].start()
 
 
     def stop(self):
@@ -120,3 +127,6 @@ class AgentarSystem:
         self.terminated.set()
 
 
+    def create_agent_time(self):
+        # Create agent time instance
+        self.agentTimeId = AgentId(".0")

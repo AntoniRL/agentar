@@ -5,6 +5,8 @@ agent finder{
         isReword = get_from_world(0,0);
         print(isReword);
         set_in_world(1,1,1);
+        sleep(2);
+        set_in_world(1,1,0);
     }
 }
 
@@ -17,5 +19,13 @@ agent mother {
         print(self.WORLD);
         agentid agentid_;
         agentid_ = spawn(finder);
+    }
+    goals {
+        g1: 1==2;
+    }
+    rules{
+        when () then{
+            print(self.WORLD);
+        }
     }
 }
