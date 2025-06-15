@@ -178,6 +178,19 @@ class AgentInstance:
             raise NameError(f"Goal '{goal_to_check}' is not declared.")
 
 
+    def get_from_world(self, stmt, local_var, local_var_type):
+        x = self.eval_expr(stmt.x, local_var, local_var_type)
+        y = self.eval_expr(stmt.y, local_var, local_var_type)
+        if not isinstance(x, int) or not isinstance(y, int):
+            raise TypeError(f"Coordinates must be integers, got {type(x)} and {type(y)}")
+        isRewordThere = self.runtime.mother_instance.fields["WORLD"][x][y]
+        if isRewordThere == 1:
+            return True
+        elif isRewordThere == 0:
+            return False
+        else:
+            return None  # If the value is not 0 or 1, return None
+
 
     def execute_stmt(self, stmt, local_var, local_var_type, message=None):
         # logging.info(f"{self.id.path}:: Executing statement...{stmt}") # TODO: remove logging
@@ -216,7 +229,7 @@ class AgentInstance:
                         raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self.fields[target])}")
                     index = self.eval_expr(stmt.index, local_var, local_var_type)
                     self.fields[target][index] = value
-                return 0
+                return
             
             elif stmt.index is not None:
                 target = stmt.target
@@ -226,7 +239,13 @@ class AgentInstance:
                 else:
                     index = self.eval_expr(stmt.index, local_var, local_var_type)
                     local_var[target][index] = value
-                return 0
+                return
+            
+            elif isinstance(stmt.value, GetFromWorldNode):
+                target = stmt.target.name
+                value = self.get_from_world(stmt.value, local_var, local_var_type)
+                local_var[target] = value
+                return
 
             elif isinstance(stmt.value, SpawnNode):
                 if stmt.target not in local_var_type:

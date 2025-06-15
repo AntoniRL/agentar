@@ -278,6 +278,24 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#getFromWorldStmt.
+    def enterGetFromWorldStmt(self, ctx:AgentarParser.GetFromWorldStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#getFromWorldStmt.
+    def exitGetFromWorldStmt(self, ctx:AgentarParser.GetFromWorldStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#setInWorldStmt.
+    def enterSetInWorldStmt(self, ctx:AgentarParser.SetInWorldStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#setInWorldStmt.
+    def exitSetInWorldStmt(self, ctx:AgentarParser.SetInWorldStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#messageInit.
     def enterMessageInit(self, ctx:AgentarParser.MessageInitContext):
         pass
@@ -482,6 +500,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#SelfGoalCheckAssign.
     def exitSelfGoalCheckAssign(self, ctx:AgentarParser.SelfGoalCheckAssignContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#GetFromWorldAssign.
+    def enterGetFromWorldAssign(self, ctx:AgentarParser.GetFromWorldAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#GetFromWorldAssign.
+    def exitGetFromWorldAssign(self, ctx:AgentarParser.GetFromWorldAssignContext):
         pass
 
 

@@ -289,3 +289,15 @@ class SenseNode(ASTNode):
 @dataclass
 class GoalCheckNode(ASTNode):
     goal_name: str
+
+
+@dataclass
+class GetFromWorldNode(ASTNode):
+    x: ASTNode
+    y: ASTNode
+
+@dataclass
+class SetToWorldNode(ASTNode):
+    x: ASTNode
+    y: ASTNode
+    value: ASTNode

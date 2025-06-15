@@ -26,6 +26,8 @@ statement
     | returnStmt
     | senseStmt
     | goalCheckStmt
+    | getFromWorldStmt
+    | setInWorldStmt
     ;
 
 // === Mother declaration
@@ -165,6 +167,16 @@ goalCheckStmt
     ;
 
 
+getFromWorldStmt
+    : 'get_from_world' '(' expression ',' expression ')' ';'
+    ;
+
+
+setInWorldStmt
+    : 'set_in_world' '(' expression ',' expression ',' expression ')' ';'
+    ;
+
+
 messageInit
     : ID '(' (messageFieldAssign (',' messageFieldAssign)*)? ')'
     ;
@@ -230,6 +242,7 @@ assignment
     | expression'['']' '=' expression ';'                 # SelfListAddAssign
     | expression '=' expression ';'                       # SelfAssign
     | expression '=' goalCheckStmt                        # SelfGoalCheckAssign
+    | expression '=' getFromWorldStmt                     # GetFromWorldAssign
     ;
 
 doStmt
