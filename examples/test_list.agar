@@ -1,0 +1,24 @@
+message ping{
+}
+
+agent child {
+    receive ping {
+        when (msg.type == ask) then {
+            msg_ = ping();
+            send(self.parent, msg_, msg_type=inform);
+        }
+    }
+}
+
+agent mother {
+    fields{
+        list mmList;
+    }
+    initialize{
+        list myList = [1, 2, 3, 4, 5, 6];
+        list secondList;
+        print(self.mmList);
+        self.mmList = myList[2:-2];
+        print(self.mmList);
+    }
+}

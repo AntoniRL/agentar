@@ -39,6 +39,32 @@ class FieldSectionNode(ASTNode):
 
 
 @dataclass
+class BeliefSectionNode(ASTNode):
+    declarations: List[VariableDeclNode]
+
+
+@dataclass
+class SeanseSectionNode(ASTNode):
+    statements: List[ASTNode]
+
+
+@dataclass
+class GoalSectionNode(ASTNode):
+    goals: List[ASTNode]
+
+
+@dataclass
+class GoalBlockNode(ASTNode):
+    name: str
+    condition: List[ASTNode]
+
+
+@dataclass
+class RulesSectionNode(ASTNode):
+    rules: List[ASTNode]
+
+
+@dataclass
 class InitSectionNode(ASTNode):
     statements: List[ASTNode]
 
@@ -86,6 +112,11 @@ class AssignmentNode(ASTNode):
     value: ASTNode
     index: Optional[ASTNode] = None
 
+@dataclass
+class IndexRangeNode(ASTNode):
+    start: Optional[ASTNode] = None
+    end: Optional[ASTNode] = None
+
 
 @dataclass
 class VariableDeclNode(ASTNode):
@@ -102,6 +133,20 @@ class SendNode(ASTNode):
 
 
 @dataclass
+class SendToChildrenNode(ASTNode):
+    agent_type: ASTNode
+    message: ASTNode
+    msg_type: Optional[str] = None
+
+
+@dataclass
+class SendToSiblingsNode(ASTNode):
+    agent_type: ASTNode
+    message: ASTNode
+    msg_type: Optional[str] = None
+
+
+@dataclass
 class SpawnNode(ASTNode):
     agent_type: str
     args: List[ASTNode]
@@ -111,6 +156,10 @@ class SpawnNode(ASTNode):
 class KillNode(ASTNode):
     agent_id: ASTNode
 
+
+@dataclass
+class KillChildrenNode(ASTNode):
+    agent_type: ASTNode
 
 
 @dataclass
@@ -148,6 +197,12 @@ class IndexAccessNode(ASTNode):
     base: ASTNode
     index: ASTNode
 
+@dataclass
+class SliceAccessNode(ASTNode):
+    base: ASTNode
+    start: Optional[ASTNode] = None
+    end: Optional[ASTNode] = None
+
 
 @dataclass
 class MessageInitNode(ASTNode):
@@ -157,12 +212,17 @@ class MessageInitNode(ASTNode):
 
 @dataclass
 class SelfAccessNode(ASTNode):
-    path: List[str]  # e.g., ['msg', 'content', 'text']
+    path: List[str]  # e.g., ['self.', 'text', ...]
 
 
 @dataclass
 class MsgAccessNode(ASTNode):
     path: List[str]  # e.g., ['msg', 'content', 'text']
+
+
+@dataclass
+class BelAccessNode(ASTNode):
+    path: List[str]  # e.g., ['bel', 'text', ...]
 
 
 @dataclass
@@ -188,3 +248,56 @@ class SleepNode(ASTNode):
 @dataclass
 class ReturnNode(ASTNode):
     value: Optional[ASTNode] = None
+
+
+@dataclass
+class IfStmtNode(ASTNode):
+    conditions: List[ASTNode]
+    statements: List[ASTNode]
+    elseStmt: ASTNode
+
+
+@dataclass
+class ElseStmtNode(ASTNode):
+    statements: List[ASTNode]
+
+
+@dataclass
+class ForLoopNode(ASTNode):
+    initialize: ASTNode
+    condition: ASTNode
+    update: ASTNode
+    body: List[ASTNode]
+
+
+@dataclass
+class WhileLoopNode(ASTNode):
+    condition: ASTNode
+    body: List[ASTNode]
+
+
+@dataclass
+class BreakNode(ASTNode):
+    pass
+
+
+@dataclass
+class SenseNode(ASTNode):
+    pass
+
+
+@dataclass
+class GoalCheckNode(ASTNode):
+    goal_name: str
+
+
+@dataclass
+class GetFromWorldNode(ASTNode):
+    x: ASTNode
+    y: ASTNode
+
+@dataclass
+class SetInWorldNode(ASTNode):
+    x: ASTNode
+    y: ASTNode
+    value: ASTNode

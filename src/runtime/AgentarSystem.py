@@ -20,22 +20,25 @@ class AgentarSystem:
         self.terminated = threading.Event()     # Event to signal termination of the system
         self.terminated.clear()                 # Clear the termination event
 
-        self._lock= threading.Lock()
-
-        # create agent time
-        # self.time_id = AgentId(".2")
-        # self.AgentTime = AgentInstance(AgentarAgent(), agent_id=self.time_id)
+        self._lock = threading.Lock()
 
         # Create mother
         self.mother_id = AgentId(".1")
         self.mother_instance = AgentInstance(mother_decl, system=self, id=self.mother_id)
         self.agents[self.mother_id.path] = self.mother_instance  # Add mother instance to agents dict
         self.threads[self.mother_id.path] = AgentRunner(self.mother_instance, system=self, agent_id=self.mother_id)
-        
+
+        # Create agent time
+        # self.agentTimeId = AgentId(".0")  # Unique ID for agent time
+        # self.agentTime = AgentInstance(AgentarAgent(), system=self, id=self.agentTimeId)
+        # self.agents[self.agentTimeId.path] = self.agentTime  # Add agent time instance to agents dict
+        # self.threads[self.agentTimeId.path] = AgentRunner(self.agentTime, system=self, agent_id=self.agentTimeId)
+        # self.create_agent_time()
 
     def start(self):
         logging.info("Starting Agentar system...")
         self.threads[self.mother_id.path].start()
+        # self.threads[self.agentTimeId.path].start()
 
 
     def stop(self):
@@ -50,6 +53,7 @@ class AgentarSystem:
 
     def send_message(self, message):
         receiverId = message.receiver.path
+        logging.info(f"{message.sender.path}:: Sending message to {receiverId}...")        
         with self._lock:
             if receiverId in self.agents:
                 receiver = self.agents[receiverId]
@@ -61,18 +65,39 @@ class AgentarSystem:
         if self.terminated.is_set():
             return None
         
+        if agent_type not in self.agents_decl:
+            raise ValueError(f"Agent type {agent_type} not found in system declarations.")
+        id = parentInstance.id.child(parentInstance.next_child)     # Create new AgentId for the child agent
+        parentInstance.next_child += 1                              # Increment child index for next spawn
+        parentInstance.children.append(id)                          # Add child id to parent's children list
+        new_agent_inst = self.agents_decl[agent_type]               # Get the agent declaration from the system
+        agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
+        
         with self._lock:
-            if agent_type not in self.agents_decl:
-                raise ValueError(f"Agent type {agent_type} not found in system declarations.")
-            id = parentInstance.id.child(parentInstance.next_child)     # Create new AgentId for the child agent
-            parentInstance.next_child += 1                              # Increment child index for next spawn
-            parentInstance.children.append(id)                          # Add child id to parent's children list
-            new_agent_inst = self.agents_decl[agent_type]               # Get the agent declaration from the system
-            agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
             self.agents[id.path] = agent
             self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)
             self.threads[id.path].start()
-            return id
+        return id
+        
+    
+    def killChildren(self, agent_id: AgentId, agent_type):
+        # Kill all children of the agent
+        if agent_type == None: # 
+            with self._lock:
+                agents_to_kill = []
+                for child in self.agents[agent_id.path].children:
+                    agents_to_kill.append(child)
+            for aid in agents_to_kill:
+                self.killAgent(AgentId(aid))
+        # Kill only children of the specified type
+        else: 
+            with self._lock:
+                agents_to_kill = []
+                for child in self.agents[agent_id.path].children:
+                    if self.agents[child].name == agent_type:
+                        agents_to_kill.append(child)
+            for aid in agents_to_kill:
+                self.killAgent(AgentId(aid))
 
 
     def killAgent(self, agent_id: AgentId):
@@ -102,3 +127,6 @@ class AgentarSystem:
         self.terminated.set()
 
 
+    def create_agent_time(self):
+        # Create agent time instance
+        self.agentTimeId = AgentId(".0")

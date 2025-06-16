@@ -7,6 +7,13 @@ from ast_tree.nodes import ASTNode
 from antlr4 import InputStream, CommonTokenStream
 from antlr.AgentarLexer import AgentarLexer
 from antlr.AgentarParser import AgentarParser
+from antlr4.error.ErrorListener import ErrorListener
+import sys
+
+
+class ThrowingErrorListener(ErrorListener):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        raise SyntaxError(f"Line {line}:{column} {msg}")
 
 def build_rich_tree(node: ASTNode, label="AST"):
     tree = Tree(label)
@@ -32,11 +39,19 @@ def _build_tree(rich_tree, node):
         rich_tree.add(str(node))
 
 def main(source):
-    lexer = AgentarLexer(InputStream(source))
-    tokens = CommonTokenStream(lexer)
-    parser = AgentarParser(tokens)
-    tree = parser.program()
-
+    try:
+        lexer = AgentarLexer(InputStream(source))
+        tokens = CommonTokenStream(lexer)
+        parser = AgentarParser(tokens)
+        # delete default error listeners
+        parser.removeErrorListeners()
+        # add custom error listener that throws exceptions
+        parser.addErrorListener(ThrowingErrorListener())
+        tree = parser.program()
+    except SyntaxError as e:
+        print(f"ERROR: Syntax error in the file: {e}")
+        sys.exit(1)
+        
     builder = AgentarToASTBuilder()
     ast_root = builder.visit(tree)
 

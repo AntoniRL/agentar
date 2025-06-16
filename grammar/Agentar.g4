@@ -8,14 +8,26 @@ program
 
 statement
     : printStmt
+    | ifStmt
+    | forStmt
+    | whileStmt
+    | breakStmt
     | variableDecl
     | assignment
     | sendStmt
+    | sendParentStmt
+    | sendChildrenStmt
+    | sendSiblingStmt
     | spawnStmt
     | killStmt
+    | killchildrenStmt
     | doStmt
     | sleepStmt
     | returnStmt
+    | senseStmt
+    | goalCheckStmt
+    | getFromWorldStmt
+    | setInWorldStmt
     ;
 
 // === Mother declaration
@@ -33,6 +45,10 @@ agentBody
     : fieldSection? 
     initialSection?
     destroySection?
+    beliefsSection?
+    senseSection?
+    goalsSection?
+    rulesSection?
     receiveSection*
     actionSection*
     ;
@@ -47,6 +63,26 @@ initialSection
 
 destroySection
     : 'destroy' '{' statement* '}'
+    ;
+
+beliefsSection
+    : 'beliefs' '{' variableDecl* '}'
+    ;
+
+senseSection
+    : 'sense' '{' statement* '}'
+    ;
+
+goalsSection
+    : 'goals' '{' goalBlock* '}'
+    ;
+
+goalBlock
+    : ID ':' expression ';'
+    ;
+
+rulesSection
+    : 'rules' '{' whenBlock* '}'
     ;
 
 receiveSection
@@ -82,6 +118,22 @@ sendStmt
     : 'send' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'  
     ;
 
+
+sendParentStmt
+    : 'send2parent' '(' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    ;
+
+
+sendChildrenStmt
+    : 'send2children' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    ;
+
+
+sendSiblingStmt
+    : 'send2siblings' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    ;
+
+
 spawnStmt
     : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
     ;
@@ -90,12 +142,38 @@ killStmt
     : 'kill' '(' expression? ')' ';'
     ;
 
+
+killchildrenStmt
+    : 'kill_children' '(' expression? ')' ';'
+    ;
+
+
 sleepStmt  
     : 'sleep' '('expression')' ';'
     ;
 
 returnStmt
     : 'return' expression ';'
+    ;
+
+
+senseStmt
+    : 'sense' '('')' ';'
+    ;
+
+
+goalCheckStmt
+    : 'goal_check' '(' ID ')' ';'
+    ;
+
+
+getFromWorldStmt
+    : 'get_from_world' '(' expression ',' expression ')' ';'
+    ;
+
+
+setInWorldStmt
+    : 'set_in_world' '(' expression ',' expression ',' expression ')' ';'
     ;
 
 
@@ -111,6 +189,43 @@ printStmt
     : 'print' '(' expression (',' expression)* ')' ';'
     ;
 
+ifStmt
+    : 'if' '(' expression ')' blockOrStmt (elseStmt)?
+    ;   
+
+
+blockOrStmt 
+    : '{' statement* '}'
+    | statement
+    ;
+
+
+elseStmt
+    : 'else' '{' statement* '}'
+    ;
+
+
+forStmt
+    : 'for' '(' variableDecl expression ';' forAssignExpr ')' '{' forBody '}'
+    ;
+
+forBody
+    : statement*
+    ;
+
+forAssignExpr
+    : ID '=' expression
+    ;
+
+whileStmt
+    : 'while' '(' expression ')' '{' statement* '}'
+    ;
+
+breakStmt
+    : 'break' ';'
+    ;
+    
+
 variableDecl
     : type ID ('=' expression)? ';'                       # VarDecl
     ;
@@ -118,10 +233,16 @@ variableDecl
 assignment
     : ID '=' expression ';'                               # SimpleAssign
     | ID '[' expression ']' '=' expression ';'            # IndexAssign
+    | ID '['']' '=' expression ';'                        # ListAddAssign
     | ID '=' spawnStmt                                    # SpawnAssign
     | ID '=' doStmt                                       # DoAssign
+    | ID '=' goalCheckStmt                                # GoalCheckAssign
     | expression '=' doStmt                               # DoSelfAssign
+    | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
+    | expression'['']' '=' expression ';'                 # SelfListAddAssign
     | expression '=' expression ';'                       # SelfAssign
+    | expression '=' goalCheckStmt                        # SelfGoalCheckAssign
+    | expression '=' getFromWorldStmt                     # GetFromWorldAssign
     ;
 
 doStmt
@@ -131,29 +252,34 @@ doStmt
 type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
 
 expression
-    : expression op=OR expression     # OrExpr
-    | expression op=AND expression    # AndExpr
-    | expression op=XOR expression    # XorExpr
-    | expression op=EQ expression     # EqExpr
-    | expression op=NEQ expression    # NeqExpr
-    | expression op=LT expression     # LtExpr
-    | expression op=GT expression     # GtExpr
-    | expression op=LEQ expression    # LeqExpr
-    | expression op=GEQ expression    # GeqExpr
-    | expression op=('+'|'-') expression # AddSubExpr
-    | expression op=('*'|'/') expression # MulDivExpr
-    | NOT expression                  # NotExpr
-    | expression '[' expression ']'  # IndexExpr
-    | '(' expression ')'             # ParenExpr
-    | MSG '.' ID                     # MessageAccessExpr
-    | SELF '.' ID                    # SelfAccessExpr
-    | messageInit                    # MessageInitExpr
-    | msgTypeValue                   # MsgTypeValueExpr
-    | listLiteral                    # ListExpr
-    | mapLiteral                     # MapExpr
-    | literal                        # LiteralExpr
-    | ID                             # VarReference
-    | AGENTID                        # AgentIdExpr
+    : expression op=OR expression           # OrExpr
+    | expression op=AND expression          # AndExpr
+    | expression op=XOR expression          # XorExpr
+    | expression op=EQ expression           # EqExpr
+    | expression op=NEQ expression          # NeqExpr
+    | expression op=LT expression           # LtExpr
+    | expression op=GT expression           # GtExpr
+    | expression op=LEQ expression          # LeqExpr
+    | expression op=GEQ expression          # GeqExpr
+    | expression op=('+'|'-') expression    # AddSubExpr
+    | expression op=('*'|'/') expression    # MulDivExpr
+    | expression op=MODULO expression       # ModuloExpr
+    | NOT expression                        # NotExpr
+    | '(' expression ')'                    # ParenExpr
+    | MSG '.' ID                            # MessageAccessExpr
+    | SELF '.' ID                           # SelfAccessExpr
+    | BELIEF '.' ID                         # BeliefAccessExpr
+    | expression '[' expression ']'         # IndexExpr
+    | expression '[' ':' expression ']'     # SliceToExpr
+    | expression '[' expression ':' ']'     # SliceFromExpr
+    | expression '[' expression ':' expression ']' # SliceRangeExpr
+    | messageInit                           # MessageInitExpr
+    | msgTypeValue                          # MsgTypeValueExpr
+    | listLiteral                           # ListExpr
+    | mapLiteral                            # MapExpr
+    | literal                               # LiteralExpr
+    | ID                                    # VarReference
+    | AGENTID                               # AgentIdExpr
     ;
 
 listLiteral
@@ -182,24 +308,18 @@ msgTypeValue
 // === End of parser rules
 
 
+
 // LEXER RULES --------------------------------------
 MESSAGE: 'message';
 MSG: 'msg';
 SELF: 'self';
+BELIEF: 'bel';
 MSGTYPE_INFORM:  'inform';
 MSGTYPE_ASK:     'ask';
 MSGTYPE_REQUEST: 'request';
 MSGTYPE_CONFIRM: 'confirm';
 MSGTYPE_DENY:    'deny';
 
-
-INT: [0-9]+;
-FLOAT: [0-9]+ '.' [0-9]+;
-AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
-BOOL: 'true' | 'false';
-STRING: '"' .*? '"';
-// function and variables names 
-ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
 // Symbols
 LPAREN: '(';
@@ -216,6 +336,7 @@ PLUS: '+';
 MINUS: '-';
 STAR: '*';
 SLASH: '/';
+MODULO: '%';
 EQ: '==';
 NEQ: '!=';
 LT: '<';
@@ -226,6 +347,30 @@ NOT: '!';
 AND: '&&';
 OR: '||';
 XOR: '^';
+IF: 'if';
+ELSE: 'else';
+FOR: 'for';
+WHILE: 'while';
+BREAK: 'break';
+PRINT: 'print';
+AGENT: 'agent';
+VOID: 'void';
+KILL: 'kill';
+SEND: 'send';
+SPAWN: 'spawn';
+DO: 'do';
+SLEEP: 'sleep';
+RETURN: 'return';
+
+
+
+INT: '-'? [0-9]+;
+FLOAT: '-'? [0-9]+ '.' [0-9]+;
+AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
+BOOL: 'true' | 'false';
+STRING: '"' .*? '"';
+// function and variables names 
+ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
 // Whitespace and comments
 BLOCK_COMMENT: '/*' .*? '*/' -> skip;

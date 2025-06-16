@@ -6,6 +6,11 @@ class AgentarAgent:
     def __init__(self):
         self.fields = {}
         self.fields_type = {}
+        self.beliefs = {}
+        self.beliefs_type = {}
+        self.sense = []
+        self.goals = {}
+        self.rules = []
         self.receive = {}
         self.actions = {}
         self.initialize = []

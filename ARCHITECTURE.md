@@ -3,7 +3,7 @@
 ├── ARCHITECTURE.md                     
 ├── README.md                           # Opis projektu
 ├── docs                                              
-│   └── spec_agentar.md                 # Dokumentacja języka Agentar
+│   └── spec_agentar.md                 # Documentation of agentar Language
 ├── examples                            # FOLDER with examples of .agar files
 │   ├── __init__.py
 │   ├── hello.agar                      
@@ -13,7 +13,7 @@
 ├── java_tree                           
 │   └── grammar
 ├── requirements.txt
-├── scripts                             # Script to run agentar run ..
+├── scripts                             # Script to run agentar
 │   └── generate_parser.sh
 ├── setup.py
 ├── src
@@ -23,7 +23,9 @@
 │   │   ├── nodes.py                    # AST node classes
 │   │   └── print_ast.py                # Printing AST tree for tests
 │   ├── core
-│   │   ├── agent.py                    # AgenterAgent class (based on AST) 
+│   │   ├── agent.py                    # AgenterAgent class (based on AST)
+│   │   ├── agentid.py                  # AgentId class
+│   │   ├── agentarTypes.py             # Agenter types of variables
 │   │   └── message.py                  # AgentarMessage class (based on AST)
 │   ├── interpreter
 │   │   └── AgentarInterpreter.py       # Parses, builds AST and agent definitions 

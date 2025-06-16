@@ -31,7 +31,10 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitAgentBody(self, ctx:AgentarParser.AgentBodyContext):
-        return [self.visit(child) for child in ctx.children]
+        if ctx.children is None:
+            return []
+        else:
+            return [self.visit(child) for child in ctx.children ]
 
 
     def visitFieldSection(self, ctx:AgentarParser.FieldSectionContext):
@@ -47,6 +50,32 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitDestroySection(self, ctx:AgentarParser.DestroySectionContext):
         stats = [self.visit(stat) for stat in ctx.statement()]
         return ast.DestroySectionNode(statements=stats)
+
+
+    def visitBeliefsSection(self, ctx:AgentarParser.BeliefsSectionContext):
+        decls = [self.visit(decl) for decl in ctx.variableDecl()]
+        return ast.BeliefSectionNode(declarations=decls)
+
+
+    def visitSenseSection(self, ctx:AgentarParser.SenseSectionContext):
+        stats = [self.visit(stat) for stat in ctx.statement()]
+        return ast.SeanseSectionNode(statements=stats)
+
+
+    def visitGoalsSection(self, ctx:AgentarParser.GoalsSectionContext):
+        goals = [self.visit(gole) for gole in ctx.goalBlock()]
+        return ast.GoalSectionNode(goals=goals)
+    
+
+    def visitGoalBlock(self, ctx:AgentarParser.GoalBlockContext):
+        name = ctx.ID().getText()
+        conditions = self.visit(ctx.expression()) if ctx.expression() else []
+        return ast.GoalBlockNode(name=name, condition=conditions)
+
+
+    def visitRulesSection(self, ctx:AgentarParser.RulesSectionContext):
+        rules = [self.visit(rule) for rule in ctx.whenBlock()]
+        return ast.RulesSectionNode(rules=rules)
 
 
     def visitReceiveSection(self, ctx:AgentarParser.ReceiveSectionContext):
@@ -71,10 +100,6 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.ActionNode(name=name, parameters=parameters, return_type=return_type, body=body)
 
 
-    def visitParameterList(self, ctx:AgentarParser.ParameterListContext):
-        pass # TODO: Handle parameter list if needed
-
-
     def visitParameter(self, ctx:AgentarParser.ParameterContext):
         param_type = ctx.type_().getText() if ctx.type_() else None
         name = ctx.ID().getText()
@@ -94,6 +119,27 @@ class AgentarToASTBuilder(AgentarVisitor):
         message = self.visit(ctx.expression(1))
         msg_type = ctx.msgTypeValue().getText() if ctx.msgTypeValue() else None
         return ast.SendNode(to=to, message=message, msg_type=msg_type)
+    
+
+    def visitSendParentStmt(self, ctx:AgentarParser.SendParentStmtContext):
+        to = 'PARENT'  # Sending to parent agent
+        message = self.visit(ctx.expression())
+        msg_type = ctx.msgTypeValue().getText() if ctx.msgTypeValue() else None
+        return ast.SendNode(to=to, message=message, msg_type=msg_type)
+
+
+    def visitSendChildrenStmt(self, ctx:AgentarParser.SendChildrenStmtContext):
+        agent_type = self.visit(ctx.expression(0))           # Sending to all children agents (when param _) or a specific child
+        message = self.visit(ctx.expression(1))
+        msg_type = ctx.msgTypeValue().getText() if ctx.msgTypeValue() else None
+        return ast.SendToChildrenNode(agent_type=agent_type, message=message, msg_type=msg_type)
+
+
+    def visitSendSiblingStmt(self, ctx:AgentarParser.SendSiblingStmtContext):
+        agent_type = self.visit(ctx.expression(0))           # Sending to all siblings agents (when param _) or a specific child
+        message = self.visit(ctx.expression(1))
+        msg_type = ctx.msgTypeValue().getText() if ctx.msgTypeValue() else None
+        return ast.SendToSiblingsNode(agent_type=agent_type, message=message, msg_type=msg_type)
 
 
     def visitSpawnStmt(self, ctx:AgentarParser.SpawnStmtContext):
@@ -110,6 +156,14 @@ class AgentarToASTBuilder(AgentarVisitor):
         else:
             agent_id = self.visit(ctx.expression())
         return ast.KillNode(agent_id=agent_id)
+    
+
+    def visitKillchildrenStmt(self, ctx:AgentarParser.KillchildrenStmtContext):
+        if ctx.expression() is None:
+            agent_type = None
+        else:
+            agent_type = self.visit(ctx.expression())
+        return ast.KillChildrenNode(agent_type=agent_type)
 
 
     def visitSleepStmt(self, ctx:AgentarParser.SleepStmtContext):
@@ -118,7 +172,27 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitReturnStmt(self, ctx:AgentarParser.ReturnStmtContext):
         return ast.ReturnNode(value=self.visit(ctx.expression()) if ctx.expression() else None)
+    
 
+    def visitSenseStmt(self, ctx:AgentarParser.SenseStmtContext):
+        return ast.SenseNode()
+
+
+    def visitGoalCheckStmt(self, ctx:AgentarParser.GoalCheckStmtContext):
+        goal_name = ctx.ID().getText()
+        return ast.GoalCheckNode(goal_name=goal_name)
+    
+
+    def visitGetFromWorldStmt(self, ctx:AgentarParser.GetFromWorldStmtContext):
+        x = self.visit(ctx.expression(0))
+        y = self.visit(ctx.expression(1))
+        return ast.GetFromWorldNode(x=x, y=y)
+
+    def visitSetInWorldStmt(self, ctx:AgentarParser.SetInWorldStmtContext):
+        x = self.visit(ctx.expression(0))
+        y = self.visit(ctx.expression(1))
+        value = self.visit(ctx.expression(2))
+        return ast.SetInWorldNode(x=x, y=y, value=value)
 
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
         message_type = ctx.ID().getText()
@@ -138,6 +212,54 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.PrintNode(values=[self.visit(expr) for expr in ctx.expression()])
 
 
+    def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
+        conditions = self.visit(ctx.expression()) if ctx.expression() else []
+        statements = self.visit(ctx.blockOrStmt()) if ctx.blockOrStmt() else []
+        elseStmt = self.visit(ctx.elseStmt()) if ctx.elseStmt() else None
+        return ast.IfStmtNode(conditions=conditions, statements=statements, elseStmt=elseStmt)
+
+
+    def visitBlockOrStmt(self, ctx:AgentarParser.BlockOrStmtContext):
+        return [self.visit(stat) for stat in ctx.statement()]
+
+
+    def visitElseStmt(self, ctx:AgentarParser.ElseStmtContext):
+        statements = [self.visit(stat) for stat in ctx.statement()]
+        return ast.ElseStmtNode(statements=statements)
+
+
+    def visitForStmt(self, ctx:AgentarParser.ForStmtContext):
+        initialize = self.visit(ctx.variableDecl())
+        condition = self.visit(ctx.expression()) if ctx.expression() else None
+        update = self.visit(ctx.forAssignExpr()) if ctx.forAssignExpr() else None
+        body = self.visit(ctx.forBody()) if ctx.forBody() else []
+        if not initialize or not condition or not update or not body:
+            raise ValueError("For loop requires initialization, condition, update, and body.")
+        return ast.ForLoopNode(initialize=initialize, condition=condition, update=update, body=body)
+        
+
+    def visitForBody(self, ctx:AgentarParser.ForBodyContext):
+        return [self.visit(stat) for stat in ctx.statement()]
+
+
+    def visitForAssignExpr(self, ctx:AgentarParser.ForAssignExprContext):
+        target = ctx.ID().getText()
+        value = self.visit(ctx.expression())
+        return ast.AssignmentNode(target=target, value=value)
+
+
+    def visitWhileStmt(self, ctx:AgentarParser.WhileStmtContext):
+        condition = self.visit(ctx.expression()) if ctx.expression() else None
+        body = [self.visit(stat) for stat in ctx.statement()]
+        if not condition or not body:
+            raise ValueError("While loop requires a condition and a body.")
+        return ast.WhileLoopNode(condition=condition, body=body)
+
+
+    def visitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
+        return ast.BreakNode()
+
+
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
         var_type = ctx.type_().getText()
         name = ctx.ID().getText()
@@ -152,10 +274,17 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitIndexAssign(self, ctx: AgentarParser.IndexAssignContext):
-        base = ctx.ID().getText()    # np. x
+        target = ctx.ID().getText()    # np. x
         index = self.visit(ctx.expression(0))   # np. 3
         value = self.visit(ctx.expression(1))   # np. 10
-        return ast.AssignmentNode(target=base, index=index, value=value)
+        return ast.AssignmentNode(target=target, index=index, value=value)
+
+
+    def visitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
+        target = ctx.ID().getText()
+        value = self.visit(ctx.expression())
+        index = "add"
+        return ast.AssignmentNode(target=target, index=index, value=value)
 
 
     def visitSpawnAssign(self, ctx: AgentarParser.SpawnAssignContext):
@@ -170,6 +299,12 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.AssignmentNode(target=target, value=value)
 
 
+    def visitGoalCheckAssign(self, ctx:AgentarParser.GoalCheckAssignContext):
+        target = ctx.ID().getText()
+        value = self.visit(ctx.goalCheckStmt())
+        return ast.AssignmentNode(target=target, value=value)
+
+
     def visitDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
         target = self.visit(ctx.expression())
         value = self.visit(ctx.doStmt())
@@ -179,6 +314,32 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
         target = self.visit(ctx.expression(0))
         value = self.visit(ctx.expression(1))
+        return ast.AssignmentNode(target=target, value=value)
+
+
+    def visitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
+        target = self.visit(ctx.expression(0))
+        index = self.visit(ctx.expression(1))
+        value = self.visit(ctx.expression(2))
+        return ast.AssignmentNode(target=target, index=index, value=value)
+
+
+    def visitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
+        target = self.visit(ctx.expression(0))
+        index = "add"
+        value = self.visit(ctx.expression(1))
+        return ast.AssignmentNode(target=target, index=index, value=value)
+
+
+    def visitSelfGoalCheckAssign(self, ctx:AgentarParser.SelfGoalCheckAssignContext):
+        target = self.visit(ctx.expression())
+        value = self.visit(ctx.goalCheckStmt())
+        return ast.AssignmentNode(target=target, value=value)
+    
+
+    def visitGetFromWorldAssign(self, ctx:AgentarParser.GetFromWorldAssignContext):
+        target = self.visit(ctx.expression())
+        value = self.visit(ctx.getFromWorldStmt())
         return ast.AssignmentNode(target=target, value=value)
 
 
@@ -261,11 +422,46 @@ class AgentarToASTBuilder(AgentarVisitor):
         base = self.visit(ctx.expression(0))   # np. x
         index = self.visit(ctx.expression(1))  # np. 3
         return ast.IndexAccessNode(base=base, index=index)
+    
+
+    def visitSliceToExpr(self, ctx:AgentarParser.SliceToExprContext):
+        base = self.visit(ctx.expression(0))
+        start = None # means slice from the beginning
+        end = self.visit(ctx.expression(1))
+        return ast.SliceAccessNode(base=base, start=start, end=end)
+
+
+    def visitSliceFromExpr(self, ctx:AgentarParser.SliceFromExprContext):
+        base = self.visit(ctx.expression(0))
+        start = self.visit(ctx.expression(1))
+        end = None # means no end specified, slice to the end
+        return ast.SliceAccessNode(base=base, start=start, end=end)
+
+
+    def visitSliceRangeExpr(self, ctx:AgentarParser.SliceRangeExprContext):
+        base = self.visit(ctx.expression(0))
+        start = self.visit(ctx.expression(1))
+        end = self.visit(ctx.expression(2))
+        return ast.SliceAccessNode(base=base, start=start, end=end)
 
 
     def visitAgentIdExpr(self, ctx:AgentarParser.AgentIdExprContext):
         text = ctx.getText()
         return ast.AgentIdNode(path=text)
+    
+
+    def visitModuloExpr(self, ctx:AgentarParser.ModuloExprContext): 
+        left = self.visit(ctx.expression(0))
+        right = self.visit(ctx.expression(1))
+        return ast.BinaryOpNode(op='%', left=left, right=right)
+
+
+    def visitBeliefAccessExpr(self, ctx:AgentarParser.BeliefAccessExprContext):
+        if type(ctx.ID()) is list:
+            path = ["bel"] + [id_.getText() for id_ in ctx.ID()]
+        else: 
+            path = ['bel', ctx.ID().getText()]
+        return ast.BelAccessNode(path=path)
 
 
     def visitVarReference(self, ctx:AgentarParser.VarReferenceContext):

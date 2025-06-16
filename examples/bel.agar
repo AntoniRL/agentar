@@ -1,58 +1,57 @@
 message clean_room {
     string task;
+    int value;
 }
 
 message task_done {
-    string status;
 }
 
 agent cleaner {
-    beliefs {
-        dirty;
+    initialize{
+        sleep(1);
+        msg_ = task_done();
+        //send2parent(msg_, inform);
+        send2siblings(cleaner, msg_, inform);
     }
-    goals {
-        clean_room = true;
-    }
-    rules {
-        when (
-            belief("dirty") && 
-            goal("clean_room")
-        ) then {
-            clean();
-        }
-    }
-    action clean(): void {
-        print("Cleaning room...");
-        beliefs("dirty") = false;
-        drop_goal("clean_room");
-        done = task_done(status = "done");
-        send_to_parent(done, msg_type=confirm);
-    }
-    receive clean_room {
-        when (
-            msg.type == "request" &&
-            msg.content.task == "clean"
-        ) then {
-            beliefs("dirty") = true;
-            adopt_goal("clean_room");
-        }
+}
+agent tester {
+    initialize{
+        //msg_ = task_done();
+        //send2parent(msg_, inform);
     }
 }
 
 agent mother {
-    initialize {
-        agentid id_;
-        id_ = spawn(cleaner);
-        msg = clean_room(task = "clean");
-        send(id_, msg, msg_type=request);
+    initialize{        
+        sense();
+        bool check;
+        check = goal_check(g1);
+        print("CHECK", check);
+        agentid cleaner_id;
+        cleaner_id = spawn(cleaner);
+        cleaner_id = spawn(cleaner);
+        cleaner_id = spawn(tester);
+        print(self.children);
+        //kill_children();
+        msg_ = task_done();
+        send2children(tester, msg_, inform);
     }
-    receive task_done {
-        when (
-            msg.type == confirm &&
-            msg.content.status == "done"
-        ) then {
-            print("Cleaner completed task.");
-            kill();
+    beliefs {
+        int x = 0;
+        int y = 7;
+    }
+    sense {
+    }
+    goals {
+        g1: 5==6;
+        g2: (3<4) || (5==5);
+    }
+    rules {
+        when ( bel.x == 1) then {
+            print("Hello from mother agent!");
+        }
+        when () then {
+            //print("I am mother agent, I can do something!");
         }
     }
 }
