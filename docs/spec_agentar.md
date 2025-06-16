@@ -135,6 +135,7 @@ Zastrzeżone nazwy: `self.agent`, `self.isMother`, `self.next_child`, `self.inbo
 | `when`         | Warunek wyzwolenia | `rules`, `receive` |
 | `then`         | Część wykonawcza reguły | `rules`, `receive` |
 | `send(...)`    | Wysyłanie wiadomości | dowolnie |
+| `do(...)`      | Wywoałanie akcji (zwraca wartość dla innych typów akcji niż `void`) | dowolnie |
 | ???`adopt_goal(...)` | Przyjęcie nowego celu | `action`, `receive` |
 | ???`drop_goal(...)`  | Porzucenie celu | `action`, `receive` |
 | ???`adopt_belief`    | Pezyjęcie nowe przekonanie                         |
@@ -149,6 +150,8 @@ Zastrzeżone nazwy: `self.agent`, `self.isMother`, `self.next_child`, `self.inbo
 | `spawn(agent_name, [fields_of_agent])`   | Tworzenie dzieci | `initialize`, `action` |
 | `sleep(ms)`    | Pauza w wykonaniu | `action`, `receive` |
 | `sense()`      | Możaliwość wywołania z dowolnego miejsca w ciele agenta. Wykonuje polecenia z `sense{}` |
+| `get_from_world()`      | Funkcja zwraca wartość pola z szachownicy świata (0 albo 1)|
+| `set_in_world()`      | Ustawiamy wartość na szachownicu world |
 
 ### Kontrola przepływów
 
@@ -156,9 +159,9 @@ Zastrzeżone nazwy: `self.agent`, `self.isMother`, `self.next_child`, `self.inbo
 |----------------|------|----------|
 | `return`       | Zwracanie wartości | `action` |
 | `if`, `else`   | Warunkowe wykonanie | dowolnie |
-| `for ... in ...` | Pętla iteracyjna | dowolnie |
-| `range()`      | range(6) = (0, 1, 2, 3, 4, 5)| dowolnie|
+| `for` | Pętla iteracyjna | dowolnie |
 | `while()`      | Pętla warunkowa | dowolnie |
+| `break`      | Przerywa pętlę | dowolnie |
 
 ### Typy danych
 
@@ -189,29 +192,31 @@ Dodanie na koniec:
 Aktualizacja elementu:
 `myList[1] = 10;  // teraz myList = [1, 10, 3, 4]`
 
-Deklaracja mapy:
+Wybrór kawałka listy:
+`myList[2:-1]`
+
+??? Deklaracja mapy:
 ```
-dict user = {
+??? dict user = {
     name = "Alice",
     age = 30
 };
 ```
 
-Dostęp do klucza:
+??? Dostęp do klucza:
 `let username = user["name"];`
 
-Modyfikacja wartości:
+??? Modyfikacja wartości:
 `user["age"] = 31;`
 
-Dodanie nowej pary:
+??? Dodanie nowej pary:
 `user["city"] = "Warsaw";`
 
 Uwagi projektowe:
 - Listy są indeksowane od 0.
 - Dodanie elementu [] = x to syntactic sugar dla append(x).
-- Mapy mają klucze tekstowe. Można je dynamicznie dodawać lub modyfikować.
 
----
+
 
 # Komunikacja
 - Każdy agent działa niesekwencyjnie i ma własną kolejkę wiadomości.
@@ -241,15 +246,14 @@ msg {
     sender: ID        // nadawca wiadomości
     receiver: ID      // adresat wiadomości
     type: string      // systemowy typ wiadomości (inform, request ...)
-    time: int         // czas wysłania wiadomości
-    content: object   // treść wiadomości – instancja klasy zdefiniowanej w message { ... }
+    ??? time: int         // czas wysłania wiadomości
+    <Pola wiadomości>   // treść wiadomości – instancja klasy zdefiniowanej w message { ... }
 }
 ```
 
-`msg.content` to instancja klasy wiadomości, wygenerowanej na podstawie definicji `message <msg_name> {...}`.
 Dostęp do pól odbywa się przez kropkę, np. `msg.task`
 
-W ciele `receive`, agent ma dostęp do struktury `msg`, która zawiera metadane wiadomości oraz jej treść (`content`)
+W ciele `receive`, agent ma dostęp do struktury `msg`, która zawiera metadane wiadomości oraz jej treść
 
 Przykład:
 ```
