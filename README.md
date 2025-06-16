@@ -37,17 +37,12 @@ Python
 agentar run examples/hello.agar
 ```
 
-Java (testowanie, łatwiejsza analiza drzewa parsowego)
-
-- generuj parser
+- Java generuj parser (testowanie, łatwiejsza analiza drzewa parsowego) 
+Wymaga dodatkowej instalacji:
+    - java
+    - plik antlr-4.13.1-complete.jar
 ```bash
 antlr4 -Dlanguage=Java -o java_tree grammar/Agentar.g4
 find java_tree/grammar -name "*.java" | xargs javac -cp ".:../antlr-4.13.1-complete.jar"
 java -cp ".:../antlr-4.13.1-complete.jar:java_tree/grammar" org.antlr.v4.gui.TestRig Agentar program -gui examples/test.agar
-```
-
-4. Budowanie drzewa AST testowo:
-
-```bash
-python ./src/ast_tree/print_ast.py examples/test.agar 
 ```
