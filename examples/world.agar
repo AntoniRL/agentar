@@ -24,7 +24,7 @@ agent line_founder{
     }
     goals{
         g1: bel.my_field == (self.number_of_fields - 1); //indexing from 0
-        //g2: antek==zakochany_w_marysi;
+        g2: 2==2;
     } merge (g1 && g2)
     rules{
         when () then{

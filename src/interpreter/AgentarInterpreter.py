@@ -165,7 +165,8 @@ class AgentarInterpreter:
 
     def GoalDeclare(self, node):
         for goal in node.goals:
-            self.agent._goals[goal.name] = goal.condition
+            self.agent._sub_goals[goal.name] = goal.condition
+        self.agent._merge_goals_condition = node.merge_condition if node.merge_condition else None
 
 
     def RulesDeclare(self, node):

@@ -51,7 +51,7 @@ class SeanseSectionNode(ASTNode):
 @dataclass
 class GoalSectionNode(ASTNode):
     goals: List[ASTNode]
-    merge: ASTNode
+    merge_condition: ASTNode
 
 
 @dataclass

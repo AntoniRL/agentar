@@ -64,8 +64,8 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitGoalsSection(self, ctx:AgentarParser.GoalsSectionContext):
         goals = [self.visit(gole) for gole in ctx.goalBlock()]
-        merge = self.visit(ctx.expression()) if ctx.expression() else None
-        return ast.GoalSectionNode(goals=goals, merge=merge)
+        merge_condition = self.visit(ctx.expression()) if ctx.expression() else None
+        return ast.GoalSectionNode(goals=goals, merge_condition=merge_condition)
     
 
     def visitGoalBlock(self, ctx:AgentarParser.GoalBlockContext):

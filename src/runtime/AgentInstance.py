@@ -102,17 +102,25 @@ class AgentInstance:
 
 
     def check_global_goal(self):
-        if self._goals == {}:
+        if self._sub_goals == {}:
             self._isGoalAchieved = False
             return
         else:
             sub_goals = {}
-            for goal, conditions in self._goals.items():
+            sub_goals_type = {}
+            for goal, conditions in self._sub_goals.items():
                 check_the_condition = self.eval_expr(conditions)  # Evaluate the goal conditions
                 sub_goals[goal] = check_the_condition
-            if all(sub_goals.values()):
-                print(f"{self._id.path}:: All goals achieved: {sub_goals}")
-                self._isGoalAchieved = True
+                sub_goals_type[goal] = type(check_the_condition)
+            if self._merge_goals_condition is None:
+                if all(sub_goals.values()):
+                    self._isGoalAchieved = True
+            else:
+                merge_condition = self.eval_expr(self._merge_goals_condition, sub_goals, sub_goals_type)
+                if merge_condition:
+                    self._isGoalAchieved = True
+                else:
+                    self._isGoalAchieved = False
         if self._isGoalAchieved:
             print(f"{self._id.path}:: Goal  achieved!")  
 
@@ -169,8 +177,8 @@ class AgentInstance:
 
     def check_goal(self, stmt, local_var, local_var_type):
         goal_to_check = stmt.goal_name
-        if goal_to_check in self._goals:
-            conditions = self._goals[goal_to_check]
+        if goal_to_check in self._sub_goals:
+            conditions = self._sub_goals[goal_to_check]
             check_the_condition = self.eval_expr(conditions, local_var, local_var_type)
             if check_the_condition:
                 return True

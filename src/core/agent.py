@@ -9,7 +9,8 @@ class AgentarAgent:
         self._beliefs = {}
         self._beliefs_type = {}
         self._sense = []
-        self._goals = {}
+        self._sub_goals = {}
+        self._merge_goals_condition = None
         self._rules = []
         self._receive = {}
         self._actions = {}
