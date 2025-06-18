@@ -1,0 +1,43 @@
+message response{
+    pointer list my_world;
+}
+
+
+agent menager_by_lines {
+    fields{
+        int my_world;
+    }
+    initialize{
+    }
+    beliefs{
+    }
+    goals{
+    }
+    rules{
+        when () then (
+            self.my_world[0][0] = 5;
+        )
+    }
+    receive response {
+        when () then {
+        }
+    }
+}
+
+
+agent mother {
+    fields{
+        list WORLD;
+    }
+    initialize{
+        self.WORLD = [[0,0,0],[0,0,0],[0,0,0]];
+        //print(self.WORLD);
+        agentid agentid_;
+        agentid_ = spawn(menager_by_lines, [&self.WORLD]);
+    }
+    rules{
+        when () then {
+            print(self.WORLD);
+        }
+    }
+}

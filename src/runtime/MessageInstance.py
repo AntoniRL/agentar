@@ -12,7 +12,7 @@ class MessageInstance():
         self._name = name                    # np. 'clean_room'
         self._sender: AgentId = None         # AgentId('.1')
         self._receiver: AgentId = None       # AgentId('.1.2')
-        self._msgType = MessageType.INFORM      # np. MessageType.REQUEST
+        self._type = MessageType.INFORM      # np. MessageType.REQUEST
         self._content = deepcopy(content) or {}        # np. {'task': 3, 'value': 1.2}
         self._content_type = {}              # np. {'task': int, 'value': float}
         self._send_time = 0                  # czas systemowy

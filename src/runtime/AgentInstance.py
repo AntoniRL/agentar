@@ -348,7 +348,7 @@ class AgentInstance:
         # SendNode handles sending messages
         elif isinstance(stmt, SendNode):
             msg = self.eval_expr(stmt.message, local_var, local_var_type)
-            msg._msgType = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
+            msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
             msg._sender = self._id
             if stmt.to == "PARENT":
                 msg._receiver = self._parent
@@ -360,7 +360,7 @@ class AgentInstance:
 
         # SendToChildrenNode handles sending messages to children
         elif isinstance(stmt, SendToChildrenNode):
-            msg = self.eval_expr(stmt.message, local_var, local_var_type)
+            msg = deepcopy(self.eval_expr(stmt.message, local_var, local_var_type))
             msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
             msg.sender = self._id
             # TODO: msg.send_time = ...
@@ -370,13 +370,13 @@ class AgentInstance:
             msg_to_send = []
             with self._runtime._lock:
                 for child in self._children:
-                    if agent_type != "_" and agent_type == self._runtime.agents[child].name:
+                    if agent_type != "_" and agent_type == self._runtime.agents[child]._name:
                         new_msg = deepcopy(msg)
-                        new_msg.receiver = AgentId(child)
+                        new_msg._receiver = AgentId(child)
                         msg_to_send.append(new_msg)
                     elif agent_type == "_":
                         new_msg = deepcopy(msg)
-                        new_msg.receiver = AgentId(child)
+                        new_msg._receiver = AgentId(child)
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
