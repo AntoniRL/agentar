@@ -399,8 +399,18 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#LenExpr.
+    def visitLenExpr(self, ctx:AgentarParser.LenExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#MessageAccessExpr.
     def visitMessageAccessExpr(self, ctx:AgentarParser.MessageAccessExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#TypeExpr.
+    def visitTypeExpr(self, ctx:AgentarParser.TypeExprContext):
         return self.visitChildren(ctx)
 
 

@@ -45,7 +45,7 @@ agent mother {
     goals {
         g1: 5==6;
         g2: (3<4) || (5==5);
-    }
+    } merge (g1 || g2)
     rules {
         when ( bel.x == 1) then {
             print("Hello from mother agent!");

@@ -4,26 +4,26 @@
 
 class AgentarAgent:
     def __init__(self):
-        self.fields = {}
-        self.fields_type = {}
-        self.beliefs = {}
-        self.beliefs_type = {}
-        self.sense = []
-        self.goals = {}
-        self.rules = []
-        self.receive = {}
-        self.actions = {}
-        self.initialize = []
-        self.destroy = []
+        self._fields = {}
+        self._fields_type = {}
+        self._beliefs = {}
+        self._beliefs_type = {}
+        self._sense = []
+        self._goals = {}
+        self._rules = []
+        self._receive = {}
+        self._actions = {}
+        self._initialize = []
+        self._destroy = []
         
-        self.isMother = False
-        self.name = None
+        self._isMother = False
+        self._name = None
 
     def __repr__(self):
         return (
-            f"<AgentarAgent name='{self.name}'\n"
-            f"  Fields: {list(self.fields.keys())}\n"
-            f"  Actions: {list(self.actions.keys())}\n"
-            f"  Receive handlers: {list(self.receive.keys())}\n"
+            f"<AgentarAgent name='{self._name}'\n"
+            f"  Fields: {list(self._fields.keys())}\n"
+            f"  Actions: {list(self._actions.keys())}\n"
+            f"  Receive handlers: {list(self._receive.keys())}\n"
             f"</AgentarAgent>"
         )

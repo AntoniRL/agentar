@@ -58,12 +58,12 @@ class AgentarInterpreter:
             if isinstance(decl, MotherNode):
                 self.declareAgent(decl)
                 self.mother_decl = self.agent
-                self.mother_decl.isMother = True
-                self.mother_decl.name = "MOTHER"
+                self.mother_decl._isMother = True
+                self.mother_decl._name = "MOTHER"
                 self.agent = AgentarAgent()  # Reset for next agent
             elif isinstance(decl, AgentNode):
                 self.declareAgent(decl)
-                self.agent.name = decl.name
+                self.agent._name = decl.name
                 self.agents_decl[decl.name] = self.agent
                 self.agent = AgentarAgent()  # Reset for next agent
             elif isinstance(decl, MessageDeclNode):
@@ -114,23 +114,23 @@ class AgentarInterpreter:
                     default_value = []
                 elif type_name is dict:
                     default_value = {}                
-                self.agent.fields[field.name] = default_value
-                self.agent.fields_type[field.name] = type_name  # np. int, str, bool
+                self.agent._fields[field.name] = default_value
+                self.agent._fields_type[field.name] = type_name  # np. int, str, bool
             elif isinstance(field.value, LiteralNode or SpawnNode):
-                self.agent.fields[field.name] = field.value.value  # np. 42, "hello", True
-                self.agent.fields_type[field.name] = AGENTAR_TYPE_MAP.get(field.var_type)  # np. int, str, bool
+                self.agent._fields[field.name] = field.value.value  # np. 42, "hello", True
+                self.agent._fields_type[field.name] = AGENTAR_TYPE_MAP.get(field.var_type)  # np. int, str, bool
             else:
                 raise ValueError(f"Unsupported field value type: {type(field.value)}")
 
 
     def InitDeclare(self, node):
         for statement in node.statements:
-            self.agent.initialize.append(statement)
+            self.agent._initialize.append(statement)
 
 
     def DestroyDeclare(self, node):
         for statement in node.statements:
-            self.agent.destroy.append(statement)
+            self.agent._destroy.append(statement)
 
 
     def BeliefDeclare(self, node):
@@ -149,41 +149,41 @@ class AgentarInterpreter:
                     default_value = []
                 elif type_name is dict:
                     default_value = {}                
-                self.agent.beliefs[belief.name] = default_value
-                self.agent.beliefs_type[belief.name] = type_name  # np. int, str, bool
+                self.agent._beliefs[belief.name] = default_value
+                self.agent._beliefs_type[belief.name] = type_name  # np. int, str, bool
             elif isinstance(belief.value, LiteralNode):
-                self.agent.beliefs[belief.name] = belief.value.value  # np. 42, "hello", True
-                self.agent.beliefs_type[belief.name] = AGENTAR_TYPE_MAP.get(belief.var_type)  # np. int, str, bool
+                self.agent._beliefs[belief.name] = belief.value.value  # np. 42, "hello", True
+                self.agent._beliefs_type[belief.name] = AGENTAR_TYPE_MAP.get(belief.var_type)  # np. int, str, bool
             else:
                 raise ValueError(f"Unsupported field value type: {type(belief.value)}")
 
 
     def SenseDeclare(self, node):
         for statement in node.statements:
-            self.agent.sense.append(statement)
+            self.agent._sense.append(statement)
 
 
     def GoalDeclare(self, node):
         for goal in node.goals:
-            self.agent.goals[goal.name] = goal.condition
+            self.agent._goals[goal.name] = goal.condition
 
 
     def RulesDeclare(self, node):
         for rule in node.rules:
-            self.agent.rules.append(rule)
+            self.agent._rules.append(rule)
 
 
     def ReceiveDeclare(self, node):
         list_of_blocks = []
         for blok in node.blocks:
              list_of_blocks.append(blok)
-        self.agent.receive[node.name] = list_of_blocks        
+        self.agent._receive[node.name] = list_of_blocks        
         
     def ActionDeclare(self, node):
-        self.agent.actions[node.name] = node
+        self.agent._actions[node.name] = node
 
     
     def declareMessage(self, node):
-        self.message.name = node.name
-        self.message.content = {field.name: field.value for field in node.fields}
-        self.message.content_type = {field.name: AGENTAR_TYPE_MAP.get(field.var_type) for field in node.fields}
+        self.message._name = node.name
+        self.message._content = {field.name: field.value for field in node.fields}
+        self.message._content_type = {field.name: AGENTAR_TYPE_MAP.get(field.var_type) for field in node.fields}

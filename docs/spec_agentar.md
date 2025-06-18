@@ -27,6 +27,7 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 3. `destroy` — sprzątanie przed śmiercią
 
 Agent umiera, gdy:
+- wykona cel
 - wywoła `kill()`
 - jego rodzic go zlikwiduje
 
@@ -163,6 +164,22 @@ Zastrzeżone nazwy: `self.agent`, `self.isMother`, `self.next_child`, `self.inbo
 | `while()`      | Pętla warunkowa | dowolnie |
 | `break`      | Przerywa pętlę | dowolnie |
 
+Przykład:
+```agentar
+for (int i; i<10; i=i+1){
+    print(i);
+}
+while (self.counter<5){
+    self.counter = self.counter + 1;
+}
+if msg.text=="text"{
+    print("tak");
+} else { 
+    print("nie");
+}
+if (msg.text=="text") print("tak");
+```
+
 ### Typy danych
 
 | Typ      | Opis                              |
@@ -259,7 +276,7 @@ Przykład:
 ```
 receive ping {
     when (
-        msg.type == "request" &&
+        msg.type == request &&
         msg.sender == "mother" &&
         msg.text == "hello"
     ) then {

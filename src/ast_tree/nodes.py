@@ -51,6 +51,7 @@ class SeanseSectionNode(ASTNode):
 @dataclass
 class GoalSectionNode(ASTNode):
     goals: List[ASTNode]
+    merge: ASTNode
 
 
 @dataclass
@@ -301,3 +302,13 @@ class SetInWorldNode(ASTNode):
     x: ASTNode
     y: ASTNode
     value: ASTNode
+
+
+@dataclass
+class LenNode(ASTNode):
+    base: ASTNode
+
+
+@dataclass
+class TypeNode(ASTNode):
+    base: ASTNode

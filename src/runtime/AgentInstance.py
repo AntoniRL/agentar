@@ -19,113 +19,115 @@ class AgentInstance:
     def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
         for key, value in agent_ast.__dict__.items():  # Copy all attributes from the agent_AST to the instance
             setattr(self, key, value)
-        self.agent = agent_ast
-        self.isMother = self.agent.isMother
-        self.id = id        
-        self.parent = id.parent() if not self.isMother else None
-        self.children = []                  # List of agent children [AgentId]
-        self.next_child = 1
-        self.now = 1                        # time step counter (Agent perception time)
-        self.inbox = Queue()                # Queue for incoming messages
-        self.isGoalAchieved = False         # Flag to indicate if the agent's goal is achieved        
+        self._agent = agent_ast
+        self._isMother = self._agent._isMother
+        self._id = id        
+        self._parent = id.parent() if not self._isMother else None
+        self._children = []                  # List of agent children [AgentId]
+        self._next_child = 1
+        self._now = 1                        # time step counter (Agent perception time)
+        self._inbox = Queue()                # Queue for incoming messages
+        self._isGoalAchieved = False         # Flag to indicate if the agent's goal is achieved        
 
-        self.runtime = system               # Reference to the AgentarSystem instance
+        self._runtime = system               # Reference to the AgentarSystem instance
 
         # Initialize agent fields from the agent declaration
         if fields is not None:
-            for key, value, val_type in zip(self.agent.fields.keys(), fields, self.agent.fields_type.values()):
+            for key, value, val_type in zip(self._agent._fields.keys(), fields, self._agent._fields_type.values()):
                 if type(value) == val_type:
-                    self.fields[key] = value
-                    self.fields_type[key] = val_type
+                    self._fields[key] = value
+                    self._fields_type[key] = val_type
 
-        self.fields["id"] = self.id   # Set the agent's id in its fields (Make it issier to access)
-        self.fields_type["id"] = AgentId
+        self._fields["id"] = self._id   # Set the agent's id in its fields (Make it issier to access)
+        self._fields_type["id"] = AgentId
 
-        self.return_flag = False  # Flag to indicate if a return statement was executed
-        self.break_flag = False   # Flag to indicate if a break statement was executed
+        self._return_flag = False  # Flag to indicate if a return statement was executed
+        self._break_flag = False   # Flag to indicate if a break statement was executed
+
 
     def __repr__(self):
         return (
-            f"<AgentarAgent name='{self.agent.name}', id='{self.id.path}'\n"
+            f"<AgentarAgent name='{self._name}', id='{self._id.path}'\n"
             f"</AgentarAgent>"
         )
 
 
     def initializeAgent(self):
-        logging.info(f"{self.id}:: Initializing agent")
+        logging.info(f"{self._id}:: Initializing agent")
         local_var = {}
         local_var_type = {}
-        for stmt in self.agent.initialize:          # Execute the agent's initialization statements
+        for stmt in self._agent._initialize:          # Execute the agent's initialization statements
             self.execute_stmt(stmt, local_var, local_var_type)
 
 
     def step(self):
         self.sense_world()                          # Sense the world and update beliefs
-        if not self.inbox.empty():
-            self.process_messages(self.inbox.get()) # Process incoming messages (first from the inbox)
-        self.check_goals()                          # Check if the agent's goals are achieved
-        if not self.isGoalAchieved:                 # If the goal is not achieved, follow rules
-            self.follow_rules()
+        if not self._inbox.empty():
+            self.process_messages(self._inbox.get()) # Process incoming messages (first from the inbox)
+        self.check_global_goal()                    # Check if the agent's goals are achieved
+        self.follow_rules()
 
 
     def destroyAgent(self):
         local_var = {}
         local_var_type = {}
-        for stmt in self.agent.destroy:             # Execute the agent's destruction statements
+        for stmt in self._agent._destroy:             # Execute the agent's destruction statements
             self.execute_stmt(stmt, local_var, local_var_type)
 
-        with self.runtime._lock:
-            if not self.isMother:
-                del self.runtime.agents[self.id.path]
-                del self.runtime.threads[self.id.path]    
+        with self._runtime._lock:
+            if not self._isMother:
+                del self._runtime.agents[self._id.path]
+                del self._runtime.threads[self._id.path]    
 
     
     def sense_world(self):
-        if self.sense != []:        # If the agent has any sense statements, execute them
+        if self._sense != []:        # If the agent has any sense statements, execute them
             local_var = {}
             local_var_type = {}
-            for stmt in self.sense:
+            for stmt in self._sense:
                 self.execute_stmt(stmt, local_var, local_var_type)
 
 
     def process_messages(self, message):
-        logging.info(f"{self.id.path}:: Received message from {message.sender.path}")
+        logging.info(f"{self._id.path}:: Received message from {message._sender.path}")
         # comper the name of the message with the agent's receive method
-        if message.name in self.agent.receive:
+        if message._name in self._receive:
             # Get the corresponding method from the agent's receive method
-            receive_method = self.agent.receive[message.name]
+            receive_method = self._receive[message._name]
 
             for when_met in receive_method:          # Iterate over all when blocks in the receive method
                 self.when_block(when_met, message)
         else:
-            logging.warning(f"{self.id.path}:: No receive method for message '{message.name}' found in agent {self.agent.name}. Ignoring message.")
+            logging.warning(f"{self._id.path}:: No receive method for message '{message._name}' found in agent {self._name}. Ignoring message.")
 
 
-    def check_goals(self):
-        if self.agent.goals == {}:
-            self.isGoalAchieved = True
+    def check_global_goal(self):
+        if self._goals == {}:
+            self._isGoalAchieved = False
             return
         else:
-            for goal, conditions in self.agent.goals.items():
+            sub_goals = {}
+            for goal, conditions in self._goals.items():
                 check_the_condition = self.eval_expr(conditions)  # Evaluate the goal conditions
-                if not check_the_condition:  # If the goal conditions are met
-                    self.isGoalAchieved = False
-                    break
-                else:
-                    self.isGoalAchieved = True
-                    
+                sub_goals[goal] = check_the_condition
+            if all(sub_goals.values()):
+                print(f"{self._id.path}:: All goals achieved: {sub_goals}")
+                self._isGoalAchieved = True
+        if self._isGoalAchieved:
+            print(f"{self._id.path}:: Goal  achieved!")  
+
 
     def follow_rules(self):
-        for rule in self.rules:
+        for rule in self._rules:
             if isinstance(rule, WhenBlockNode):
-                self.when_block(rule, None)  # Execute the when block if it exists
+                self.when_block(rule, message=None)  # Execute the when block if it exists
 
 
     def when_block(self, when_node, message):
             local_var = {}
             local_var_type = {}
             if message is not None:
-                for stmt in message.content.items():
+                for stmt in message._content.items():
                     # Initialize local variables from message content
                     local_var[stmt[0]] = stmt[1]
                     local_var_type[stmt[0]] = type(stmt[1])
@@ -141,7 +143,7 @@ class AgentInstance:
 
 
     def execute_action(self, action_node, variables=None):
-        logging.info(f"{self.id.path}:: Executing action '{action_node.name}'...")
+        logging.info(f"{self._id.path}:: Executing action '{action_node.name}'...")
         if variables != None:    
             local_var = {}
             local_var_type = {}
@@ -158,8 +160,8 @@ class AgentInstance:
                 self.execute_stmt(stmt, local_var, local_var_type)
         if return_type != "void":
             for stmt in action_node.body:
-                if self.return_flag:
-                    self.return_flag = False
+                if self._return_flag:
+                    self._return_flag = False
                     break
                 to_return =  self.execute_stmt(stmt, local_var, local_var_type)
             return to_return
@@ -167,8 +169,8 @@ class AgentInstance:
 
     def check_goal(self, stmt, local_var, local_var_type):
         goal_to_check = stmt.goal_name
-        if goal_to_check in self.agent.goals:
-            conditions = self.goals[goal_to_check]
+        if goal_to_check in self._goals:
+            conditions = self._goals[goal_to_check]
             check_the_condition = self.eval_expr(conditions, local_var, local_var_type)
             if check_the_condition:
                 return True
@@ -183,24 +185,26 @@ class AgentInstance:
         y = self.eval_expr(stmt.y, local_var, local_var_type)
         if not isinstance(x, int) or not isinstance(y, int):
             raise TypeError(f"Coordinates must be integers, got {type(x)} and {type(y)}")
-        isRewordThere = self.runtime.mother_instance.fields["WORLD"][x][y]
-        if isRewordThere == 1:
-            return True
-        elif isRewordThere == 0:
-            return False
-        else:
-            return None  # If the value is not 0 or 1, return None
+        with self._runtime._lock:
+            isRewordThere = self._runtime.mother_instance._fields["WORLD"][x][y]
+            if isRewordThere == 1:
+                return True
+            elif isRewordThere == 0:
+                return False
+            else:
+                return None  # If the value is not 0 or 1, return None
         
 
     def set_in_world(self, x, y, value):
         if not isinstance(x, int) or not isinstance(y, int):
             raise TypeError(f"Coordinates must be integers, got {type(x)} and {type(y)}")
-        if x not in range(0, len(self.runtime.mother_instance.fields["WORLD"])) or y not in range(0, len(self.runtime.mother_instance.fields["WORLD"][0])):
-            raise IndexError(f"Coordinates ({x}, {y}) out of bounds for WORLD size {len(self.runtime.mother_instance.fields['WORLD'])}, {len(self.runtime.mother_instance.fields['WORLD'][0])}.")
+        if x not in range(0, len(self._runtime.mother_instance.fields["WORLD"])) or y not in range(0, len(self._runtime.mother_instance.fields["WORLD"][0])):
+            raise IndexError(f"Coordinates ({x}, {y}) out of bounds for WORLD size {len(self._runtime.mother_instance.fields['WORLD'])}, {len(self._runtime.mother_instance.fields['WORLD'][0])}.")
         if value not in [0, 1]:
             raise ValueError(f"Value must be 0 or 1, got {value}")
-        self.runtime.mother_instance.fields["WORLD"][x][y] = value
-        logging.info(f"{self.id.path}:: Set WORLD[{x}][{y}] to {value}")
+        with self._runtime._lock:
+            self._runtime.mother_instance.fields["WORLD"][x][y] = value
+        logging.info(f"{self._id.path}:: Set WORLD[{x}][{y}] to {value}")
 
 
 # ---EXECUTE_STMT-----------------------------------
@@ -210,8 +214,22 @@ class AgentInstance:
         # VariableDeclNode handles variable declarations
         if isinstance(stmt, VariableDeclNode):
             if stmt.value is None:
-                local_var[stmt.name] = None
-                local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type)
+                var_type = AGENTAR_TYPE_MAP.get(stmt.var_type)
+                local_var_type[stmt.name] = var_type
+                if var_type == int:
+                    local_var[stmt.name] = 0
+                elif var_type == float:
+                    local_var[stmt.name] = 0.0
+                elif var_type == str:
+                    local_var[stmt.name] = ""
+                elif var_type == bool:
+                    local_var[stmt.name] = False
+                elif var_type == list:
+                    local_var[stmt.name] = []
+                elif var_type == dict:
+                    local_var[stmt.name] = {}
+                else:
+                    local_var[stmt.name] = None  # fallback
 
             elif stmt.value is not None:
                 value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
@@ -227,20 +245,40 @@ class AgentInstance:
                 target = stmt.target.path[1]
                 value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
                 if stmt.index is None:
-                    if not self.fields_type[target] == type(value):
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
-                    self.fields[target] = value
+                    if not self._fields_type[target] == type(value):
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected {self._fields_type[target]}, got {type(value)}")
+                    self._fields[target] = value
                 elif stmt.index == "add":
-                    if not self.fields_type[target] == list:
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self.fields[target])}")
-                    self.fields[target].append(value)
+                    if not self._fields_type[target] == list:
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self._fields[target])}")
+                    self._fields[target].append(value)
                 elif isinstance(stmt.index, IndexRangeNode):
                     pass # TODO: handle index range assignment
                 else: 
-                    if not self.fields_type[target] == list:
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self.fields[target])}")
+                    if not self._fields_type[target] == list:
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self._fields[target])}")
                     index = self.eval_expr(stmt.index, local_var, local_var_type)
-                    self.fields[target][index] = value
+                    self._fields[target][index] = value
+                return
+            
+            if isinstance(stmt.target, BelAccessNode):
+                target = stmt.target.path[1]
+                value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
+                if stmt.index is None:
+                    if not self._beliefs_type[target] == type(value):
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected {self._beliefs_type[target]}, got {type(value)}")
+                    self._beliefs[target] = value
+                elif stmt.index == "add":
+                    if not self._beliefs_type[target] == list:
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self._beliefs[target])}")
+                    self._beliefs[target].append(value)
+                elif isinstance(stmt.index, IndexRangeNode):
+                    pass # TODO: handle index range assignment
+                else: 
+                    if not self._beliefs_type[target] == list:
+                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self._fields[target])}")
+                    index = self.eval_expr(stmt.index, local_var, local_var_type)
+                    self._beliefs[target][index] = value
                 return
             
             elif stmt.index is not None:
@@ -262,19 +300,19 @@ class AgentInstance:
             elif isinstance(stmt.value, SpawnNode):
                 if stmt.target not in local_var_type:
                     raise NameError(f"Variable '{stmt.target}' is not declared.")
-                fields = [self.eval_expr(arg) for arg in stmt.value.args] if stmt.value.args else []
-                value = self.runtime.spawn_agent(parentInstance = self , agent_type = stmt.value.agent_type, fields = fields)
+                fields = [deepcopy(self.eval_expr(arg, local_var, local_var_type)) for arg in stmt.value.args] if stmt.value.args else []
+                value = self._runtime.spawn_agent(parentInstance = self , agent_type = stmt.value.agent_type, fields = fields)
 
 
             elif isinstance(stmt.value, MessageInitNode):
                 message = stmt.value
-                if message.message_type not in self.runtime.messages_decl:
+                if message.message_type not in self._runtime.messages_decl:
                     raise NameError(f"Message type '{message.message_type}' is not declared.")
-                if self.runtime.messages_decl[message.message_type].content.keys() != message.fields.keys():
-                    raise ValueError(f"Message fields do not match declaration for {message.message_type}. Expected {self.runtime.messages_decl[message.message_type].content.keys()}, got {message.fields.keys()}")
+                if self._runtime.messages_decl[message.message_type]._content.keys() != message.fields.keys():
+                    raise ValueError(f"Message fields do not match declaration for {message.message_type}. Expected {self._runtime.messages_decl[message.message_type]._content.keys()}, got {message.fields.keys()}")
                 content = {}
                 content_type = {}
-                for key, val, ref_type in zip(message.fields.keys(), message.fields.values(), self.runtime.messages_decl[message.message_type].content_type.values()):
+                for key, val, ref_type in zip(message.fields.keys(), message.fields.values(), self._runtime.messages_decl[message.message_type]._content_type.values()):
                     val = self.eval_expr(val)
                     if not isinstance(val, ref_type):
                         raise TypeError(f"Type mismatch in message field '{val}': expected {ref_type}, got {type(val)}")
@@ -294,7 +332,7 @@ class AgentInstance:
                     raise NameError(f"Variable '{stmt.target}' is not declared.")
                 value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
                 if not local_var_type[stmt.target] == type(value):
-                    raise TypeError(f"Type mismatch in assignment to {target}: expected {self.fields_type[target]}, got {type(value)}")
+                    raise TypeError(f"Type mismatch in assignment to {target}: expected {self._fields_type[target]}, got {type(value)}")
             
             local_var[stmt.target] = value
         # end of AssignmentNode ----
@@ -302,29 +340,29 @@ class AgentInstance:
         # SendNode handles sending messages
         elif isinstance(stmt, SendNode):
             msg = self.eval_expr(stmt.message, local_var, local_var_type)
-            msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
-            msg.sender = self.id
+            msg._msgType = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
+            msg._sender = self._id
             if stmt.to == "PARENT":
-                msg.receiver = self.parent
+                msg._receiver = self._parent
             else:
-                msg.receiver = self.eval_expr(stmt.to, local_var, local_var_type)
+                msg._receiver = self.eval_expr(stmt.to, local_var, local_var_type)
             # TODO: msg.send_time = ...
-            self.runtime.send_message(msg)
+            self._runtime.send_message(msg)
 
 
         # SendToChildrenNode handles sending messages to children
         elif isinstance(stmt, SendToChildrenNode):
             msg = self.eval_expr(stmt.message, local_var, local_var_type)
             msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
-            msg.sender = self.id
+            msg.sender = self._id
             # TODO: msg.send_time = ...
             agent_type = stmt.agent_type.name
-            agent_type = agent_type if agent_type in self.runtime.agents_decl else "_"
+            agent_type = agent_type if agent_type in self._runtime.agents_decl else "_"
             # Prepare the message to be sent to children
             msg_to_send = []
-            with self.runtime._lock:
-                for child in self.children:
-                    if agent_type != "_" and agent_type == self.runtime.agents[child].name:
+            with self._runtime._lock:
+                for child in self._children:
+                    if agent_type != "_" and agent_type == self._runtime.agents[child].name:
                         new_msg = deepcopy(msg)
                         new_msg.receiver = AgentId(child)
                         msg_to_send.append(new_msg)
@@ -334,23 +372,23 @@ class AgentInstance:
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
-                self.runtime.send_message(msg)
+                self._runtime.send_message(msg)
 
 
         elif isinstance(stmt, SendToSiblingsNode):
             msg = self.eval_expr(stmt.message, local_var, local_var_type)
             msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
-            msg.sender = self.id
+            msg.sender = self._id
             # TODO: msg.send_time = ...
             agent_type = stmt.agent_type.name
-            agent_type = agent_type if agent_type in self.runtime.agents_decl else "_"
+            agent_type = agent_type if agent_type in self._runtime.agents_decl else "_"
             # Prepare the message to be sent to children
             msg_to_send = []
-            with self.runtime._lock:
-                for child in self.runtime.agents[self.parent.path].children:
-                    if child == self.id.path:  # Skip sending message to self
+            with self._runtime._lock:
+                for child in self._runtime.agents[self._parent.path].children:
+                    if child == self._id.path:  # Skip sending message to self
                         continue
-                    if agent_type != "_" and agent_type == self.runtime.agents[child].name:
+                    if agent_type != "_" and agent_type == self._runtime.agents[child].name:
                         new_msg = deepcopy(msg)
                         new_msg.receiver = AgentId(child)
                         msg_to_send.append(new_msg)
@@ -360,7 +398,7 @@ class AgentInstance:
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
-                self.runtime.send_message(msg)
+                self._runtime.send_message(msg)
             
 
         # print statement
@@ -372,37 +410,37 @@ class AgentInstance:
                     for j, val in enumerate(value):
                         if type(val) == AgentId:
                             to_print[i][j] = val.path                
-            print(f"AGENT {self.id}::", " ".join(str(v) for v in to_print))
-            logging.info(f"{self.id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
+            print(f"AGENT {self._id}::", " ".join(str(v) for v in to_print))
+            logging.info(f"{self._id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
 
 
         # KillNode handles agent termination
         elif isinstance(stmt, KillNode):
             if stmt.agent_id is not None:
                 agent_id = self.eval_expr(stmt.agent_id, local_var, local_var_type)
-                self.runtime.killAgent(agent_id)
+                self._runtime.killAgent(agent_id)
             else:
-                if self.isMother:
-                    self.runtime.killMother()
+                if self._isMother:
+                    self._runtime.killMother()
                 else:
-                    self.runtime.killAgent(self.id)
+                    self._runtime.killAgent(self._id)
 
 
         # SllepNode handles sleeping for a specified duration
         elif isinstance(stmt, SleepNode):
             duration = self.eval_expr(stmt.duration, local_var, local_var_type)
-            logging.info(f"{self.id.path}:: Sleeping for {duration}s...")
+            logging.info(f"{self._id.path}:: Sleeping for {duration}s...")
             time.sleep(duration)
 
 
         # DoNode handles executing actions
         elif isinstance(stmt, DoNode):
-            logging.info(f"{self.id.path}:: Executing action '{stmt.name}'")
-            if stmt.name in self.agent.actions:
+            logging.info(f"{self._id.path}:: Executing action '{stmt.name}'")
+            if stmt.name in self._agent.actions:
                 variables = []
                 for param in stmt.variables:
                     variables.append(self.eval_expr(param))
-                action = self.agent.actions[stmt.name]
+                action = self._agent.actions[stmt.name]
                 if isinstance(action, ActionNode):
                     if action.return_type == "void":
                         self.execute_action(action, variables)
@@ -413,7 +451,7 @@ class AgentInstance:
         # ReturnNode handles returning values from actions        
         elif isinstance(stmt, ReturnNode):
             if stmt.value is not None:
-                self.return_flag = True
+                self._return_flag = True
                 return self.eval_expr(stmt.value, local_var, local_var_type, message=message)
             else:
                 return None
@@ -438,7 +476,7 @@ class AgentInstance:
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
             def update_loop_var():
                 self.execute_stmt(stmt.update, local_var, local_var_type)
-            while check_condition() and not self.break_flag:
+            while check_condition() and not self._break_flag:
                 for statement in stmt.body:
                     self.execute_stmt(statement, local_var, local_var_type)
                 update_loop_var()
@@ -451,11 +489,11 @@ class AgentInstance:
             while check_condition() and not self.break_flag:
                 for statement in stmt.body:
                     self.execute_stmt(statement, local_var, local_var_type)
-            self.break_flag = False  # Reset break flag after loop execution
+            self._break_flag = False  # Reset break flag after loop execution
 
 
         elif isinstance(stmt, BreakNode):
-            self.break_flag = True
+            self._break_flag = True
 
 
         elif isinstance(stmt, SenseNode):
@@ -464,7 +502,7 @@ class AgentInstance:
     
         elif isinstance(stmt, KillChildrenNode):
             agent_type = stmt.agent_type.name if stmt.agent_type is not None else None
-            self.runtime.killChildren(self.id, agent_type)  # Kill all children of the agent with the specified type
+            self._runtime.killChildren(self._id, agent_type)  # Kill all children of the agent with the specified type
 
 
         elif isinstance(stmt, SetInWorldNode):
@@ -493,8 +531,8 @@ class AgentInstance:
                 return expr.value
         
         elif isinstance(expr, VarRefNode):
-            if expr.name in self.fields:
-                return self.fields[expr.name]
+            if expr.name in self._fields:
+                return self._fields[expr.name]
             elif expr.name in local_var:
                 return local_var[expr.name]
             elif expr.name == "_":
@@ -502,6 +540,21 @@ class AgentInstance:
             else:
                 raise NameError(f"Variable '{expr.name}' is not declared.")
             
+
+        elif isinstance(expr, LenNode):
+            return len(self.eval_expr(expr.base, local_var, local_var_type, message=message))
+            
+
+        elif isinstance(expr, TypeNode):
+            value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            if isinstance(value, list):
+                return list
+            elif isinstance(value, dict):
+                return dict
+            else:
+                return type(value)
+
+
         elif isinstance(expr, IndexAccessNode):
             base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
             index = self.eval_expr(expr.index, local_var, local_var_type, message=message)
@@ -523,9 +576,9 @@ class AgentInstance:
             
         elif isinstance(expr, SelfAccessNode):
             name = expr.path[1]
-            if hasattr(self, name) or name in self.fields:
+            if hasattr(self, name) or name in self._fields:
                 return (
-                    self.fields[name] if name in self.fields
+                    self._fields[name] if name in self._fields
                     else getattr(self, name) if hasattr(self, name)
                     else None
                 )
@@ -534,9 +587,9 @@ class AgentInstance:
             
         elif isinstance(expr, MsgAccessNode):
             name = expr.path[1]
-            if hasattr(message, name) or name in message.content:
+            if hasattr(message, name) or name in message._content:
                 return (
-                    message.content[name] if name in message.content
+                    message._content[name] if name in message._content
                     else getattr(message, name) if hasattr(message, name)
                     else None
                 )
@@ -545,8 +598,8 @@ class AgentInstance:
 
         elif isinstance(expr, BelAccessNode):
             name = expr.path[1]
-            if name in self.beliefs:
-                return (self.beliefs[name])
+            if name in self._beliefs:
+                return (self._beliefs[name])
             else:
                 raise NameError(f"Variable '{name}' is not declared.") 
             
@@ -563,9 +616,9 @@ class AgentInstance:
             if isinstance(right, BinaryOpNode):
                 right = self.eval_expr(right, local_var, local_var_type, message=message)
 
-            if not isinstance(left, bool):
+            if not isinstance(left, (bool, int, float, str)):
                 left = self.eval_expr(left, local_var, local_var_type, message=message)
-            if not isinstance(right, bool):
+            if not isinstance(right, (bool, int, float, str)):
                 right = self.eval_expr(right, local_var, local_var_type, message=message)
 
             if operator == '+':
