@@ -8,6 +8,7 @@ from runtime.AgentInstance import AgentInstance
 from runtime.AgentRunner import AgentRunner
 from core.agentid import AgentId
 import threading
+from copy import deepcopy
 
 class AgentarSystem:
     def __init__(self, mother_decl, agents_decl, messages_decl):
@@ -52,13 +53,13 @@ class AgentarSystem:
 
 
     def send_message(self, message):
-        receiverId = message.receiver.path
-        logging.info(f"{message.sender.path}:: Sending message to {receiverId}...")        
+        receiverId = message._receiver.path
+        logging.info(f"{message._sender.path}:: Sending message to {receiverId}...")        
         with self._lock:
             if receiverId in self.agents:
                 receiver = self.agents[receiverId]
         if receiver is not None:
-            receiver.inbox.put(message)
+            receiver._inbox.put(message)
 
 
     def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None):
@@ -67,11 +68,11 @@ class AgentarSystem:
         
         if agent_type not in self.agents_decl:
             raise ValueError(f"Agent type {agent_type} not found in system declarations.")
-        id = parentInstance.id.child(parentInstance.next_child)     # Create new AgentId for the child agent
-        parentInstance.next_child += 1                              # Increment child index for next spawn
-        parentInstance.children.append(id)                          # Add child id to parent's children list
-        new_agent_inst = self.agents_decl[agent_type]               # Get the agent declaration from the system
-        agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
+        id = parentInstance._id.child(parentInstance._next_child)     # Create new AgentId for the child agent
+        parentInstance._next_child += 1                              # Increment child index for next spawn
+        parentInstance._children.append(id)                          # Add child id to parent's children list
+        new_agent_inst = deepcopy(self.agents_decl[agent_type])               # Get the agent declaration from the system
+        agent = AgentInstance(new_agent_inst, system=self, id=id, fields=deepcopy(fields))
         
         with self._lock:
             self.agents[id.path] = agent
@@ -85,7 +86,7 @@ class AgentarSystem:
         if agent_type == None: # 
             with self._lock:
                 agents_to_kill = []
-                for child in self.agents[agent_id.path].children:
+                for child in self.agents[agent_id.path]._children:
                     agents_to_kill.append(child)
             for aid in agents_to_kill:
                 self.killAgent(AgentId(aid))
@@ -93,7 +94,7 @@ class AgentarSystem:
         else: 
             with self._lock:
                 agents_to_kill = []
-                for child in self.agents[agent_id.path].children:
+                for child in self.agents[agent_id.path]._children:
                     if self.agents[child].name == agent_type:
                         agents_to_kill.append(child)
             for aid in agents_to_kill:
@@ -105,7 +106,7 @@ class AgentarSystem:
 
         def collect_descendants(aid):
             with self._lock:
-                children = self.agents[aid.path].children if aid.path in self.agents else []
+                children = self.agents[aid.path]._children if aid.path in self.agents else []
             for child_id in reversed(children):
                 collect_descendants(child_id)
             agents_to_kill.append(aid)

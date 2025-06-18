@@ -14,9 +14,9 @@ class MessageType(str, Enum):
 
 class AgentarMessage:
     def __init__(self):
-        self.name = None
-        self.content = {}
-        self.content_type = {}
+        self._name = None
+        self._content = {}
+        self._content_type = {}
 
     def __repr__(self):
         return (

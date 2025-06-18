@@ -7,11 +7,11 @@ message pong{
 }
 
 agent child {
-    receive ping {
+    receive ping{
         when () then {
             print("I received:", msg.text);
             msg_ = pong(text="Yes I am!");
-            send(self.parent, msg_, msg_type=inform);
+            send2parent(msg_, msg_type=inform);
         }
     }
 }

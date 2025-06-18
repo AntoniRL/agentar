@@ -64,7 +64,8 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitGoalsSection(self, ctx:AgentarParser.GoalsSectionContext):
         goals = [self.visit(gole) for gole in ctx.goalBlock()]
-        return ast.GoalSectionNode(goals=goals)
+        merge_condition = self.visit(ctx.expression()) if ctx.expression() else None
+        return ast.GoalSectionNode(goals=goals, merge_condition=merge_condition)
     
 
     def visitGoalBlock(self, ctx:AgentarParser.GoalBlockContext):
@@ -258,7 +259,7 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
         return ast.BreakNode()
-
+    
 
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
         var_type = ctx.type_().getText()
@@ -390,6 +391,11 @@ class AgentarToASTBuilder(AgentarVisitor):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
         return ast.BinaryOpNode(op='>=', left=left, right=right)
+    
+
+    def visitLenExpr(self, ctx:AgentarParser.LenExprContext):
+        base = self.visit(ctx.expression())
+        return ast.LenNode(base=base)
 
 
     def visitMessageAccessExpr(self, ctx:AgentarParser.MessageAccessExprContext):
@@ -410,6 +416,11 @@ class AgentarToASTBuilder(AgentarVisitor):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
         return ast.BinaryOpNode(op='>', left=left, right=right)
+    
+
+    def visitTypeExpr(self, ctx:AgentarParser.TypeExprContext):
+        base = self.visit(ctx.expression())
+        return ast.TypeNode(base=base)
 
 
     def visitOrExpr(self, ctx:AgentarParser.OrExprContext):

@@ -27,6 +27,7 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 3. `destroy` — sprzątanie przed śmiercią
 
 Agent umiera, gdy:
+- wykona cel
 - wywoła `kill()`
 - jego rodzic go zlikwiduje
 
@@ -70,7 +71,7 @@ agent <agent_name> {
         // Cele agenta (opcjonalne; tylko jedna instancja)
         // np. g1: b.b1 == true || b.b2 < 4;
         // np. g2: b.b2 < 10;
-    }
+    } marge (g1 && g2) //możliwość połączenia celów w dowolny sposób. Jeżeli brak to AND między celami cząstkowymi.
 
     rules {
         // Zasady postępowania agenta (opcjonalne; tylko jedna instancja)
@@ -115,17 +116,20 @@ agent <agent_name> {
 ### Wbudowane pola agenta
 
 Dostęp do przekonań (`beliefs`) poprzed odwołanie `bel.<nazwa_pola>`
+Wbudowane pola agenta zaczynają się od `_` np. `self._<nazwa pola>`
 
 | Pole                      | Opis                                         |
 | ------------------------- | -------------------------------------------- |
-| `self.id`                 | ID agenta np. `.1.2.1`                       |
-| `self.parent`             | ID rodzica np. `.1.2`                        |
-| `self.children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
-| `self.name`               | nazwa rodzaju agenta (jedna ze zdefiniowanych przez programistę) |
-| `self.isGoalAchieved`     | flaga sprawdzająca czy sel został osiągnięty  aktualizowana co krop agenta |
-| (TODO?) `self.now`        | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) |
+| `self._id`                 | ID agenta np. `.1.2.1`                       |
+| `self._parent`             | ID rodzica np. `.1.2`                        |
+| `self._children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
+| `self._name`               | nazwa rodzaju agenta (jedna ze zdefiniowanych przez programistę) |
+| `self._isGoalAchieved`     | flaga sprawdzająca czy sel został osiągnięty  aktualizowana co krop agenta |
+| (TODO?) `self._now`        | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) |
 
-Zastrzeżone nazwy: `self.agent`, `self.isMother`, `self.next_child`, `self.inbox`, `self.runtime`, `self.return_flag`, `self.break_flag`, `self.fields`, `self.fields_type`, `self.beliefs`, `self.beliefs_type`, `self.sense`, `self.goals`, `self.rules`, `self.receive`, `self.actions`, `self.initialize`, `self.destroy`
+Zastrzeżone nazwy: `self._agent`, `self._isMother`, `self._next_child`, `self._inbox`, `self._runtime`, `self._return_flag`, `self._break_flag`, `self._fields`, `self._fields_type`, `self._beliefs`, `self._beliefs_type`, `self._sense`, `self._goals`, `self._rules`, `self._receive`, `self._actions`, `self._initialize`, `self._destroy`
+
+TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie takiej potrzeby. 
 
 
 ## Operacje
@@ -162,6 +166,22 @@ Zastrzeżone nazwy: `self.agent`, `self.isMother`, `self.next_child`, `self.inbo
 | `for` | Pętla iteracyjna | dowolnie |
 | `while()`      | Pętla warunkowa | dowolnie |
 | `break`      | Przerywa pętlę | dowolnie |
+
+Przykład:
+```agentar
+for (int i; i<10; i=i+1){
+    print(i);
+}
+while (self.counter<5){
+    self.counter = self.counter + 1;
+}
+if msg.text=="text"{
+    print("tak");
+} else { 
+    print("nie");
+}
+if (msg.text=="text") print("tak");
+```
 
 ### Typy danych
 
@@ -259,7 +279,7 @@ Przykład:
 ```
 receive ping {
     when (
-        msg.type == "request" &&
+        msg.type == request &&
         msg.sender == "mother" &&
         msg.text == "hello"
     ) then {

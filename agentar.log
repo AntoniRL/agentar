@@ -1,14 +1,6 @@
-[19:28:32] INFO: Starting Agentar system...
-[19:28:32] INFO: .1:: Initializing agent
-[19:28:32] INFO: .1.1:: Initializing agent
-[19:28:32] INFO: .1:: Sending message to .1.1...
-[19:28:32] INFO: .1.1:: Received message from .1
-[19:28:32] INFO: .1.1:: (PRINTING) I received: Are you there?
-[19:28:32] INFO: .1.1:: Sending message to .1...
-[19:28:33] INFO: .1:: Received message from .1.1
-[19:28:33] INFO: .1:: (PRINTING) I received: Yes I am!
-[19:28:33] INFO: .1:: (PRINTING) Ping-pong is working!!!
-[19:28:33] INFO: Mother agent requested system shutdown.
-[19:28:33] INFO: Thread for agent .1.1 stopped.
-[19:28:34] INFO: Thread for agent .1 stopped.
-[19:28:34] INFO: Agentar system stopped.
+[15:38:16] INFO: Starting Agentar system...
+[15:38:16] INFO: .1:: Initializing agent
+[15:38:16] INFO: .1:: (PRINTING) [[1, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 1], [0, 0, 0, 1, 0, 0, 0, 0, 1, 0], [0, 0, 1, 0, 0, 0, 0, 1, 0, 0], [0, 1, 0, 0, 0, 0, 1, 0, 0, 0], [1, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 1], [0, 0, 0, 1, 0, 0, 0, 0, 1, 0], [0, 0, 1, 0, 0, 0, 0, 1, 0, 0], [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]]
+[15:38:16] INFO: Mother agent requested system shutdown.
+[15:38:16] INFO: Thread for agent .1 stopped.
+[15:38:16] INFO: Agentar system stopped.

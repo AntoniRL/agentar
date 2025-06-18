@@ -19,7 +19,7 @@ def show_help():
     print("  run          Execute a .agar file")
     print("    -r         Log output to console")
     print("    -f / -file    Log output to agentar.log")
-    print("    -t <seconds>  Set maximum runtime for the script (default is 5 seconds)")
+    print("    -t <seconds>  Set maximum runtime for the script (default is 5 seconds) or 'inf' for infinite runtime")
     print("  tree         Print the AST of a .agar file")
     print("\nExamples:")
     print("  agentar run examples/hello.agar -r -t 10")
@@ -88,9 +88,13 @@ def main():
         if "-t" in sys.argv:
             t_index = sys.argv.index("-t")
             try:
-                max_runtime = int(sys.argv[t_index + 1])
+                arg = sys.argv[t_index + 1]
+                if arg.lower() == "inf":
+                    max_runtime = float("inf")
+                else:
+                    max_runtime = int(arg)
             except (IndexError, ValueError):
-                print("Error: You must provide a valid integer after '-t'")
+                print("Error: You must provide a valid integer after '-t' or 'inf' for infinite runtime.")
                 sys.exit(1)
         else:
             max_runtime = 5

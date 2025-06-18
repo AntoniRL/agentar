@@ -18,7 +18,8 @@ agent mother {
         list myList = [1, 2, 3, 4, 5, 6];
         list secondList;
         print(self.mmList);
-        self.mmList = myList[2:-2];
-        print(self.mmList);
+        self.mmList = myList[2:];
+        sleep(7);
+        kill();
     }
 }

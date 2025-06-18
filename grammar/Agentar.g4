@@ -74,7 +74,7 @@ senseSection
     ;
 
 goalsSection
-    : 'goals' '{' goalBlock* '}'
+    : 'goals' '{' goalBlock* '}' ( 'merge' '(' expression')' )?
     ;
 
 goalBlock
@@ -252,20 +252,22 @@ doStmt
 type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
 
 expression
-    : expression op=OR expression           # OrExpr
-    | expression op=AND expression          # AndExpr
-    | expression op=XOR expression          # XorExpr
+    : '(' expression ')'                    # ParenExpr
+    | expression op=MODULO expression       # ModuloExpr
+    | expression op=('*'|'/') expression    # MulDivExpr
+    | expression op=('+'|'-') expression    # AddSubExpr
     | expression op=EQ expression           # EqExpr
     | expression op=NEQ expression          # NeqExpr
     | expression op=LT expression           # LtExpr
     | expression op=GT expression           # GtExpr
     | expression op=LEQ expression          # LeqExpr
     | expression op=GEQ expression          # GeqExpr
-    | expression op=('+'|'-') expression    # AddSubExpr
-    | expression op=('*'|'/') expression    # MulDivExpr
-    | expression op=MODULO expression       # ModuloExpr
+    | expression op=OR expression           # OrExpr
+    | expression op=AND expression          # AndExpr
+    | expression op=XOR expression          # XorExpr
     | NOT expression                        # NotExpr
-    | '(' expression ')'                    # ParenExpr
+    | 'len' '(' expression ')'              # LenExpr
+    | 'type' '(' expression ')'             # TypeExpr
     | MSG '.' ID                            # MessageAccessExpr
     | SELF '.' ID                           # SelfAccessExpr
     | BELIEF '.' ID                         # BeliefAccessExpr

@@ -710,12 +710,30 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#LenExpr.
+    def enterLenExpr(self, ctx:AgentarParser.LenExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#LenExpr.
+    def exitLenExpr(self, ctx:AgentarParser.LenExprContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#MessageAccessExpr.
     def enterMessageAccessExpr(self, ctx:AgentarParser.MessageAccessExprContext):
         pass
 
     # Exit a parse tree produced by AgentarParser#MessageAccessExpr.
     def exitMessageAccessExpr(self, ctx:AgentarParser.MessageAccessExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#TypeExpr.
+    def enterTypeExpr(self, ctx:AgentarParser.TypeExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#TypeExpr.
+    def exitTypeExpr(self, ctx:AgentarParser.TypeExprContext):
         pass
 
 
