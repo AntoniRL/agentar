@@ -72,7 +72,7 @@ class AgentarSystem:
         parentInstance._next_child += 1                              # Increment child index for next spawn
         parentInstance._children.append(id)                          # Add child id to parent's children list
         new_agent_inst = deepcopy(self.agents_decl[agent_type])               # Get the agent declaration from the system
-        agent = AgentInstance(new_agent_inst, system=self, id=id, fields=deepcopy(fields))
+        agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
         
         with self._lock:
             self.agents[id.path] = agent

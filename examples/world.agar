@@ -10,7 +10,7 @@ agent line_founder{
     }
     destroy{
         msg_ = response(number_of_rewords=bel.number_of_rewords);
-        send2parent(msg_, msg_type=deny);
+        send2parent(msg_, msg_type=confirm);
     }
     beliefs{
         int number_of_rewords = 0;
@@ -66,7 +66,7 @@ agent menager_by_lines {
         }
     }
     receive response {
-        when () then {
+        when (msg._type==confirm) then {
             bel.number_of_rewords = bel.number_of_rewords + msg.number_of_rewords;
             bel.number_of_unswers = bel.number_of_unswers + 1;
         }
@@ -97,10 +97,10 @@ agent mother {
         print("Done makeing world! rewords:", self.counter);
         //print(self.WORLD);
         agentid agentid_;
-        agentid_ = spawn(menager_by_lines, [1, world_size]);
+        agentid_ = spawn(menager_by_lines, [world_size, world_size]);
     }
     receive response{
-        when () then {
+        when (msg._type==confirm) then {
             print("The agent ", msg._sender, " has found ", msg.number_of_rewords, "/", self.counter," rewords.");
             kill();
         }
