@@ -521,12 +521,30 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#type.
-    def enterType(self, ctx:AgentarParser.TypeContext):
+    # Enter a parse tree produced by AgentarParser#BacisType.
+    def enterBacisType(self, ctx:AgentarParser.BacisTypeContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#type.
-    def exitType(self, ctx:AgentarParser.TypeContext):
+    # Exit a parse tree produced by AgentarParser#BacisType.
+    def exitBacisType(self, ctx:AgentarParser.BacisTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#PointerType.
+    def enterPointerType(self, ctx:AgentarParser.PointerTypeContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#PointerType.
+    def exitPointerType(self, ctx:AgentarParser.PointerTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#bodyType.
+    def enterBodyType(self, ctx:AgentarParser.BodyTypeContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#bodyType.
+    def exitBodyType(self, ctx:AgentarParser.BodyTypeContext):
         pass
 
 
@@ -761,6 +779,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#MulDivExpr.
     def exitMulDivExpr(self, ctx:AgentarParser.MulDivExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#AddressOfExpr.
+    def enterAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#AddressOfExpr.
+    def exitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
         pass
 
 

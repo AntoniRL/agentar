@@ -310,5 +310,19 @@ class LenNode(ASTNode):
 
 
 @dataclass
-class TypeNode(ASTNode):
+class TypeExprNode(ASTNode):
     base: ASTNode
+
+
+@dataclass
+class BaseTypeNode(ASTNode):
+    name: str  # np. 'int', 'list', 'bool', ...
+
+@dataclass
+class PointerTypeNode(ASTNode):
+    inner: ASTNode  # inny TypeNode, np. BaseTypeNode lub kolejny PointerTypeNode
+
+
+@dataclass
+class AddressOfExprNode(ASTNode):
+    variable: ASTNode

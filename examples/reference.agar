@@ -1,12 +1,13 @@
-message response{
-    pointer list my_world;
+message set_world{
+    pointer<list> new_world;
 }
 
 
 agent menager_by_lines {
     fields{
-        int my_world;
+        pointer<list> my_world;
     }
+    /*
     initialize{
     }
     beliefs{
@@ -14,14 +15,15 @@ agent menager_by_lines {
     goals{
     }
     rules{
-        when () then (
+        when () then {
             self.my_world[0][0] = 5;
-        )
+        }
     }
     receive response {
         when () then {
         }
     }
+    */
 }
 
 

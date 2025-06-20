@@ -13,8 +13,9 @@ from antlr.AgentarLexer import AgentarLexer
 from antlr.AgentarParser import AgentarParser
 from dataclasses import is_dataclass
 from dataclasses import dataclass, fields
-from core.agentarTypes import AGENTAR_TYPE_MAP
+from core.agentarTypes import AGENTAR_TYPE_MAP, resolve_type
 from antlr4.error.ErrorListener import ErrorListener
+from core.pointer import *
 
 class ThrowingErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
@@ -102,23 +103,15 @@ class AgentarInterpreter:
         for field in node.declarations:
             # chek if field has value or not then make sure it is correct class
             if field.value is None:
-                type_name = AGENTAR_TYPE_MAP.get(field.var_type)
-                default_value = None
-                if type_name in (int, float):
-                    default_value = type_name(0)
-                elif type_name is str:
-                    default_value = ""
-                elif type_name is bool:
-                    default_value = False
-                elif type_name is list:
-                    default_value = []
-                elif type_name is dict:
-                    default_value = {}                
+                type_name, default_value = resolve_type(field.var_type)     
+
                 self.agent._fields[field.name] = default_value
                 self.agent._fields_type[field.name] = type_name  # np. int, str, bool
-            elif isinstance(field.value, LiteralNode or SpawnNode):
+            
+            elif isinstance(field.value, LiteralNode):
+                type_name, _ = resolve_type(field.var_type)
                 self.agent._fields[field.name] = field.value.value  # np. 42, "hello", True
-                self.agent._fields_type[field.name] = AGENTAR_TYPE_MAP.get(field.var_type)  # np. int, str, bool
+                self.agent._fields_type[field.name] = type_name  # np. int, str, bool
             else:
                 raise ValueError(f"Unsupported field value type: {type(field.value)}")
 
@@ -137,23 +130,13 @@ class AgentarInterpreter:
         for belief in node.declarations:
             # chek if field has value or not then make sure it is correct class
             if belief.value is None:
-                type_name = AGENTAR_TYPE_MAP.get(belief.var_type)
-                default_value = None
-                if type_name in (int, float):
-                    default_value = type_name(0)
-                elif type_name is str:
-                    default_value = ""
-                elif type_name is bool:
-                    default_value = False
-                elif type_name is list:
-                    default_value = []
-                elif type_name is dict:
-                    default_value = {}                
+                type_name , default_value = resolve_type(belief.var_type)             
                 self.agent._beliefs[belief.name] = default_value
                 self.agent._beliefs_type[belief.name] = type_name  # np. int, str, bool
             elif isinstance(belief.value, LiteralNode):
+                type_name , _ = resolve_type(belief.var_type) 
                 self.agent._beliefs[belief.name] = belief.value.value  # np. 42, "hello", True
-                self.agent._beliefs_type[belief.name] = AGENTAR_TYPE_MAP.get(belief.var_type)  # np. int, str, bool
+                self.agent._beliefs_type[belief.name] = type_name  # np. int, str, bool
             else:
                 raise ValueError(f"Unsupported field value type: {type(belief.value)}")
 
@@ -186,5 +169,10 @@ class AgentarInterpreter:
     
     def declareMessage(self, node):
         self.message._name = node.name
-        self.message._content = {field.name: field.value for field in node.fields}
-        self.message._content_type = {field.name: AGENTAR_TYPE_MAP.get(field.var_type) for field in node.fields}
+        for field in node.fields:
+            type_name , default_value = resolve_type(field.var_type)             
+
+            self.message._content[field.name] = default_value
+            self.message._content_type[field.name] = type_name
+
+        

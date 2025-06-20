@@ -249,7 +249,14 @@ doStmt
     : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
     ;
 
-type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
+type
+    :  bodyType                 # BacisType
+    | 'pointer<'type'>'         # PointerType
+    ;
+
+bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
+
+
 
 expression
     : '(' expression ')'                    # ParenExpr
@@ -266,6 +273,7 @@ expression
     | expression op=AND expression          # AndExpr
     | expression op=XOR expression          # XorExpr
     | NOT expression                        # NotExpr
+    | '&' expression                        # AddressOfExpr
     | 'len' '(' expression ')'              # LenExpr
     | 'type' '(' expression ')'             # TypeExpr
     | MSG '.' ID                            # MessageAccessExpr

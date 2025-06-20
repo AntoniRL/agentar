@@ -6,7 +6,7 @@ from runtime.MessageInstance import MessageInstance
 from core.agent import AgentarAgent
 from core.message import MessageType, get_message_type
 from core.agentid import AgentId
-from core.agentarTypes import AGENTAR_TYPE_MAP
+from core.agentarTypes import AGENTAR_TYPE_MAP, resolve_type
 from ast_tree.nodes import *
 from queue import Queue
 import logging
@@ -222,22 +222,9 @@ class AgentInstance:
         # VariableDeclNode handles variable declarations
         if isinstance(stmt, VariableDeclNode):
             if stmt.value is None:
-                var_type = AGENTAR_TYPE_MAP.get(stmt.var_type)
+                var_type, var_base_decl = resolve_type(stmt.var_type)
                 local_var_type[stmt.name] = var_type
-                if var_type == int:
-                    local_var[stmt.name] = 0
-                elif var_type == float:
-                    local_var[stmt.name] = 0.0
-                elif var_type == str:
-                    local_var[stmt.name] = ""
-                elif var_type == bool:
-                    local_var[stmt.name] = False
-                elif var_type == list:
-                    local_var[stmt.name] = []
-                elif var_type == dict:
-                    local_var[stmt.name] = {}
-                else:
-                    local_var[stmt.name] = None  # fallback
+                local_var[stmt.name] = var_base_decl
 
             elif stmt.value is not None:
                 value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
@@ -308,6 +295,11 @@ class AgentInstance:
             elif isinstance(stmt.value, SpawnNode):
                 if stmt.target not in local_var_type:
                     raise NameError(f"Variable '{stmt.target}' is not declared.")
+                for arg in stmt.value.args:
+                    if isinstance(arg, AddressOfExprNode):
+                        raise TypeError(f"Cannot use AddressOfExprNode in SpawnNode arguments. Use direct values instead.")
+                
+
                 fields = [deepcopy(self.eval_expr(arg, local_var, local_var_type)) for arg in stmt.value.args] if stmt.value.args else []
                 value = self._runtime.spawn_agent(parentInstance = self , agent_type = stmt.value.agent_type, fields = fields)
 
@@ -324,8 +316,8 @@ class AgentInstance:
                     val = self.eval_expr(val)
                     if not isinstance(val, ref_type):
                         raise TypeError(f"Type mismatch in message field '{val}': expected {ref_type}, got {type(val)}")
-                    content_type[key] = ref_type
-                    content[key] = val
+                    content_type[key] = deepcopy(ref_type)
+                    content[key] = deepcopy(val)
                 value = MessageInstance(name=message.message_type, content=content)
 
             # When do action return a value 
@@ -347,7 +339,7 @@ class AgentInstance:
 
         # SendNode handles sending messages
         elif isinstance(stmt, SendNode):
-            msg = self.eval_expr(stmt.message, local_var, local_var_type)
+            msg = deepcopy(self.eval_expr(stmt.message, local_var, local_var_type))
             msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
             msg._sender = self._id
             if stmt.to == "PARENT":
@@ -384,7 +376,7 @@ class AgentInstance:
 
 
         elif isinstance(stmt, SendToSiblingsNode):
-            msg = self.eval_expr(stmt.message, local_var, local_var_type)
+            msg = deepcopy(self.eval_expr(stmt.message, local_var, local_var_type))
             msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
             msg.sender = self._id
             # TODO: msg.send_time = ...
@@ -553,7 +545,7 @@ class AgentInstance:
             return len(self.eval_expr(expr.base, local_var, local_var_type, message=message))
             
 
-        elif isinstance(expr, TypeNode):
+        elif isinstance(expr, TypeExprNode):
             value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
             if isinstance(value, list):
                 return list
@@ -604,6 +596,7 @@ class AgentInstance:
             else:
                 raise NameError(f"Variable '{name}' is not declared.")  
 
+
         elif isinstance(expr, BelAccessNode):
             name = expr.path[1]
             if name in self._beliefs:
@@ -611,8 +604,10 @@ class AgentInstance:
             else:
                 raise NameError(f"Variable '{name}' is not declared.") 
             
+
         elif isinstance(expr, ListLiteralNode):
             return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]
+
 
         elif isinstance(expr, BinaryOpNode): 
             left = expr.left
@@ -663,3 +658,8 @@ class AgentInstance:
                 return left ^ right
             else:
                 raise ValueError(f"Unknown operator: {operator}")
+            
+
+
+
+    

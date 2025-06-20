@@ -194,6 +194,8 @@ if (msg.text=="text") print("tak");
 | `list`   | Lista wartości                    |
 | `dict`   | Słownik (klucz → wartość)         |
 | `agentID`| np. `.1.1`         |
+| `pointer<type>` | wspaźnik na obiekt. UWAGA! Posczas deklaracji nie da się przypisać |
+| `&var_name` | przekazanie referencji do obiektu |
 
 
 ### Obsługa list i map
