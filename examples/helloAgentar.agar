@@ -1,0 +1,6 @@
+agent mother {
+    initialize{
+        print("Hello Agentar!");
+        kill();
+    }
+}

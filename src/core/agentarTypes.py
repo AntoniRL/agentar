@@ -32,10 +32,19 @@ def resolve_type(var_type):
             return dict, {}
         elif name == "agentid":
             return AgentId, AgentId()
+        elif name == "void":
+            return 'void', None
     else:
         raise TypeError(f"Unknown AST type: {type(var_type)}")
     
-    
+
+def check_if_var_is_pointer(variable):
+    """
+    Check if the given variable type is a pointer type.
+    """
+    variable_type = type(variable)
+    return variable_type in (IntPointer, FloatPointer, BoolPointer, StringPointer, ListPointer)   
+
 
 # Global mapping: Agentar type string → Python type
 AGENTAR_TYPE_MAP = {

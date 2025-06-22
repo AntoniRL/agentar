@@ -6,7 +6,7 @@ from runtime.MessageInstance import MessageInstance
 from core.agent import AgentarAgent
 from core.message import MessageType, get_message_type
 from core.agentid import AgentId
-from core.agentarTypes import AGENTAR_TYPE_MAP, resolve_type
+from core.agentarTypes import AGENTAR_TYPE_MAP, resolve_type, check_if_var_is_pointer
 from ast_tree.nodes import *
 from core.pointer import *
 from queue import Queue
@@ -158,13 +158,14 @@ class AgentInstance:
             local_var = {}
             local_var_type = {}
             for i, stmt in enumerate(action_node.parameters):
-                if type(variables[i]) == AGENTAR_TYPE_MAP.get(stmt.param_type):
+                var_type, _ = resolve_type(stmt.param_type)
+                if type(variables[i]) == var_type:
                     # Initialize local variables from action parameters
                     local_var[stmt.name] = variables[i]
-                    local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.param_type)
+                    local_var_type[stmt.name] = var_type
                 else:
-                    raise TypeError(f"Type mismatch in action parameter '{stmt.name}': expected {AGENTAR_TYPE_MAP.get(stmt.param_type)}, got {type(variables[i])}")
-        return_type = action_node.return_type
+                    raise TypeError(f"Type mismatch in action parameter '{stmt.name}': expected {var_type}, got {type(variables[i])}")
+        return_type = self.eval_expr(action_node.return_type)
         if return_type == "void":
             for stmt in action_node.body:
                 self.execute_stmt(stmt, local_var, local_var_type)
@@ -189,32 +190,6 @@ class AgentInstance:
         else:
             raise NameError(f"Goal '{goal_to_check}' is not declared.")
 
-
-    def get_from_world(self, stmt, local_var, local_var_type):
-        x = self.eval_expr(stmt.x, local_var, local_var_type)
-        y = self.eval_expr(stmt.y, local_var, local_var_type)
-        if not isinstance(x, int) or not isinstance(y, int):
-            raise TypeError(f"Coordinates must be integers, got {type(x)} and {type(y)}")
-        with self._runtime._lock:
-            isRewordThere = self._runtime.mother_instance._fields["WORLD"][x][y]
-            if isRewordThere == 1:
-                return True
-            elif isRewordThere == 0:
-                return False
-            else:
-                return None  # If the value is not 0 or 1, return None
-        
-
-    def set_in_world(self, x, y, value):
-        if not isinstance(x, int) or not isinstance(y, int):
-            raise TypeError(f"Coordinates must be integers, got {type(x)} and {type(y)}")
-        if x not in range(0, len(self._runtime.mother_instance.fields["WORLD"])) or y not in range(0, len(self._runtime.mother_instance.fields["WORLD"][0])):
-            raise IndexError(f"Coordinates ({x}, {y}) out of bounds for WORLD size {len(self._runtime.mother_instance.fields['WORLD'])}, {len(self._runtime.mother_instance.fields['WORLD'][0])}.")
-        if value not in [0, 1]:
-            raise ValueError(f"Value must be 0 or 1, got {value}")
-        with self._runtime._lock:
-            self._runtime.mother_instance.fields["WORLD"][x][y] = value
-        logging.info(f"{self._id.path}:: Set WORLD[{x}][{y}] to {value}")
 
 
 # ---EXECUTE_STMT-----------------------------------
@@ -343,12 +318,20 @@ class AgentInstance:
 
         # DoNode handles executing actions
         elif isinstance(stmt, DoNode):
-            logging.info(f"{self._id.path}:: Executing action '{stmt.name}'")
-            if stmt.name in self._agent.actions:
+            # logging.info(f"{self._id.path}:: Executing action '{stmt.name}'")
+            # TODO: deepcopy of variables and 
+            if stmt.name in self._agent._actions:
                 variables = []
                 for param in stmt.variables:
-                    variables.append(self.eval_expr(param))
-                action = self._agent.actions[stmt.name]
+                    var = self.eval_expr(param, local_var, local_var_type, message=message)
+                    if isinstance(var, AddressOfExprNode):
+                        var = self.eval_expr(var, local_var, local_var_type, message=message)
+                    elif check_if_var_is_pointer(var):
+                        pass
+                    else:
+                        var = deepcopy(var)  # Ensure we work with a copy of the variable
+                    variables.append(var)
+                action = self._agent._actions[stmt.name]
                 if isinstance(action, ActionNode):
                     if action.return_type == "void":
                         self.execute_action(action, variables)
@@ -413,12 +396,6 @@ class AgentInstance:
             self._runtime.killChildren(self._id, agent_type)  # Kill all children of the agent with the specified type
 
 
-        elif isinstance(stmt, SetInWorldNode):
-            x = self.eval_expr(stmt.x, local_var, local_var_type)
-            y = self.eval_expr(stmt.y, local_var, local_var_type)
-            value = self.eval_expr(stmt.value, local_var, local_var_type)
-            self.set_in_world(x, y, value)
-
 
 # ---EVAL_EXPR-----------------------------------
     def eval_expr(self, expr, local_var=None, local_var_type=None, message=None):
@@ -447,6 +424,10 @@ class AgentInstance:
                 return "_"
             else:
                 raise NameError(f"Variable '{expr.name}' is not declared.")
+            
+
+        elif isinstance(expr, BaseTypeNode):
+            return resolve_type(expr)[0]
             
 
         elif isinstance(expr, LenNode):
@@ -518,7 +499,6 @@ class AgentInstance:
 
 
         elif isinstance(expr, AddressOfExprNode):
-            # TODO: implement AddressOfExprNode
             var_to_ref = self.eval_expr(expr.variable, local_var, local_var_type, message=message)
             pointer_type = get_pointer_type(var_to_ref)
             pointer_object = pointer_type(var_to_ref)  # Create a pointer to the variable\
@@ -590,8 +570,6 @@ class AgentInstance:
             value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
         elif isinstance(stmt.value, GoalCheckNode):
             value = self.check_goal(stmt.value, local_var, local_var_type)
-        elif isinstance(stmt.value, GetFromWorldNode): # TODO: remove GetFromWorldNode
-            value = self.get_from_world(stmt.value, local_var, local_var_type)
         else:
             value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
         self.assign_to_target(stmt, value, local_var, local_var_type)

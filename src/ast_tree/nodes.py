@@ -293,18 +293,6 @@ class GoalCheckNode(ASTNode):
 
 
 @dataclass
-class GetFromWorldNode(ASTNode):
-    x: ASTNode
-    y: ASTNode
-
-@dataclass
-class SetInWorldNode(ASTNode):
-    x: ASTNode
-    y: ASTNode
-    value: ASTNode
-
-
-@dataclass
 class LenNode(ASTNode):
     base: ASTNode
 
