@@ -1,5 +1,5 @@
 message set_world{
-    pointer<list> new_world;
+    list new_world;
 }
 
 
@@ -9,20 +9,26 @@ agent menager_by_lines {
     initialize{
     }
     beliefs{
-        pointer<list> my_world;
+        list my_world;
     }
     goals{
     }
     rules{
         when (bel.my_world) then {
-            bel.my_world[0][0] = 5; 
+            bel.my_world[1][1] = 5; 
+            //print(bel.my_world);
         }
     }
     receive set_world {
         when () then {
-            sleep(2);
-            bel.my_world = msg.new_world;
+            list world = [[0,1],[0,1]];
+            do(after_get_world, [msg.new_world]);
         }
+    }
+    action after_get_world(list new_world): void {
+        print("I am in action");
+        sleep(1);
+        bel.my_world = new_world;
     }
 }
 
@@ -36,7 +42,7 @@ agent mother {
         //print(self.WORLD);
         agentid agentid_;
         agentid_ = spawn(menager_by_lines);
-        msg_ = set_world(new_world=&self.WORLD);
+        msg_ = set_world(new_world=self.WORLD[:2]);
         send(agentid_, msg_, msg_type=request);
     }
     rules{

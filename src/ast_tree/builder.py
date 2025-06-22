@@ -182,18 +182,7 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitGoalCheckStmt(self, ctx:AgentarParser.GoalCheckStmtContext):
         goal_name = ctx.ID().getText()
         return ast.GoalCheckNode(goal_name=goal_name)
-    
 
-    def visitGetFromWorldStmt(self, ctx:AgentarParser.GetFromWorldStmtContext):
-        x = self.visit(ctx.expression(0))
-        y = self.visit(ctx.expression(1))
-        return ast.GetFromWorldNode(x=x, y=y)
-
-    def visitSetInWorldStmt(self, ctx:AgentarParser.SetInWorldStmtContext):
-        x = self.visit(ctx.expression(0))
-        y = self.visit(ctx.expression(1))
-        value = self.visit(ctx.expression(2))
-        return ast.SetInWorldNode(x=x, y=y, value=value)
 
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
         message_type = ctx.ID().getText()
@@ -337,12 +326,6 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitSelfGoalCheckAssign(self, ctx:AgentarParser.SelfGoalCheckAssignContext):
         target = self.visit(ctx.expression())
         value = self.visit(ctx.goalCheckStmt())
-        return ast.AssignmentNode(target=target, value=value)
-    
-
-    def visitGetFromWorldAssign(self, ctx:AgentarParser.GetFromWorldAssignContext):
-        target = self.visit(ctx.expression())
-        value = self.visit(ctx.getFromWorldStmt())
         return ast.AssignmentNode(target=target, value=value)
 
 
