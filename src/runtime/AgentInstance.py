@@ -8,6 +8,7 @@ from core.message import MessageType, get_message_type
 from core.agentid import AgentId
 from core.agentarTypes import AGENTAR_TYPE_MAP, resolve_type
 from ast_tree.nodes import *
+from core.pointer import *
 from queue import Queue
 import logging
 import time
@@ -61,6 +62,7 @@ class AgentInstance:
 
 
     def step(self):
+        # print(f"{self._id.path}:: Agent step...")  # Print the current step of the agent
         self.sense_world()                          # Sense the world and update beliefs
         if not self._inbox.empty():
             self.process_messages(self._inbox.get()) # Process incoming messages (first from the inbox)
@@ -151,7 +153,7 @@ class AgentInstance:
 
 
     def execute_action(self, action_node, variables=None):
-        logging.info(f"{self._id.path}:: Executing action '{action_node.name}'...")
+        # logging.info(f"{self._id.path}:: Executing action '{action_node.name}'...")
         if variables != None:    
             local_var = {}
             local_var_type = {}
@@ -217,7 +219,7 @@ class AgentInstance:
 
 # ---EXECUTE_STMT-----------------------------------
     def execute_stmt(self, stmt, local_var, local_var_type, message=None):
-        # logging.info(f"{self.id.path}:: Executing statement...{stmt}") # TODO: remove logging
+        # logging.info(f"{self._id.path}:: Executing statement...{stmt}") # TODO: remove logging
 
         # VariableDeclNode handles variable declarations
         if isinstance(stmt, VariableDeclNode):
@@ -228,118 +230,24 @@ class AgentInstance:
 
             elif stmt.value is not None:
                 value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
-                if not AGENTAR_TYPE_MAP[stmt.var_type] == type(value):
+                if not resolve_type(stmt.var_type)[0] == type(value):
                     raise TypeError(f"Type mismatch in variable declaration for {stmt.name}: expected {AGENTAR_TYPE_MAP[stmt.var_type]}, got {type(value)}")
                 local_var[stmt.name] = value
-                local_var_type[stmt.name] = AGENTAR_TYPE_MAP.get(stmt.var_type) 
+                local_var_type[stmt.name] = resolve_type(stmt.var_type)[0] 
                 
 
         # AssignmentNode handles different types of assignments
         elif isinstance(stmt, AssignmentNode):
-            if isinstance(stmt.target, SelfAccessNode):
-                target = stmt.target.path[1]
-                value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
-                if stmt.index is None:
-                    if not self._fields_type[target] == type(value):
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected {self._fields_type[target]}, got {type(value)}")
-                    self._fields[target] = value
-                elif stmt.index == "add":
-                    if not self._fields_type[target] == list:
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self._fields[target])}")
-                    self._fields[target].append(value)
-                elif isinstance(stmt.index, IndexRangeNode):
-                    pass # TODO: handle index range assignment
-                else: 
-                    if not self._fields_type[target] == list:
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self._fields[target])}")
-                    index = self.eval_expr(stmt.index, local_var, local_var_type)
-                    self._fields[target][index] = value
-                return
-            
-            if isinstance(stmt.target, BelAccessNode):
-                target = stmt.target.path[1]
-                value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
-                if stmt.index is None:
-                    if not self._beliefs_type[target] == type(value):
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected {self._beliefs_type[target]}, got {type(value)}")
-                    self._beliefs[target] = value
-                elif stmt.index == "add":
-                    if not self._beliefs_type[target] == list:
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self._beliefs[target])}")
-                    self._beliefs[target].append(value)
-                elif isinstance(stmt.index, IndexRangeNode):
-                    pass # TODO: handle index range assignment
-                else: 
-                    if not self._beliefs_type[target] == list:
-                        raise TypeError(f"Type mismatch in assignment to {target}: expected list, got {type(self._fields[target])}")
-                    index = self.eval_expr(stmt.index, local_var, local_var_type)
-                    self._beliefs[target][index] = value
-                return
-            
-            elif stmt.index is not None:
-                target = stmt.target
-                value = self.eval_expr(stmt.value, local_var, local_var_type)
-                if stmt.index == "add":
-                    local_var[target].append(value)
-                else:
-                    index = self.eval_expr(stmt.index, local_var, local_var_type)
-                    local_var[target][index] = value
-                return
-            
-            elif isinstance(stmt.value, GetFromWorldNode):
-                target = stmt.target.name
-                value = self.get_from_world(stmt.value, local_var, local_var_type)
-                local_var[target] = value
-                return
-
-            elif isinstance(stmt.value, SpawnNode):
-                if stmt.target not in local_var_type:
-                    raise NameError(f"Variable '{stmt.target}' is not declared.")
-                for arg in stmt.value.args:
-                    if isinstance(arg, AddressOfExprNode):
-                        raise TypeError(f"Cannot use AddressOfExprNode in SpawnNode arguments. Use direct values instead.")
-                
-
-                fields = [deepcopy(self.eval_expr(arg, local_var, local_var_type)) for arg in stmt.value.args] if stmt.value.args else []
-                value = self._runtime.spawn_agent(parentInstance = self , agent_type = stmt.value.agent_type, fields = fields)
-
-
-            elif isinstance(stmt.value, MessageInitNode):
-                message = stmt.value
-                if message.message_type not in self._runtime.messages_decl:
-                    raise NameError(f"Message type '{message.message_type}' is not declared.")
-                if self._runtime.messages_decl[message.message_type]._content.keys() != message.fields.keys():
-                    raise ValueError(f"Message fields do not match declaration for {message.message_type}. Expected {self._runtime.messages_decl[message.message_type]._content.keys()}, got {message.fields.keys()}")
-                content = {}
-                content_type = {}
-                for key, val, ref_type in zip(message.fields.keys(), message.fields.values(), self._runtime.messages_decl[message.message_type]._content_type.values()):
-                    val = self.eval_expr(val)
-                    if not isinstance(val, ref_type):
-                        raise TypeError(f"Type mismatch in message field '{val}': expected {ref_type}, got {type(val)}")
-                    content_type[key] = deepcopy(ref_type)
-                    content[key] = deepcopy(val)
-                value = MessageInstance(name=message.message_type, content=content)
-
-            # When do action return a value 
-            elif isinstance(stmt.value, DoNode):
-                value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
-            
-            elif isinstance(stmt.value, GoalCheckNode):
-                value = self.check_goal(stmt.value, local_var, local_var_type)
-
-            else:
-                if stmt.target not in local_var_type:
-                    raise NameError(f"Variable '{stmt.target}' is not declared.")
-                value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
-                if not local_var_type[stmt.target] == type(value):
-                    raise TypeError(f"Type mismatch in assignment to {target}: expected {self._fields_type[target]}, got {type(value)}")
-            
-            local_var[stmt.target] = value
-        # end of AssignmentNode ----
+            self.handle_assignment(stmt, local_var, local_var_type, message)
 
         # SendNode handles sending messages
         elif isinstance(stmt, SendNode):
-            msg = deepcopy(self.eval_expr(stmt.message, local_var, local_var_type))
+            msg = self.eval_expr(stmt.message, local_var, local_var_type)
+            # Create a deep copy of the message to avoid modifying the original, without conntent to make working with pointers easier
+            content = msg._content
+            msg._content = {}
+            msg = deepcopy(msg)  # Create a deep copy of the message to avoid modifying the original
+            msg._content = content  # Restore the content after deepcopy
             msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
             msg._sender = self._id
             if stmt.to == "PARENT":
@@ -374,7 +282,7 @@ class AgentInstance:
             for msg in msg_to_send:
                 self._runtime.send_message(msg)
 
-
+        # send message to siblings
         elif isinstance(stmt, SendToSiblingsNode):
             msg = deepcopy(self.eval_expr(stmt.message, local_var, local_var_type))
             msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
@@ -609,6 +517,14 @@ class AgentInstance:
             return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]
 
 
+        elif isinstance(expr, AddressOfExprNode):
+            # TODO: implement AddressOfExprNode
+            var_to_ref = self.eval_expr(expr.variable, local_var, local_var_type, message=message)
+            pointer_type = get_pointer_type(var_to_ref)
+            pointer_object = pointer_type(var_to_ref)  # Create a pointer to the variable\
+            return pointer_object
+
+
         elif isinstance(expr, BinaryOpNode): 
             left = expr.left
             right = expr.right
@@ -662,4 +578,170 @@ class AgentInstance:
 
 
 
+# ---HANDLE_ASSIGNMENT-----------------------------------
+
+    def handle_assignment(self, stmt, local_var, local_var_type, message):
+        value = None
+        if isinstance(stmt.value, SpawnNode):
+            value = self.handle_spawn(stmt.value, local_var, local_var_type)
+        elif isinstance(stmt.value, MessageInitNode):
+            value = self.handle_message_init(stmt.value)
+        elif isinstance(stmt.value, DoNode):
+            value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
+        elif isinstance(stmt.value, GoalCheckNode):
+            value = self.check_goal(stmt.value, local_var, local_var_type)
+        elif isinstance(stmt.value, GetFromWorldNode): # TODO: remove GetFromWorldNode
+            value = self.get_from_world(stmt.value, local_var, local_var_type)
+        else:
+            value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
+        self.assign_to_target(stmt, value, local_var, local_var_type)
+
+
+    def assign_to_target(self, stmt, value, local_var, local_var_type):
+        target_node = stmt.target
+        index = stmt.index
+
+        if isinstance(target_node, SelfAccessNode):
+            target = target_node.path[1]
+            self.assign_to_storage(self._fields, self._fields_type, target, value, index)
+        elif isinstance(target_node, BelAccessNode):
+            target = target_node.path[1]
+            self.assign_to_storage(self._beliefs, self._beliefs_type, target, value, index)
+        elif isinstance(stmt.value, MessageInitNode):
+            local_var[target_node] = value  # Assign the message instance to the local variable
+            local_var_type[target_node] = MessageInstance  # Set the type of the local variable
+        elif isinstance(target_node, IndexAccessNode): # Handle indexing
+            container, final_idx = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
+            container[final_idx] = value
+        elif isinstance(target_node, SliceAccessNode):
+            self.handle_slice_assignment(target_node, value, local_var, local_var_type)
+        else:
+            target = target_node if isinstance(target_node, str) else target_node.name
+            if target not in local_var:
+                raise NameError(f"Variable '{target}' is not declared.")
+            if index is None:
+                if not local_var_type[target] == type(value):
+                    raise TypeError(f"Type mismatch in assignment to {target}: expected {local_var_type[target]}, got {type(value)}")
+                local_var[target] = value
+            elif index == "add":
+                local_var[target].append(value)
+            elif isinstance(index, IndexRangeNode):
+                # TODO: implement index range assignment
+                pass
+            else:
+                idx = self.eval_expr(index, local_var, local_var_type)
+                local_var[target][idx] = value
+
+
+    def assign_to_storage(self, storage, type_info, target, value, index):
+        expected_type = type_info[target]
+        if index is None:
+            if not expected_type == type(value):
+                raise TypeError(f"Type mismatch in assignment to {target}: expected {expected_type}, got {type(value)}")
+            storage[target] = value
+        elif index == "add":
+            if expected_type != list:
+                raise TypeError(f"Cannot 'add' to non-list field '{target}'")
+            storage[target].append(value)
+        elif isinstance(index, IndexRangeNode):
+            # TODO: implement range assignment
+            pass
+        else:
+            idx = self.eval_expr(index)  # Assuming index expr independent
+            storage[target][idx] = value
+
+
+    def handle_spawn(self, spawn_node, local_var, local_var_type):
+        if spawn_node.args:
+            fields = []
+            for arg in spawn_node.args:
+                if isinstance(arg, AddressOfExprNode):
+                    fields.append(self.eval_expr(arg, local_var, local_var_type))
+                else:
+                    fields.append(deepcopy(self.eval_expr(arg, local_var, local_var_type)))
+        else:
+            fields = []
+        return self._runtime.spawn_agent(parentInstance=self, agent_type=spawn_node.agent_type, fields=fields)
     
+
+    def handle_message_init(self, msg_node):
+        msg_type = msg_node.message_type
+        if msg_type not in self._runtime.messages_decl:
+            raise NameError(f"Message type '{msg_type}' is not declared.")
+
+        decl = self._runtime.messages_decl[msg_type]
+        if decl._content.keys() != msg_node.fields.keys():
+            raise ValueError(f"Message fields mismatch for {msg_type}. Expected {decl._content.keys()}, got {msg_node.fields.keys()}")
+
+        content = {}
+        content_type = {}
+        for key, val_expr, expected_type in zip(msg_node.fields.keys(), msg_node.fields.values(), decl._content_type.values()):
+            val = self.eval_expr(val_expr)
+            if not isinstance(val_expr, AddressOfExprNode):
+                val = deepcopy(val)  # Ensure we copy the value if it's not a pointer
+                expected_type = deepcopy(expected_type)
+            if not isinstance(val, expected_type):
+                raise TypeError(f"Type mismatch in field '{key}': expected {expected_type}, got {type(val)}")
+            content[key] = val
+            content_type[key] = expected_type
+            
+        return MessageInstance(name=msg_type, content=content, content_type=content_type)
+    
+
+
+    def resolve_index_chain(self, target_node, final_index, local_var, local_var_type):
+        indices = []
+
+        # make list of indices from IndexAccessNode chain
+        base_node = target_node
+        while isinstance(base_node, IndexAccessNode):
+            indices.insert(0, base_node.index)
+            base_node = base_node.base
+
+        if final_index is not None:
+            indices.append(final_index)
+
+        if isinstance(base_node, SelfAccessNode):
+            var_name = base_node.path[1]
+            current = self._fields[var_name]
+        elif isinstance(base_node, BelAccessNode):
+            var_name = base_node.path[1]
+            current = self._beliefs[var_name]
+        elif isinstance(base_node, VarRefNode):
+            var_name = base_node.name
+            current = local_var[var_name]
+        else:
+            raise NotImplementedError("Unsupported base for indexing")
+
+        for index_expr in indices[:-1]:
+            idx = self.eval_expr(index_expr, local_var, local_var_type)
+            current = current[idx]
+
+        last_index = self.eval_expr(indices[-1], local_var, local_var_type)
+        return current, last_index
+    
+
+
+    def handle_slice_assignment(self, target_node, value, local_var, local_var_type):
+        base_node = target_node.base
+        start = target_node.start
+        end = target_node.end
+        start_idx = self.eval_expr(start, local_var, local_var_type) if start else None
+        end_idx = self.eval_expr(end, local_var, local_var_type) if end else None
+
+        if isinstance(base_node, SelfAccessNode):
+            var_name = base_node.path[1]
+            target_list = self._fields[var_name]
+        elif isinstance(base_node, BelAccessNode):
+            var_name = base_node.path[1]
+            target_list = self._beliefs[var_name]
+        elif isinstance(base_node, VarRefNode):
+            var_name = base_node.name
+            target_list = local_var[var_name]
+        else:
+            raise NotImplementedError("Unsupported base for slice assignment")
+
+        if not isinstance(value, list):
+            raise TypeError("Slice assignment requires a list value")
+
+        target_list[start_idx:end_idx] = value

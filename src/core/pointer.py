@@ -5,6 +5,25 @@
 import threading
 from copy import deepcopy
 
+
+def get_pointer_type(value):
+    """
+    Returns the type of pointer based on the value type.
+    """
+    if isinstance(value, int):
+        return IntPointer
+    elif isinstance(value, float):
+        return FloatPointer
+    elif isinstance(value, bool):
+        return BoolPointer
+    elif isinstance(value, str):
+        return StringPointer
+    elif isinstance(value, list):
+        return ListPointer
+    else:
+        raise TypeError(f"Unsupported type for pointer: {type(value)}")
+
+
 class BasePointer:
     def __init__(self, ref = None):
         self._ref = ref
@@ -29,10 +48,15 @@ class BasePointer:
 
 class IntPointer(BasePointer):
     def __add__(self, other): return self.get() + other
+    def __radd__(self, other): return other + self.get()
     def __sub__(self, other): return self.get() - other
+    def __rsub__(self, other): return other - self.get()
     def __mul__(self, other): return self.get() * other
+    def __rmul__(self, other): return other * self.get()
     def __truediv__(self, other): return self.get() / other
+    def __rtruediv__(self, other): return other / self.get()
     def __mod__(self, other): return self.get() % other
+    def __rmod__(self, other): return other % self.get()
 
     def __eq__(self, other): return self.get() == other
     def __lt__(self, other): return self.get() < other
@@ -44,9 +68,13 @@ class IntPointer(BasePointer):
 
 class FloatPointer(BasePointer):
     def __add__(self, other): return self.get() + other
+    def __radd__(self, other): return other + self.get()
     def __sub__(self, other): return self.get() - other
+    def __rsub__(self, other): return other - self.get()
     def __mul__(self, other): return self.get() * other
+    def __rmul__(self, other): return other * self.get()
     def __truediv__(self, other): return self.get() / other
+    def __rtruediv__(self, other): return other / self.get()
 
     def __eq__(self, other): return self.get() == other
     def __lt__(self, other): return self.get() < other
@@ -58,7 +86,11 @@ class FloatPointer(BasePointer):
 
 class BoolPointer(BasePointer):
     def __bool__(self): return bool(self.get())
-    def __eq__(self, other): return self.get() == other
+    def __eq__(self, other): return self.get() == other   
+    def __lt__(self, other): return self.get() < other
+    def __le__(self, other): return self.get() <= other
+    def __gt__(self, other): return self.get() > other
+    def __ge__(self, other): return self.get() >= other
 
 
 

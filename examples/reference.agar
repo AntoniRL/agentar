@@ -5,25 +5,25 @@ message set_world{
 
 agent menager_by_lines {
     fields{
-        pointer<list> my_world;
     }
-    /*
     initialize{
     }
     beliefs{
+        pointer<list> my_world;
     }
     goals{
     }
     rules{
-        when () then {
-            self.my_world[0][0] = 5;
+        when (bel.my_world) then {
+            bel.my_world[0][0] = 5; 
         }
     }
-    receive response {
+    receive set_world {
         when () then {
+            sleep(2);
+            bel.my_world = msg.new_world;
         }
     }
-    */
 }
 
 
@@ -32,10 +32,12 @@ agent mother {
         list WORLD;
     }
     initialize{
-        self.WORLD = [[0,0,0],[0,0,0],[0,0,0]];
+        self.WORLD = [[1,0,0],[0,0,0],[0,0,0]];
         //print(self.WORLD);
         agentid agentid_;
-        agentid_ = spawn(menager_by_lines, [&self.WORLD]);
+        agentid_ = spawn(menager_by_lines);
+        msg_ = set_world(new_world=&self.WORLD);
+        send(agentid_, msg_, msg_type=request);
     }
     rules{
         when () then {

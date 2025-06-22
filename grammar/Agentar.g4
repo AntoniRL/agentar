@@ -260,6 +260,10 @@ bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agent
 
 expression
     : '(' expression ')'                    # ParenExpr
+    | expression '[' expression ']'         # IndexExpr
+    | expression '[' ':' expression ']'     # SliceToExpr
+    | expression '[' expression ':' ']'     # SliceFromExpr
+    | expression '[' expression ':' expression ']' # SliceRangeExpr
     | expression op=MODULO expression       # ModuloExpr
     | expression op=('*'|'/') expression    # MulDivExpr
     | expression op=('+'|'-') expression    # AddSubExpr
@@ -279,10 +283,6 @@ expression
     | MSG '.' ID                            # MessageAccessExpr
     | SELF '.' ID                           # SelfAccessExpr
     | BELIEF '.' ID                         # BeliefAccessExpr
-    | expression '[' expression ']'         # IndexExpr
-    | expression '[' ':' expression ']'     # SliceToExpr
-    | expression '[' expression ':' ']'     # SliceFromExpr
-    | expression '[' expression ':' expression ']' # SliceRangeExpr
     | messageInit                           # MessageInitExpr
     | msgTypeValue                          # MsgTypeValueExpr
     | listLiteral                           # ListExpr
