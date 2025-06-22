@@ -182,6 +182,10 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitGoalCheckStmt(self, ctx:AgentarParser.GoalCheckStmtContext):
         goal_name = ctx.ID().getText()
         return ast.GoalCheckNode(goal_name=goal_name)
+    
+
+    def visitGetTimeStmt(self, ctx:AgentarParser.GetTimeStmtContext):
+        return ast.GetTimeNode()
 
 
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
@@ -294,6 +298,12 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitGoalCheckAssign(self, ctx:AgentarParser.GoalCheckAssignContext):
         target = ctx.ID().getText()
         value = self.visit(ctx.goalCheckStmt())
+        return ast.AssignmentNode(target=target, value=value)
+
+
+    def visitGetTimeAssign(self, ctx:AgentarParser.GetTimeAssignContext):
+        target = self.visit(ctx.expression())
+        value = self.visit(ctx.getTimeStmt())
         return ast.AssignmentNode(target=target, value=value)
 
 

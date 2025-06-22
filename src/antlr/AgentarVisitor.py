@@ -159,6 +159,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#getTimeStmt.
+    def visitGetTimeStmt(self, ctx:AgentarParser.GetTimeStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#messageInit.
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
         return self.visitChildren(ctx)
@@ -216,6 +221,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#VarDecl.
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#GetTimeAssign.
+    def visitGetTimeAssign(self, ctx:AgentarParser.GetTimeAssignContext):
         return self.visitChildren(ctx)
 
 

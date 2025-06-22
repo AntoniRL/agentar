@@ -9,6 +9,7 @@ from runtime.AgentRunner import AgentRunner
 from core.agentid import AgentId
 import threading
 from copy import deepcopy
+from runtime.AgentTime import AgentTime
 
 class AgentarSystem:
     def __init__(self, mother_decl, agents_decl, messages_decl):
@@ -30,17 +31,16 @@ class AgentarSystem:
         self.threads[self.mother_id.path] = AgentRunner(self.mother_instance, system=self, agent_id=self.mother_id)
 
         # Create agent time
-        # self.agentTimeId = AgentId(".0")  # Unique ID for agent time
-        # self.agentTime = AgentInstance(AgentarAgent(), system=self, id=self.agentTimeId)
-        # self.agents[self.agentTimeId.path] = self.agentTime  # Add agent time instance to agents dict
-        # self.threads[self.agentTimeId.path] = AgentRunner(self.agentTime, system=self, agent_id=self.agentTimeId)
-        # self.create_agent_time()
+        self.agentTime = AgentTime(system=self, agent_id=AgentId(".0"))
+        self.threads[self.agentTime.agent_id.path] = self.agentTime
+        self.agents[self.agentTime.agent_id.path] = self.agentTime  # Add agent time to agents dict
+        
 
 
     def start(self):
         logging.info("Starting Agentar system...")
         self.threads[self.mother_id.path].start()
-        # self.threads[self.agentTimeId.path].start()
+        self.threads[self.agentTime.agent_id.path].start()
 
 
     def stop(self):
@@ -145,8 +145,3 @@ class AgentarSystem:
     def killMother(self):
         logging.info("Mother agent requested system shutdown.")
         self.terminated.set()
-
-
-    def create_agent_time(self):
-        # TODO: Create agent time instance
-        self.agentTimeId = AgentId(".0")
