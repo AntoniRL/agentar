@@ -1,7 +1,7 @@
 # core/agent_id.py
 
 class AgentId:
-    def __init__(self, path: str):
+    def __init__(self, path: str = None):
         self.path = path  # e.g., ".1.2.3"
 
     def __str__(self):

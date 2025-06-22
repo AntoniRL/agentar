@@ -3,7 +3,7 @@ message ping{
 
 agent child {
     receive ping {
-        when (msg.type == ask) then {
+        when (msg.msgType == ask) then {
             msg_ = ping();
             send(self.parent, msg_, msg_type=inform);
         }
@@ -15,11 +15,14 @@ agent mother {
         list mmList;
     }
     initialize{
-        list myList = [1, 2, 3, 4, 5, 6];
-        list secondList;
-        print(self.mmList);
-        self.mmList = myList[2:];
-        sleep(7);
+        list myList = [0, 1, 2, 3, 4];
+        myList[:2] = [2,2];
+        //self.mmList = myList;
+        //self.mmList[] = [5,6];
+        //string r = 
+        //self.mmList[0:][1] = "r";
+        //print(type(self.mmList[1][1]));
+        print(myList);
         kill();
     }
 }

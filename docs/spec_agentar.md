@@ -194,6 +194,8 @@ if (msg.text=="text") print("tak");
 | `list`   | Lista wartości                    |
 | `dict`   | Słownik (klucz → wartość)         |
 | `agentID`| np. `.1.1`         |
+| `pointer<type>` | wspaźnik na obiekt. UWAGA! Posczas deklaracji nie da się przypisać |
+| `&var_name` | przekazanie referencji do obiektu |
 
 
 ### Obsługa list i map
@@ -214,6 +216,8 @@ Aktualizacja elementu:
 
 Wybrór kawałka listy:
 `myList[2:-1]`
+
+TODO: obsługa map
 
 ??? Deklaracja mapy:
 ```
@@ -309,6 +313,12 @@ Rodzaj wiadomości umożliwiają programiście rozszerzyć warunki komunikacji.
 * Format: `.1`, `.1.1`, `.1.2.1`, itp.
 * ID jest unikalne w czasie działania systemu
 * Agenci **nie mogą recyklingować ID** po zabiciu dzieci
+
+
+## Świat i środowisko
+* Śwat w tej wersji języka jest symulowany poprzez pola w agencie marce (np. `self.WORLD in mother`)
+* Inni agenci mogą przechwywać wskaźniki do tych pól i w sekcji `sense{}` czytać lub pisać do świata. Jest to widoczne dla każdego agenta
+* Takie podejście daje możliwość działąnia agentów w jednym  środowisku 
 
 ---
 

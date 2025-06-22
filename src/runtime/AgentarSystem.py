@@ -36,6 +36,7 @@ class AgentarSystem:
         # self.threads[self.agentTimeId.path] = AgentRunner(self.agentTime, system=self, agent_id=self.agentTimeId)
         # self.create_agent_time()
 
+
     def start(self):
         logging.info("Starting Agentar system...")
         self.threads[self.mother_id.path].start()
@@ -65,9 +66,20 @@ class AgentarSystem:
     def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None):
         if self.terminated.is_set():
             return None
-        
         if agent_type not in self.agents_decl:
             raise ValueError(f"Agent type {agent_type} not found in system declarations.")
+        
+        declared_types = list(self.agents_decl[agent_type]._fields_type.values())
+        if len(declared_types) != len(fields): # Check if the number of fields matches the declared types
+            raise ValueError(
+                f"Agent '{agent_type}' expects {len(declared_types)} fields, got {len(fields)}"
+            )
+        for i, field in enumerate(fields): # Check if each field matches the declared type
+            if type(field) != declared_types[i]:
+                raise ValueError(
+                    f"Field {i}: got {type(field).__name__}, expected {declared_types[i].__name__}"
+                )
+            
         id = parentInstance._id.child(parentInstance._next_child)     # Create new AgentId for the child agent
         parentInstance._next_child += 1                              # Increment child index for next spawn
         parentInstance._children.append(id)                          # Add child id to parent's children list
@@ -115,6 +127,13 @@ class AgentarSystem:
 
         for aid in agents_to_kill:
             if aid.path in self.agents:
+                # Remove agent from its parent's children list
+                parent_id = aid.parent()
+                if parent_id and parent_id.path in self.agents:
+                    with self._lock:
+                        if aid in self.agents[parent_id.path]._children:
+                            self.agents[parent_id.path]._children.remove(aid)
+                # Remove agent from the system's agents and threads
                 with self._lock:
                     thread = self.threads.get(aid.path)
                 thread.stopAgent()
@@ -129,5 +148,5 @@ class AgentarSystem:
 
 
     def create_agent_time(self):
-        # Create agent time instance
+        # TODO: Create agent time instance
         self.agentTimeId = AgentId(".0")

@@ -96,13 +96,13 @@ class AgentarToASTBuilder(AgentarVisitor):
         parameters = [self.visit(param) for param in ctx.parameterList().parameter()] if ctx.parameterList() else []
         if ctx.type_() is None:
             raise ValueError("Return type is required for action section.")
-        return_type = ctx.type_().getText() 
+        return_type = self.visit(ctx.type_())
         body = [self.visit(stat) for stat in ctx.statement()]
         return ast.ActionNode(name=name, parameters=parameters, return_type=return_type, body=body)
 
 
     def visitParameter(self, ctx:AgentarParser.ParameterContext):
-        param_type = ctx.type_().getText() if ctx.type_() else None
+        param_type = self.visit(ctx.type_()) if ctx.type_() else None
         name = ctx.ID().getText()
         if not param_type or not name:
             raise ValueError("Parameter type and name are required.")
@@ -262,7 +262,9 @@ class AgentarToASTBuilder(AgentarVisitor):
     
 
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
-        var_type = ctx.type_().getText()
+        if ctx.type_() is None:
+            raise ValueError("Variable type is required for declaration.")
+        var_type = self.visit(ctx.type_())
         name = ctx.ID().getText()
         value = self.visit(ctx.expression()) if ctx.expression() else None
         return ast.VariableDeclNode(var_type=var_type, name=name, value=value)
@@ -350,6 +352,15 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.DoNode(name=name, variables=variables)
 
 
+    def visitBacisType(self, ctx:AgentarParser.BacisTypeContext):
+        return ast.BaseTypeNode(name=ctx.bodyType().getText())
+    
+
+    def visitPointerType(self, ctx:AgentarParser.PointerTypeContext):
+            inner = self.visit(ctx.type_())
+            return ast.PointerTypeNode(inner=inner)
+
+
     def visitMapExpr(self, ctx:AgentarParser.MapExprContext):
         entries = {}
         ids = ctx.ID()
@@ -420,7 +431,7 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitTypeExpr(self, ctx:AgentarParser.TypeExprContext):
         base = self.visit(ctx.expression())
-        return ast.TypeNode(base=base)
+        return ast.TypeExprNode(base=base)
 
 
     def visitOrExpr(self, ctx:AgentarParser.OrExprContext):
@@ -488,6 +499,11 @@ class AgentarToASTBuilder(AgentarVisitor):
         else:
             op = '/'
         return ast.BinaryOpNode(op=op, left=left, right=right)
+
+
+    def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
+        variable = self.visit(ctx.expression())
+        return ast.AddressOfExprNode(variable=variable)
 
 
     def visitEqExpr(self, ctx:AgentarParser.EqExprContext):

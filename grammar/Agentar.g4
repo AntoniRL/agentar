@@ -249,10 +249,21 @@ doStmt
     : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
     ;
 
-type: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
+type
+    :  bodyType                 # BacisType
+    | 'pointer<'type'>'         # PointerType
+    ;
+
+bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
+
+
 
 expression
     : '(' expression ')'                    # ParenExpr
+    | expression '[' expression ']'         # IndexExpr
+    | expression '[' ':' expression ']'     # SliceToExpr
+    | expression '[' expression ':' ']'     # SliceFromExpr
+    | expression '[' expression ':' expression ']' # SliceRangeExpr
     | expression op=MODULO expression       # ModuloExpr
     | expression op=('*'|'/') expression    # MulDivExpr
     | expression op=('+'|'-') expression    # AddSubExpr
@@ -266,15 +277,12 @@ expression
     | expression op=AND expression          # AndExpr
     | expression op=XOR expression          # XorExpr
     | NOT expression                        # NotExpr
+    | '&' expression                        # AddressOfExpr
     | 'len' '(' expression ')'              # LenExpr
     | 'type' '(' expression ')'             # TypeExpr
     | MSG '.' ID                            # MessageAccessExpr
     | SELF '.' ID                           # SelfAccessExpr
     | BELIEF '.' ID                         # BeliefAccessExpr
-    | expression '[' expression ']'         # IndexExpr
-    | expression '[' ':' expression ']'     # SliceToExpr
-    | expression '[' expression ':' ']'     # SliceFromExpr
-    | expression '[' expression ':' expression ']' # SliceRangeExpr
     | messageInit                           # MessageInitExpr
     | msgTypeValue                          # MsgTypeValueExpr
     | listLiteral                           # ListExpr

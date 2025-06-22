@@ -294,8 +294,18 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#type.
-    def visitType(self, ctx:AgentarParser.TypeContext):
+    # Visit a parse tree produced by AgentarParser#BacisType.
+    def visitBacisType(self, ctx:AgentarParser.BacisTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#PointerType.
+    def visitPointerType(self, ctx:AgentarParser.PointerTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#bodyType.
+    def visitBodyType(self, ctx:AgentarParser.BodyTypeContext):
         return self.visitChildren(ctx)
 
 
@@ -426,6 +436,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#MulDivExpr.
     def visitMulDivExpr(self, ctx:AgentarParser.MulDivExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#AddressOfExpr.
+    def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
         return self.visitChildren(ctx)
 
 

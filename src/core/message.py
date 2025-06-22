@@ -20,8 +20,8 @@ class AgentarMessage:
 
     def __repr__(self):
         return (
-            f"<AgentarMessage name='{self.name}' "
-            f"content={self.content}>"
+            f"<AgentarMessage name='{self._name}' "
+            f"content={self._content}>"
         )
 
 
