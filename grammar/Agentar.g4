@@ -26,6 +26,7 @@ statement
     | returnStmt
     | senseStmt
     | goalCheckStmt
+    | getTimeStmt
     ;
 
 // === Mother declaration
@@ -164,6 +165,11 @@ goalCheckStmt
     : 'goal_check' '(' ID ')' ';'
     ;
 
+
+getTimeStmt
+    : 'getTime' '('')' ';'
+    ;    
+
 // === End of statements
 
 
@@ -221,7 +227,8 @@ variableDecl
     ;
 
 assignment
-    : ID '=' expression ';'                               # SimpleAssign
+    : expression '=' getTimeStmt                          # GetTimeAssign
+    | ID '=' expression ';'                               # SimpleAssign
     | ID '[' expression ']' '=' expression ';'            # IndexAssign
     | ID '['']' '=' expression ';'                        # ListAddAssign
     | ID '=' spawnStmt                                    # SpawnAssign
@@ -366,7 +373,7 @@ RETURN: 'return';
 INT: '-'? [0-9]+;
 FLOAT: '-'? [0-9]+ '.' [0-9]+;
 AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
-BOOL: 'true' | 'false';
+BOOL: 'True' | 'False';
 STRING: '"' .*? '"';
 // function and variables names 
 ID: [a-zA-Z_][a-zA-Z0-9_]*;

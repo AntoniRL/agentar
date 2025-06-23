@@ -10,7 +10,8 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 * System oparty na komunikatach (wiadomościach) i reaktywnych regułach.
 * Dostęp do pól agenta poprzez `self.name`
 * Agent matka `mother` (Tworzony jako pierwszy, zarządza działaniem systemu)
-* (TODO?) Agent czas `time` `id=.0` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
+* Agent czas `time` `id=.0` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
+* 
 * Koniec działania systemu kiedy agent matka wywoła `kill()` LUB minie czas symulacji (parametr podczas uruchomienia)
 
 ---
@@ -125,7 +126,7 @@ Wbudowane pola agenta zaczynają się od `_` np. `self._<nazwa pola>`
 | `self._children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
 | `self._name`               | nazwa rodzaju agenta (jedna ze zdefiniowanych przez programistę) |
 | `self._isGoalAchieved`     | flaga sprawdzająca czy sel został osiągnięty  aktualizowana co krop agenta |
-| (TODO?) `self._now`        | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) |
+| `self._now`                | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) aktualizacja tylko poprzez `getTime()` |
 
 Zastrzeżone nazwy: `self._agent`, `self._isMother`, `self._next_child`, `self._inbox`, `self._runtime`, `self._return_flag`, `self._break_flag`, `self._fields`, `self._fields_type`, `self._beliefs`, `self._beliefs_type`, `self._sense`, `self._goals`, `self._rules`, `self._receive`, `self._actions`, `self._initialize`, `self._destroy`
 
@@ -144,7 +145,7 @@ TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie 
 | ???`drop_goal(...)`  | Porzucenie celu | `action`, `receive` |
 | ???`adopt_belief`    | Pezyjęcie nowe przekonanie                         |
 | ???`drop_belief`     | Porzucenie przekonanie                                |
-| ???`get_time()`      | Aktualizacja `self.now` | `initialize`, `action` |
+| `get_time()`      | Aktualizacja `self.now`. Kiedy przypisania zwraca aktualny czas | `initialize`, `action` |
 | `goal_check(<goal_name>)` | Sprawdzenie celu cząstkowego |
 | `print(...)`   | Debugowanie | dowolnie |
 | `kill()`       | Zakończenie działania agenta | dowolnie |
@@ -267,10 +268,10 @@ message <msg_name>  {
 `msg` jako struktura zawierająca pola:
 ```
 msg {
-    sender: ID        // nadawca wiadomości
-    receiver: ID      // adresat wiadomości
-    type: string      // systemowy typ wiadomości (inform, request ...)
-    ??? time: int         // czas wysłania wiadomości
+    _sender: ID        // nadawca wiadomości
+    _receiver: ID      // adresat wiadomości
+    _type: string      // systemowy typ wiadomości (inform, request ...)
+    ??? _sending_time: int         // czas wysłania wiadomości
     <Pola wiadomości>   // treść wiadomości – instancja klasy zdefiniowanej w message { ... }
 }
 ```

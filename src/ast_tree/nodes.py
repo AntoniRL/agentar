@@ -314,3 +314,8 @@ class PointerTypeNode(ASTNode):
 @dataclass
 class AddressOfExprNode(ASTNode):
     variable: ASTNode
+
+
+@dataclass 
+class GetTimeNode(ASTNode):
+    pass

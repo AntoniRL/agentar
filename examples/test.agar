@@ -1,66 +1,17 @@
-message clean_room{
-    int task;
-    float value;
-}
-
-agent tok{
-    fields{
-    }
-}
-
-agent tic {
-    initialize{
-        //agentid agentid_;
-        //sleep(1);
-        //agentid_ = spawn(tok);
-        //agentid_ = spawn(tok);
-        //agentid_ = spawn(tok);
-        //agentid_ = spawn(tok);
-        //kill();
-    }
-    receive clean_room {
-        when((msg.type == request) && (msg.sender == self.parent)) then {
-            print("I get message from", self.parent, "msg.task=",msg.task);
-            int results;
-            results = do(clean, [6, 5, "string"]);
-            print(results);
-        }
-        /*
-        when() then {
-            print(5+4);
-        }
-        */
-    }
-    action clean(int c, int d, string s): int {
-        c = c-1;
-        return c;
-    }
-}
-
-agent mother {
+agent my_agent {
     fields {
-        string nazwisko = "kkk";
-        int counter = 2;
+        int time = 0;
+        float tick_interval = 0.5;
     }
-    initialize{
-        agentid agentid_;
-        int x = 4;
-        agentid_ = spawn(tic, ["RRR",0]);
-        print("My child name: ", agentid_);
-        self.nazwisko = "radomin";
-        msg_ = clean_room(task = 10, value = 10.0);
-        send(agentid_, msg_, msg_type=request);
-        //kill(agentid_);
-    }
-    destroy{
-        print("Destroy myself...");
-    }
-    receive clean_room {
-        when(msg.type==inform) then {
-            print(self.id, msg.task);
-        }
-        when() then {
-            print("DONE");
+    rules {
+        when () then {
+            sleep(self.tick_interval);
+            self.time = self.time + 1;
         }
     }
+}
+
+
+agent mother{
+
 }

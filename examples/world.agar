@@ -5,6 +5,7 @@ message response{
 
 agent line_founder{
     fields{
+        pointer<list> MY_WORLD;
         int number_of_fields;
         int my_line;
     }
@@ -19,7 +20,7 @@ agent line_founder{
     }
     sense{
         bool temp;
-        temp = get_from_world(self.my_line, bel.my_field);
+        temp = do(get_from_world, [self.my_line, bel.my_field]);
         bel.reword_on_my_field = temp;
     }
     goals{
@@ -30,11 +31,20 @@ agent line_founder{
         when () then{
             if (bel.my_field < self.number_of_fields) {
                 if (bel.reword_on_my_field) bel.number_of_rewords = bel.number_of_rewords + 1;
-                bel.my_field = bel.my_field + 1;    
+                bel.my_field = bel.my_field + 1;
             }
         }
         when (self._isGoalAchieved) then{
             kill();
+        }
+    }
+    action get_from_world(int x, int y): bool {
+        if (self.MY_WORLD[x][y] == 1){
+            return True;
+        } else {
+            if (self.MY_WORLD[x][y] == 0){
+                return False;
+            }
         }
     }
 }
@@ -42,13 +52,14 @@ agent line_founder{
 
 agent menager_by_lines {
     fields{
+        pointer<list> MY_WORLD;
         int lines_in_world;
         int fields_in_line;
     }
     initialize{
         for(int i=0; i<self.lines_in_world; i=i+1){
             agentid agentid_;
-            agentid_ = spawn(line_founder, [self.fields_in_line, i]);
+            agentid_ = spawn(line_founder, [self.MY_WORLD, self.fields_in_line, i]);
         }
     }
     beliefs{
@@ -60,7 +71,6 @@ agent menager_by_lines {
     }
     rules{
         when (self._isGoalAchieved) then {
-            print(bel.number_of_unswers, self.lines_in_world);
             msg_ = response(number_of_rewords=bel.number_of_rewords);
             send2parent(msg_, confirm);
         }
@@ -97,7 +107,7 @@ agent mother {
         print("Done makeing world! rewords:", self.counter);
         //print(self.WORLD);
         agentid agentid_;
-        agentid_ = spawn(menager_by_lines, [world_size, world_size]);
+        agentid_ = spawn(menager_by_lines, [&self.WORLD, world_size, world_size]);
     }
     receive response{
         when (msg._type==confirm) then {

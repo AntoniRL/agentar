@@ -15,7 +15,7 @@ class MessageInstance():
         self._type = MessageType.INFORM      # np. MessageType.REQUEST
         self._content = content or {}        # np. {'task': 3, 'value': 1.2}
         self._content_type = content_type or {}    # np. {'task': int, 'value': float}
-        self._send_time = 0                  # czas systemowy
+        self._sending_time = 0                  # czas systemowy
 
     def __repr__(self):
         return (

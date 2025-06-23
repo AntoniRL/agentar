@@ -278,6 +278,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#getTimeStmt.
+    def enterGetTimeStmt(self, ctx:AgentarParser.GetTimeStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#getTimeStmt.
+    def exitGetTimeStmt(self, ctx:AgentarParser.GetTimeStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#messageInit.
     def enterMessageInit(self, ctx:AgentarParser.MessageInitContext):
         pass
@@ -383,6 +392,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#VarDecl.
     def exitVarDecl(self, ctx:AgentarParser.VarDeclContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#GetTimeAssign.
+    def enterGetTimeAssign(self, ctx:AgentarParser.GetTimeAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#GetTimeAssign.
+    def exitGetTimeAssign(self, ctx:AgentarParser.GetTimeAssignContext):
         pass
 
 

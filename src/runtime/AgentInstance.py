@@ -43,8 +43,8 @@ class AgentInstance:
         self._fields_type["id"] = AgentId
 
         self._return_flag = False  # Flag to indicate if a return statement was executed
+        self._return_object = None  # Object to return from the action
         self._break_flag = False   # Flag to indicate if a break statement was executed
-
 
     def __repr__(self):
         return (
@@ -169,13 +169,16 @@ class AgentInstance:
         if return_type == "void":
             for stmt in action_node.body:
                 self.execute_stmt(stmt, local_var, local_var_type)
-        if return_type != "void":
-            for stmt in action_node.body:
                 if self._return_flag:
                     self._return_flag = False
                     break
-                to_return =  self.execute_stmt(stmt, local_var, local_var_type)
-            return to_return
+        elif return_type != "void":
+            for stmt in action_node.body:
+                self.execute_stmt(stmt, local_var, local_var_type)
+                if self._return_flag:
+                    self._return_flag = False
+                    break
+            return return_type(self._return_object)
 
 
     def check_goal(self, stmt, local_var, local_var_type):
@@ -223,6 +226,7 @@ class AgentInstance:
             msg._content = {}
             msg = deepcopy(msg)  # Create a deep copy of the message to avoid modifying the original
             msg._content = content  # Restore the content after deepcopy
+            msg._sending_time = self._runtime.agentTime.getTime()  # Set the send time to the current agent time
             msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
             msg._sender = self._id
             if stmt.to == "PARENT":
@@ -235,10 +239,14 @@ class AgentInstance:
 
         # SendToChildrenNode handles sending messages to children
         elif isinstance(stmt, SendToChildrenNode):
-            msg = deepcopy(self.eval_expr(stmt.message, local_var, local_var_type))
-            msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
-            msg.sender = self._id
-            # TODO: msg.send_time = ...
+            msg = self.eval_expr(stmt.message, local_var, local_var_type)
+            # Create a deep copy of the message to avoid modifying the original, without conntent to make working with pointers easier
+            content = msg._content
+            msg._content = {}
+            msg = deepcopy(msg)  # Create a deep copy of the message to avoid modifying the original
+            msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
+            msg._sender = self._id
+            msg._sending_time = self._runtime.agentTime.getTime() # set the send time to the current agent time
             agent_type = stmt.agent_type.name
             agent_type = agent_type if agent_type in self._runtime.agents_decl else "_"
             # Prepare the message to be sent to children
@@ -247,23 +255,30 @@ class AgentInstance:
                 for child in self._children:
                     if agent_type != "_" and agent_type == self._runtime.agents[child]._name:
                         new_msg = deepcopy(msg)
+                        new_msg._content = content # Restore the content after deepcopy
                         new_msg._receiver = AgentId(child)
                         msg_to_send.append(new_msg)
                     elif agent_type == "_":
                         new_msg = deepcopy(msg)
+                        new_msg._content = content # Restore the content after deepcopy
                         new_msg._receiver = AgentId(child)
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
                 self._runtime.send_message(msg)
 
+
         # send message to siblings
         elif isinstance(stmt, SendToSiblingsNode):
-            msg = deepcopy(self.eval_expr(stmt.message, local_var, local_var_type))
-            msg.type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
-            msg.sender = self._id
-            # TODO: msg.send_time = ...
-            agent_type = stmt.agent_type.name
+            msg = self.eval_expr(stmt.message, local_var, local_var_type)
+            # Create a deep copy of the message to avoid modifying the original, without conntent to make working with pointers easier
+            content = msg._content
+            msg._content = {}
+            msg = deepcopy(msg)  # Create a deep copy of the message to avoid modifying the original
+            msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
+            msg._sender = self._id
+            msg._sending_time = self._runtime.agentTime.getTime() # set the send time to the current agent time
+            agent_type = stmt.agent_type._name
             agent_type = agent_type if agent_type in self._runtime.agents_decl else "_"
             # Prepare the message to be sent to children
             msg_to_send = []
@@ -273,11 +288,13 @@ class AgentInstance:
                         continue
                     if agent_type != "_" and agent_type == self._runtime.agents[child].name:
                         new_msg = deepcopy(msg)
-                        new_msg.receiver = AgentId(child)
+                        new_msg._content = content
+                        new_msg._receiver = AgentId(child)
                         msg_to_send.append(new_msg)
                     elif agent_type == "_":
                         new_msg = deepcopy(msg)
-                        new_msg.receiver = AgentId(child)
+                        new_msg._content = content
+                        new_msg._receiver = AgentId(child)
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
@@ -343,9 +360,9 @@ class AgentInstance:
         elif isinstance(stmt, ReturnNode):
             if stmt.value is not None:
                 self._return_flag = True
-                return self.eval_expr(stmt.value, local_var, local_var_type, message=message)
+                self._return_object = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
             else:
-                return None
+                self._return_flag = True
 
 
         # IfStmtNode handles conditional statements
@@ -353,10 +370,14 @@ class AgentInstance:
             condition = self.eval_expr(stmt.conditions, local_var, local_var_type)
             if condition:
                 for statement in stmt.statements:
+                    if self._break_flag or self._return_flag:
+                        break
                     self.execute_stmt(statement, local_var, local_var_type)
             else:
                 if stmt.elseStmt is not None:
                     for statement in stmt.elseStmt.statements:
+                        if self._break_flag or self._return_flag:
+                            break
                         self.execute_stmt(statement, local_var, local_var_type)
 
         
@@ -379,7 +400,7 @@ class AgentInstance:
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
             while check_condition() and not self.break_flag:
                 for statement in stmt.body:
-                    self.execute_stmt(statement, local_var, local_var_type)
+                    return self.execute_stmt(statement, local_var, local_var_type)
             self._break_flag = False  # Reset break flag after loop execution
 
 
@@ -394,6 +415,11 @@ class AgentInstance:
         elif isinstance(stmt, KillChildrenNode):
             agent_type = stmt.agent_type.name if stmt.agent_type is not None else None
             self._runtime.killChildren(self._id, agent_type)  # Kill all children of the agent with the specified type
+
+
+        elif isinstance(stmt, GetTimeNode):
+            self._now = self._runtime.agentTime.getTime()
+            return self._now
 
 
 
@@ -568,8 +594,11 @@ class AgentInstance:
             value = self.handle_message_init(stmt.value)
         elif isinstance(stmt.value, DoNode):
             value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
+
         elif isinstance(stmt.value, GoalCheckNode):
             value = self.check_goal(stmt.value, local_var, local_var_type)
+        elif isinstance(stmt.value, GetTimeNode):
+            value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
         else:
             value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
         self.assign_to_target(stmt, value, local_var, local_var_type)
@@ -633,10 +662,13 @@ class AgentInstance:
         if spawn_node.args:
             fields = []
             for arg in spawn_node.args:
+                arg_to_fields = self.eval_expr(arg, local_var, local_var_type)
                 if isinstance(arg, AddressOfExprNode):
-                    fields.append(self.eval_expr(arg, local_var, local_var_type))
+                    fields.append(arg_to_fields)
+                elif check_if_var_is_pointer(arg_to_fields):
+                    fields.append(arg_to_fields)  # If it's a pointer, we can use it directly
                 else:
-                    fields.append(deepcopy(self.eval_expr(arg, local_var, local_var_type)))
+                    fields.append(deepcopy(arg_to_fields))
         else:
             fields = []
         return self._runtime.spawn_agent(parentInstance=self, agent_type=spawn_node.agent_type, fields=fields)
