@@ -21,5 +21,5 @@ class MessageInstance():
         return (
             f"<MessageInstance name='{self._name}' "
             f"type={self._type} from={self._sender} to={self._receiver} "
-            f"time={self._send_time} content={self._content}>"
+            f"time={self._sending_time} content={self._content}>"
         )

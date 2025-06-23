@@ -13,6 +13,7 @@ from queue import Queue
 import logging
 import time
 from copy import deepcopy
+import random
 
 
 
@@ -124,7 +125,7 @@ class AgentInstance:
                 else:
                     self._isGoalAchieved = False
         if self._isGoalAchieved:
-            print(f"{self._id.path}:: Goal  achieved!")  
+            logging.info(f"{self._id.path}:: Goal  achieved!")  
 
 
     def follow_rules(self):
@@ -256,12 +257,12 @@ class AgentInstance:
                     if agent_type != "_" and agent_type == self._runtime.agents[child]._name:
                         new_msg = deepcopy(msg)
                         new_msg._content = content # Restore the content after deepcopy
-                        new_msg._receiver = AgentId(child)
+                        new_msg._receiver = child
                         msg_to_send.append(new_msg)
                     elif agent_type == "_":
                         new_msg = deepcopy(msg)
                         new_msg._content = content # Restore the content after deepcopy
-                        new_msg._receiver = AgentId(child)
+                        new_msg._receiver = child
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
@@ -289,12 +290,12 @@ class AgentInstance:
                     if agent_type != "_" and agent_type == self._runtime.agents[child].name:
                         new_msg = deepcopy(msg)
                         new_msg._content = content
-                        new_msg._receiver = AgentId(child)
+                        new_msg._receiver = child
                         msg_to_send.append(new_msg)
                     elif agent_type == "_":
                         new_msg = deepcopy(msg)
                         new_msg._content = content
-                        new_msg._receiver = AgentId(child)
+                        new_msg._receiver = child
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
@@ -440,6 +441,10 @@ class AgentInstance:
                 return MessageType.DENY
             else:
                 return expr.value
+            
+        elif isinstance(expr, NoneExprNode):
+            return None
+
         
         elif isinstance(expr, VarRefNode):
             if expr.name in self._fields:
@@ -459,6 +464,14 @@ class AgentInstance:
         elif isinstance(expr, LenNode):
             return len(self.eval_expr(expr.base, local_var, local_var_type, message=message))
             
+
+        elif isinstance(expr, AbsExprNode):
+            value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            if isinstance(value, (int, float)):
+                return abs(value)
+            else:
+                raise TypeError(f"abs() argument must be a number, not {type(value).__name__}")
+
 
         elif isinstance(expr, TypeExprNode):
             value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
@@ -529,6 +542,14 @@ class AgentInstance:
             pointer_type = get_pointer_type(var_to_ref)
             pointer_object = pointer_type(var_to_ref)  # Create a pointer to the variable\
             return pointer_object
+        
+
+        elif isinstance(expr, RandomExprNode):
+            start = self.eval_expr(expr.start, local_var, local_var_type, message=message)
+            end = self.eval_expr(expr.end, local_var, local_var_type, message=message)
+            if not (isinstance(start, int) and isinstance(end, int)):
+                raise TypeError("Arguments to random() must be integers.")
+            return random.randint(start, end)
 
 
         elif isinstance(expr, BinaryOpNode): 
@@ -578,6 +599,8 @@ class AgentInstance:
                 return left or right
             elif operator == 'XOR':
                 return left ^ right
+            elif operator == 'NOT':
+                return not left
             else:
                 raise ValueError(f"Unknown operator: {operator}")
             
@@ -610,10 +633,10 @@ class AgentInstance:
 
         if isinstance(target_node, SelfAccessNode):
             target = target_node.path[1]
-            self.assign_to_storage(self._fields, self._fields_type, target, value, index)
+            self.assign_to_storage(self._fields, self._fields_type, target, value, index, local_var, local_var_type)
         elif isinstance(target_node, BelAccessNode):
             target = target_node.path[1]
-            self.assign_to_storage(self._beliefs, self._beliefs_type, target, value, index)
+            self.assign_to_storage(self._beliefs, self._beliefs_type, target, value, index, local_var, local_var_type)
         elif isinstance(stmt.value, MessageInitNode):
             local_var[target_node] = value  # Assign the message instance to the local variable
             local_var_type[target_node] = MessageInstance  # Set the type of the local variable
@@ -640,7 +663,7 @@ class AgentInstance:
                 local_var[target][idx] = value
 
 
-    def assign_to_storage(self, storage, type_info, target, value, index):
+    def assign_to_storage(self, storage, type_info, target, value, index, local_var=None, local_var_type=None):
         expected_type = type_info[target]
         if index is None:
             if not expected_type == type(value):
@@ -654,7 +677,7 @@ class AgentInstance:
             # TODO: implement range assignment
             pass
         else:
-            idx = self.eval_expr(index)  # Assuming index expr independent
+            idx = self.eval_expr(index, local_var, local_var_type)  # Assuming index expr independent
             storage[target][idx] = value
 
 

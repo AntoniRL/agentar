@@ -1,3 +1,5 @@
+// Podstawowe demo dla języka Agentar
+
 agent mother {
     initialize{
         print("Hello Agentar!");

@@ -1,0 +1,65 @@
+message cleaned {}
+
+agent cleaner {
+    fields {
+        pointer<list> MY_WORLD;
+        int start_position;
+    }
+    initialize {
+        bel.is_clean = [None, None];
+        bel.my_pos = self.start_position;
+        bel.cost_of_cleaning = 0;
+    }
+    beliefs {
+        list is_clean;
+        int my_pos;
+        int cost_of_cleaning;
+    }
+    sense {
+        bel.is_clean[bel.my_pos] = abs(self.MY_WORLD[bel.my_pos] - 1);
+    }
+    goals {
+        g1: bel.is_clean == [1,1];
+    }
+    rules {
+        when (!self._isGoalAchieved) then {
+            if (bel.is_clean[bel.my_pos] == 0) {
+                do(clean, [bel.my_pos]);
+            } else {
+                do(move);
+            } 
+            bel.cost_of_cleaning = bel.cost_of_cleaning + 1;
+        }
+        when (self._isGoalAchieved) then {
+            print("My cost of cleaning:", bel.cost_of_cleaning);
+            msg_ = cleaned();
+            send2parent(msg_, msg_type=confirm);
+        }
+    }
+    action clean(int pos): void {
+        self.MY_WORLD[pos] = 0;
+    }
+    action move(): void {
+        bel.my_pos = abs(bel.my_pos - 1);
+    }
+}
+
+agent mother {
+    fields {
+        list WORLD;
+    }
+    initialize {
+        for(int i=0; i<2; i=i+1){
+            self.WORLD[] = random(0,1);
+        }
+        print(self.WORLD);
+        agentid agentid_;
+        agentid_ = spawn(cleaner, [&self.WORLD, random(0,1)]);
+    }
+    receive cleaned{
+        when (msg._type==confirm) then {
+            print("Room is clean", self.WORLD);
+            kill();
+        }
+    }
+}

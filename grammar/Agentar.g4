@@ -256,6 +256,10 @@ bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agent
 
 expression
     : '(' expression ')'                    # ParenExpr
+    | MSG '.' ID                            # MessageAccessExpr
+    | SELF '.' ID                           # SelfAccessExpr
+    | BELIEF '.' ID                         # BeliefAccessExpr
+    | NONE                                  # NoneExpr
     | expression '[' expression ']'         # IndexExpr
     | expression '[' ':' expression ']'     # SliceToExpr
     | expression '[' expression ':' ']'     # SliceFromExpr
@@ -272,13 +276,12 @@ expression
     | expression op=OR expression           # OrExpr
     | expression op=AND expression          # AndExpr
     | expression op=XOR expression          # XorExpr
-    | NOT expression                        # NotExpr
+    | NOT expression                        # NotExpr   
     | '&' expression                        # AddressOfExpr
     | 'len' '(' expression ')'              # LenExpr
     | 'type' '(' expression ')'             # TypeExpr
-    | MSG '.' ID                            # MessageAccessExpr
-    | SELF '.' ID                           # SelfAccessExpr
-    | BELIEF '.' ID                         # BeliefAccessExpr
+    | 'random' '(' expression ',' expression ')' # RandomExpr
+    | 'abs' '(' expression ')'              # AbsExpr
     | messageInit                           # MessageInitExpr
     | msgTypeValue                          # MsgTypeValueExpr
     | listLiteral                           # ListExpr
@@ -353,6 +356,7 @@ NOT: '!';
 AND: '&&';
 OR: '||';
 XOR: '^';
+NONE: 'None';
 IF: 'if';
 ELSE: 'else';
 FOR: 'for';

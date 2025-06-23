@@ -319,6 +319,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#AbsExpr.
+    def visitAbsExpr(self, ctx:AgentarParser.AbsExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#GeqExpr.
     def visitGeqExpr(self, ctx:AgentarParser.GeqExprContext):
         return self.visitChildren(ctx)
@@ -371,6 +376,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#NeqExpr.
     def visitNeqExpr(self, ctx:AgentarParser.NeqExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#RandomExpr.
+    def visitRandomExpr(self, ctx:AgentarParser.RandomExprContext):
         return self.visitChildren(ctx)
 
 
@@ -441,6 +451,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#EqExpr.
     def visitEqExpr(self, ctx:AgentarParser.EqExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#NoneExpr.
+    def visitNoneExpr(self, ctx:AgentarParser.NoneExprContext):
         return self.visitChildren(ctx)
 
 

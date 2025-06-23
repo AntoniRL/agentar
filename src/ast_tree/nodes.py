@@ -319,3 +319,19 @@ class AddressOfExprNode(ASTNode):
 @dataclass 
 class GetTimeNode(ASTNode):
     pass
+
+
+@dataclass
+class RandomExprNode(ASTNode):
+    start: ASTNode
+    end: ASTNode
+
+
+@dataclass
+class NoneExprNode(ASTNode):
+    pass
+
+
+@dataclass
+class AbsExprNode(ASTNode):
+    base: ASTNode

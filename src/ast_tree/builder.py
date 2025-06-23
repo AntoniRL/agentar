@@ -389,6 +389,11 @@ class AgentarToASTBuilder(AgentarVisitor):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
         return ast.BinaryOpNode(op='XOR', left=left, right=right)
+    
+
+    def visitAbsExpr(self, ctx:AgentarParser.AbsExprContext):
+        base = self.visit(ctx.expression())
+        return ast.AbsExprNode(base=base)
 
 
     def visitGeqExpr(self, ctx:AgentarParser.GeqExprContext):
@@ -509,10 +514,20 @@ class AgentarToASTBuilder(AgentarVisitor):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
         return ast.BinaryOpNode(op='!=', left=left, right=right)
+    
+
+    def visitRandomExpr(self, ctx:AgentarParser.RandomExprContext):
+        start = self.visit(ctx.expression(0)) if ctx.expression(0) else None
+        end = self.visit(ctx.expression(1)) if ctx.expression(1) else None
+        return ast.RandomExprNode(start=start, end=end)
 
 
     def visitLiteralExpr(self, ctx:AgentarParser.LiteralExprContext):
         return self.visit(ctx.literal())
+    
+
+    def visitNoneExpr(self, ctx:AgentarParser.NoneExprContext):
+        return ast.NoneExprNode()
 
 
     def visitMsgTypeValueExpr(self, ctx:AgentarParser.MsgTypeValueExprContext):
@@ -520,7 +535,7 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitNotExpr(self, ctx:AgentarParser.NotExprContext):
-        left = self.visit(ctx.expression(0))
+        left = self.visit(ctx.expression())
         return ast.BinaryOpNode(op='NOT', left=left, right=None)
 
 

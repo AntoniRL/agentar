@@ -1,3 +1,5 @@
+// Program zlicza ilość nagród na planszy o zadanym wymiarze. Tworzy agenta dla każdej z lini, którzy przechodzą po planszy i zliczają ilość nagród.
+
 message response{
     int number_of_rewords;
 }

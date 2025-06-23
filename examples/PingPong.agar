@@ -1,16 +1,17 @@
+// Program demonstrujący czysty model wymiany wiadomości międyz agentami
+
 message ping{
-    string text;
+    int x;
 }
 
 message pong{
-    string text;
+    int x;
 }
 
 agent child {
     receive ping{
-        when () then {
-            print("I received:", msg.text);
-            msg_ = pong(text="Yes I am!");
+        when (msg._type == request) then {
+            msg_ = pong(x = 1);
             send2parent(msg_, msg_type=inform);
         }
     }
@@ -20,14 +21,23 @@ agent mother {
     initialize {
         agentid agentid_;
         agentid_ = spawn(child);
-        msg_ = ping(text="Are you there?");
+        msg_ = ping(x = 0);
         send(agentid_, msg_, msg_type=request);
+    }
+    beliefs {
+        int counter = 0;
+    }
+    rules {
+        when (bel.counter == 10) then {
+            print("I have repied", bel.counter,"messages with agent",self._children[0]);
+            kill();
+        }
     }
     receive pong {
         when () then {
-            print("I received:", msg.text);
-            print("Ping-pong is working!!!");
-            kill();
+            bel.counter = bel.counter + 1;
+            msg_ = ping(x = 0);
+            send2children(_, msg_, msg_type=request);
         }
     }
 }

@@ -4,7 +4,7 @@
 
 import logging
 from core.agent import AgentarAgent
-from runtime.AgentInstance import AgentInstance
+from runtime.AgentInstance.AgentInstance import AgentInstance
 from runtime.AgentRunner import AgentRunner
 from core.agentid import AgentId
 import threading
@@ -57,7 +57,7 @@ class AgentarSystem:
         receiverId = message._receiver.path
         logging.info(f"{message._sender.path}:: Sending message to {receiverId}...")        
         with self._lock:
-            if receiverId in self.agents:
+            if receiverId in self.agents.keys():
                 receiver = self.agents[receiverId]
         if receiver is not None:
             receiver._inbox.put(message)

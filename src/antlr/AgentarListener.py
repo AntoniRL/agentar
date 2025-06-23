@@ -566,6 +566,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#AbsExpr.
+    def enterAbsExpr(self, ctx:AgentarParser.AbsExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#AbsExpr.
+    def exitAbsExpr(self, ctx:AgentarParser.AbsExprContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#GeqExpr.
     def enterGeqExpr(self, ctx:AgentarParser.GeqExprContext):
         pass
@@ -662,6 +671,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#NeqExpr.
     def exitNeqExpr(self, ctx:AgentarParser.NeqExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#RandomExpr.
+    def enterRandomExpr(self, ctx:AgentarParser.RandomExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#RandomExpr.
+    def exitRandomExpr(self, ctx:AgentarParser.RandomExprContext):
         pass
 
 
@@ -788,6 +806,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#EqExpr.
     def exitEqExpr(self, ctx:AgentarParser.EqExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#NoneExpr.
+    def enterNoneExpr(self, ctx:AgentarParser.NoneExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#NoneExpr.
+    def exitNoneExpr(self, ctx:AgentarParser.NoneExprContext):
         pass
 
 
