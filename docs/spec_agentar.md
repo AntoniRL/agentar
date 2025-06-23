@@ -268,10 +268,10 @@ message <msg_name>  {
 `msg` jako struktura zawierająca pola:
 ```
 msg {
-    sender: ID        // nadawca wiadomości
-    receiver: ID      // adresat wiadomości
-    type: string      // systemowy typ wiadomości (inform, request ...)
-    ??? time: int         // czas wysłania wiadomości
+    _sender: ID        // nadawca wiadomości
+    _receiver: ID      // adresat wiadomości
+    _type: string      // systemowy typ wiadomości (inform, request ...)
+    ??? _sending_time: int         // czas wysłania wiadomości
     <Pola wiadomości>   // treść wiadomości – instancja klasy zdefiniowanej w message { ... }
 }
 ```

@@ -16,6 +16,7 @@ def resolve_type(var_type):
             elif inner.name == "string": return StringPointer, None
             elif inner.name == "list": return ListPointer, None
             else: raise TypeError(f"Unsupported pointer base type: {inner.name}")
+            
     elif isinstance(var_type, BaseTypeNode):
         name = var_type.name
         if name == "int":

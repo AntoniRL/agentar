@@ -373,7 +373,7 @@ RETURN: 'return';
 INT: '-'? [0-9]+;
 FLOAT: '-'? [0-9]+ '.' [0-9]+;
 AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
-BOOL: 'true' | 'false';
+BOOL: 'True' | 'False';
 STRING: '"' .*? '"';
 // function and variables names 
 ID: [a-zA-Z_][a-zA-Z0-9_]*;

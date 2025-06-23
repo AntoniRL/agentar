@@ -22,13 +22,16 @@ agent menager_by_lines {
     receive set_world {
         when () then {
             list world = [[0,1],[0,1]];
-            do(after_get_world, [msg.new_world]);
+            bool bool_variable;
+            bool_variable = do(after_get_world, [msg.new_world]);
+            print(bool_variable);
         }
     }
     action after_get_world(list new_world): void {
         print("I am in action");
         sleep(1);
         bel.my_world = new_world;
+        return True;
     }
 }
 

@@ -568,7 +568,7 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitBoolLiteral(self, ctx:AgentarParser.BoolLiteralContext):
-        return ast.LiteralNode(value=ctx.getText() == 'true')  # Convert to boolean
+        return ast.LiteralNode(value=ctx.getText() == 'True')  # Convert to boolean
 
 
     def visitMsgTypeValue(self, ctx:AgentarParser.MsgTypeValueContext):
