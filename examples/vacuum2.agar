@@ -1,3 +1,7 @@
+// Description: A simple environment with two rooms (A and B),
+// where an autonomous vacuum cleaner senses dirt 
+// and cleans both rooms using the fewest possible steps.
+
 message cleaned {}
 
 agent cleaner {

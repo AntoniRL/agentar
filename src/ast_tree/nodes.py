@@ -113,6 +113,7 @@ class AssignmentNode(ASTNode):
     value: ASTNode
     index: Optional[ASTNode] = None
 
+
 @dataclass
 class IndexRangeNode(ASTNode):
     start: Optional[ASTNode] = None
@@ -226,14 +227,38 @@ class BelAccessNode(ASTNode):
     path: List[str]  # e.g., ['bel', 'text', ...]
 
 
-@dataclass
-class MapLiteralNode(ASTNode):
-    entries: dict  # Dict[str, ASTNode]
-
 
 @dataclass
 class ListLiteralNode(ASTNode):
     elements: List[ASTNode]
+
+
+@dataclass
+class DictLiteralNode(ASTNode):
+    dictionary: dict
+
+
+@dataclass
+class DictKeysNode(ASTNode):
+    base: ASTNode
+
+
+@dataclass
+class DictValuesNode(ASTNode):
+    base: ASTNode
+
+
+@dataclass
+class DictGetNode(ASTNode):
+    base: ASTNode
+    key: ASTNode
+    default: Optional[ASTNode] = None # To implement: default value if key not found. 
+
+
+@dataclass
+class DictDelNode(ASTNode):
+    base: ASTNode
+    key: ASTNode
 
 
 @dataclass

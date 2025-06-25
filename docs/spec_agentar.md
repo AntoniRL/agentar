@@ -229,18 +229,29 @@ TODO: obsługa map
 };
 ```
 
-??? Dostęp do klucza:
-`let username = user["name"];`
+Dostęp do kluczy:
+`keys_list = user.keys()`    (DictKeysExpr)
 
-??? Modyfikacja wartości:
+dostęp do wartości:
+`values_list = user.values()`   (DictValuesExpr)
+
+Dostęp do wartości o podanym kluczu (IndexExpr)
+`user["name"];`    Zwraca wartość  
+`username = user["name"];` 
+
+Modyfikacja wartości:  (IndexAssign)
 `user["age"] = 31;`
 
-??? Dodanie nowej pary:
+Dodanie nowej pary:  (IndexAssign)
 `user["city"] = "Warsaw";`
+
+Usunoęcie element  (dictDelStmt)
+del user["city"];
 
 Uwagi projektowe:
 - Listy są indeksowane od 0.
 - Dodanie elementu [] = x to syntactic sugar dla append(x).
+- Nie można nadawać wartości początkowych w polu fields dla list i dict... 
 
 
 

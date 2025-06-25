@@ -1,0 +1,10 @@
+
+agent mother {
+    fields {
+    }
+    initialize {
+        dict myDict = {1=1, 2=3};
+        print(myDict.get(1));
+        print(myDict.get(3));
+    }
+}

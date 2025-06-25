@@ -27,6 +27,7 @@ statement
     | senseStmt
     | goalCheckStmt
     | getTimeStmt
+    | dictDelStmt
     ;
 
 // === Mother declaration
@@ -170,7 +171,12 @@ getTimeStmt
     : 'getTime' '('')' ';'
     ;    
 
-// === End of statements
+
+dictDelStmt
+    : 'del' expression '[' expression ']' ';'
+    ;
+
+// === End_of_statements
 
 
 messageInit
@@ -222,6 +228,11 @@ breakStmt
     ;
     
 
+doStmt
+    : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
+    ;
+
+
 variableDecl
     : type ID ('=' expression)? ';'                       # VarDecl
     ;
@@ -241,16 +252,12 @@ assignment
     | expression '=' goalCheckStmt                        # SelfGoalCheckAssign
     ;
 
-doStmt
-    : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
-    ;
-
 type
     :  bodyType                 # BacisType
     | 'pointer<'type'>'         # PointerType
     ;
 
-bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
+bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'dict' | 'agentid';
 
 
 
@@ -260,6 +267,9 @@ expression
     | SELF '.' ID                           # SelfAccessExpr
     | BELIEF '.' ID                         # BeliefAccessExpr
     | NONE                                  # NoneExpr
+    | expression '.keys()'                  # DictKeysExpr   
+    | expression '.values()'                # DictValuesExpr  
+    | expression '.get('expression')'       # DictGetExpr
     | expression '[' expression ']'         # IndexExpr
     | expression '[' ':' expression ']'     # SliceToExpr
     | expression '[' expression ':' ']'     # SliceFromExpr
@@ -285,19 +295,31 @@ expression
     | messageInit                           # MessageInitExpr
     | msgTypeValue                          # MsgTypeValueExpr
     | listLiteral                           # ListExpr
-    | mapLiteral                            # MapExpr
+    | dictLiteral                           # DictExpr
     | literal                               # LiteralExpr
+    | doExpr                                # DoExpression
     | ID                                    # VarReference
     | AGENTID                               # AgentIdExpr
     ;
+
+
+doExpr
+    : 'do(' ID (',' '['expression (',' expression)*']')?  ')'
+    ;
+
 
 listLiteral
     : '[' (expression (',' expression)*)? ']'
     ;
 
-mapLiteral
-    : '{' (ID ':' expression (',' ID ':' expression)*)? '}'
+dictLiteral
+    : '{' dictEntry (',' dictEntry)* '}'
     ;
+
+dictEntry
+  : key=expression '=' value=expression
+  ;
+
 
 literal
     : INT       # IntLiteral
@@ -305,6 +327,7 @@ literal
     | STRING    # StringLiteral
     | BOOL      # BoolLiteral
     ;
+
 
 msgTypeValue
     : MSGTYPE_INFORM

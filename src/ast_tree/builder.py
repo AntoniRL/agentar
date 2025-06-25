@@ -186,6 +186,13 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitGetTimeStmt(self, ctx:AgentarParser.GetTimeStmtContext):
         return ast.GetTimeNode()
+    
+
+    def visitDictDelStmt(self, ctx:AgentarParser.DictDelStmtContext):
+        base = self.visit(ctx.expression(0)) 
+        key = self.visit(ctx.expression(1))  
+        return ast.DictDelNode(base=base, key=key)
+
 
 
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
@@ -354,17 +361,6 @@ class AgentarToASTBuilder(AgentarVisitor):
             return ast.PointerTypeNode(inner=inner)
 
 
-    def visitMapExpr(self, ctx:AgentarParser.MapExprContext):
-        entries = {}
-        ids = ctx.ID()
-        exprs = ctx.expression()
-        for i in range(len(ids)):
-            key = ids[i].getText()
-            value = self.visit(exprs[i])
-            entries[key] = value
-        return ast.MapLiteralNode(entries=entries)
-
-
     def visitAndExpr(self, ctx:AgentarParser.AndExprContext):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
@@ -413,6 +409,13 @@ class AgentarToASTBuilder(AgentarVisitor):
         else: 
             path = ['msg', ctx.ID().getText()]
         return ast.MsgAccessNode(path=path)
+    
+
+    def visitDoExpression(self, ctx:AgentarParser.DoExpressionContext):
+        ctx = ctx.doExpr()
+        name = ctx.ID().getText()
+        variables = [self.visit(var) for var in ctx.expression()] if ctx.expression() else []
+        return ast.DoNode(name=name, variables=variables)
 
 
     def visitLtExpr(self, ctx:AgentarParser.LtExprContext):
@@ -474,6 +477,11 @@ class AgentarToASTBuilder(AgentarVisitor):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
         return ast.BinaryOpNode(op='%', left=left, right=right)
+
+
+    def visitDictValuesExpr(self, ctx:AgentarParser.DictValuesExprContext):
+        base = self.visit(ctx.expression())
+        return ast.DictValuesNode(base=base)
 
 
     def visitBeliefAccessExpr(self, ctx:AgentarParser.BeliefAccessExprContext):
@@ -550,6 +558,17 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitMessageInitExpr(self, ctx:AgentarParser.MessageInitExprContext):
         return self.visit(ctx.messageInit())
+    
+
+    def visitDictKeysExpr(self, ctx:AgentarParser.DictKeysExprContext):
+        base = self.visit(ctx.expression())
+        return ast.DictKeysNode(base=base)
+    
+
+    def visitDictGetExpr(self, ctx:AgentarParser.DictGetExprContext):
+        base = self.visit(ctx.expression(0))
+        key = self.visit(ctx.expression(1))
+        return ast.DictGetNode(base=base, key=key)
 
 
     def visitAddSubExpr(self, ctx:AgentarParser.AddSubExprContext):
@@ -562,12 +581,13 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.BinaryOpNode(op=op, left=left, right=right)
 
 
-    def visitListLiteral(self, ctx:AgentarParser.ListLiteralContext):
-        pass # TODO: Handle list literal if needed, currently not used in the grammar
-
-
-    def visitMapLiteral(self, ctx:AgentarParser.MapLiteralContext):
-        pass # TODO: Handle map literal if needed, currently not used in the grammar
+    def visitDictLiteral(self, ctx:AgentarParser.DictLiteralContext):
+        dictrionary = {}
+        for entry in ctx.dictEntry():
+            key = entry.key.getText()  # Get the key as a string
+            value = self.visit(entry.value)
+            dictrionary[key] = value
+        return ast.DictLiteralNode(dictionary=dictrionary)
 
 
     def visitIntLiteral(self, ctx:AgentarParser.IntLiteralContext):

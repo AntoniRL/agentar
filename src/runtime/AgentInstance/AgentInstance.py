@@ -423,6 +423,16 @@ class AgentInstance:
             return self._now
 
 
+        elif isinstance(stmt, DictDelNode):
+            base = self.eval_expr(stmt.base, local_var, local_var_type, message=message)
+            key = str(self.eval_expr(stmt.key, local_var, local_var_type, message=message))
+            if not isinstance(base, dict):
+                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+            if key in base:
+                del base[key]
+            else:
+                raise KeyError(f"Key '{key}' not found in dictionary.")
+
 
 # ---EVAL_EXPR-----------------------------------
     def eval_expr(self, expr, local_var=None, local_var_type=None, message=None):
@@ -457,6 +467,10 @@ class AgentInstance:
                 raise NameError(f"Variable '{expr.name}' is not declared.")
             
 
+        elif isinstance(expr, DoNode):
+            return self.execute_stmt(expr, local_var, local_var_type, message)  # Execute the action with the provided local variables
+
+
         elif isinstance(expr, BaseTypeNode):
             return resolve_type(expr)[0]
             
@@ -486,9 +500,14 @@ class AgentInstance:
         elif isinstance(expr, IndexAccessNode):
             base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
             index = self.eval_expr(expr.index, local_var, local_var_type, message=message)
-            if index < 0 or index >= len(base):
-                raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
-            return base[index]
+            if type(base) == list:
+                if index < 0 or index >= len(base):
+                    raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
+                return base[index]
+            elif type(base) == dict:
+                if index not in base:
+                    raise KeyError(f"Key '{index}' not found in dictionary.")
+                return base[index]
         
 
         elif isinstance(expr, SliceAccessNode):
@@ -535,6 +554,35 @@ class AgentInstance:
 
         elif isinstance(expr, ListLiteralNode):
             return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]
+        
+
+        elif isinstance(expr, DictLiteralNode):
+            return {key: self.eval_expr(value, local_var, local_var_type) for key, value in expr.dictionary.items()}
+
+
+        elif isinstance(expr, DictKeysNode):
+            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            if not isinstance(base, dict):
+                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+            return list(base.keys())
+        
+
+        elif isinstance(expr, DictValuesNode):
+            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            if not isinstance(base, dict):
+                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+            return list(base.values())
+        
+
+        elif isinstance(expr, DictGetNode):
+            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            key = str(self.eval_expr(expr.key, local_var, local_var_type, message=message))
+            if not isinstance(base, dict):
+                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+            if key in base:
+                return base[key]
+            else:
+                return None
 
 
         elif isinstance(expr, AddressOfExprNode):
@@ -673,9 +721,6 @@ class AgentInstance:
             if expected_type != list:
                 raise TypeError(f"Cannot 'add' to non-list field '{target}'")
             storage[target].append(value)
-        elif isinstance(index, IndexRangeNode):
-            # TODO: implement range assignment
-            pass
         else:
             idx = self.eval_expr(index, local_var, local_var_type)  # Assuming index expr independent
             storage[target][idx] = value

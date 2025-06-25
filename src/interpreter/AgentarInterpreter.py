@@ -102,7 +102,7 @@ class AgentarInterpreter:
     def FieldDeclare(self, node):
         for field in node.declarations:
             # chek if field has value or not then make sure it is correct class
-            if field.value is None:
+            if field.value is None or isinstance(field.value, ListLiteralNode, DictLiteralNode):
                 type_name, default_value = resolve_type(field.var_type)     
 
                 self.agent._fields[field.name] = default_value

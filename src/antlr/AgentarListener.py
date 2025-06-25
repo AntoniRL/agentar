@@ -287,6 +287,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#dictDelStmt.
+    def enterDictDelStmt(self, ctx:AgentarParser.DictDelStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#dictDelStmt.
+    def exitDictDelStmt(self, ctx:AgentarParser.DictDelStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#messageInit.
     def enterMessageInit(self, ctx:AgentarParser.MessageInitContext):
         pass
@@ -383,6 +392,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#breakStmt.
     def exitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#doStmt.
+    def enterDoStmt(self, ctx:AgentarParser.DoStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#doStmt.
+    def exitDoStmt(self, ctx:AgentarParser.DoStmtContext):
         pass
 
 
@@ -503,15 +521,6 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#doStmt.
-    def enterDoStmt(self, ctx:AgentarParser.DoStmtContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#doStmt.
-    def exitDoStmt(self, ctx:AgentarParser.DoStmtContext):
-        pass
-
-
     # Enter a parse tree produced by AgentarParser#BacisType.
     def enterBacisType(self, ctx:AgentarParser.BacisTypeContext):
         pass
@@ -539,15 +548,6 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#MapExpr.
-    def enterMapExpr(self, ctx:AgentarParser.MapExprContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#MapExpr.
-    def exitMapExpr(self, ctx:AgentarParser.MapExprContext):
-        pass
-
-
     # Enter a parse tree produced by AgentarParser#AndExpr.
     def enterAndExpr(self, ctx:AgentarParser.AndExprContext):
         pass
@@ -572,6 +572,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#AbsExpr.
     def exitAbsExpr(self, ctx:AgentarParser.AbsExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#DoExpression.
+    def enterDoExpression(self, ctx:AgentarParser.DoExpressionContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#DoExpression.
+    def exitDoExpression(self, ctx:AgentarParser.DoExpressionContext):
         pass
 
 
@@ -692,6 +701,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#DictExpr.
+    def enterDictExpr(self, ctx:AgentarParser.DictExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#DictExpr.
+    def exitDictExpr(self, ctx:AgentarParser.DictExprContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#NotExpr.
     def enterNotExpr(self, ctx:AgentarParser.NotExprContext):
         pass
@@ -716,6 +734,24 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#MessageInitExpr.
     def exitMessageInitExpr(self, ctx:AgentarParser.MessageInitExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#DictKeysExpr.
+    def enterDictKeysExpr(self, ctx:AgentarParser.DictKeysExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#DictKeysExpr.
+    def exitDictKeysExpr(self, ctx:AgentarParser.DictKeysExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#DictGetExpr.
+    def enterDictGetExpr(self, ctx:AgentarParser.DictGetExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#DictGetExpr.
+    def exitDictGetExpr(self, ctx:AgentarParser.DictGetExprContext):
         pass
 
 
@@ -770,6 +806,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#OrExpr.
     def exitOrExpr(self, ctx:AgentarParser.OrExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#DictValuesExpr.
+    def enterDictValuesExpr(self, ctx:AgentarParser.DictValuesExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#DictValuesExpr.
+    def exitDictValuesExpr(self, ctx:AgentarParser.DictValuesExprContext):
         pass
 
 
@@ -845,6 +890,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#doExpr.
+    def enterDoExpr(self, ctx:AgentarParser.DoExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#doExpr.
+    def exitDoExpr(self, ctx:AgentarParser.DoExprContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#listLiteral.
     def enterListLiteral(self, ctx:AgentarParser.ListLiteralContext):
         pass
@@ -854,12 +908,21 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#mapLiteral.
-    def enterMapLiteral(self, ctx:AgentarParser.MapLiteralContext):
+    # Enter a parse tree produced by AgentarParser#dictLiteral.
+    def enterDictLiteral(self, ctx:AgentarParser.DictLiteralContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#mapLiteral.
-    def exitMapLiteral(self, ctx:AgentarParser.MapLiteralContext):
+    # Exit a parse tree produced by AgentarParser#dictLiteral.
+    def exitDictLiteral(self, ctx:AgentarParser.DictLiteralContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#dictEntry.
+    def enterDictEntry(self, ctx:AgentarParser.DictEntryContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#dictEntry.
+    def exitDictEntry(self, ctx:AgentarParser.DictEntryContext):
         pass
 
 
