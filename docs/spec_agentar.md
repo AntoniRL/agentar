@@ -168,6 +168,7 @@ TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie 
 | `for` | Pętla iteracyjna | dowolnie |
 | `while()`      | Pętla warunkowa | dowolnie |
 | `break`      | Przerywa pętlę | dowolnie |
+| `continue` | Idzie do następnej iteracji pętli przerywając aktualną | dowolnie |
 
 Przykład:
 ```agentar
@@ -212,6 +213,9 @@ Odwołanie do elementu:
 
 Dodanie na koniec:
 `myList[] = 4;  // teraz myList = [1, 2, 3, 4]`
+
+Usunoęcie element  (dictDelStmt)
+`del myList[1];`
 
 Aktualizacja elementu:
 `myList[1] = 10;  // teraz myList = [1, 10, 3, 4]`

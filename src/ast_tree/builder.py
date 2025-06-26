@@ -406,6 +406,11 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.BinaryOpNode(op='>=', left=left, right=right)
     
 
+    def visitNegExpr(self, ctx:AgentarParser.NegExprContext):
+        base = self.visit(ctx.expression())
+        return ast.NegExprNode(base=base)
+    
+
     def visitLenExpr(self, ctx:AgentarParser.LenExprContext):
         base = self.visit(ctx.expression())
         return ast.LenNode(base=base)
@@ -523,6 +528,10 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
         variable = self.visit(ctx.expression())
         return ast.AddressOfExprNode(variable=variable)
+    
+
+    def visitDeepCopyExpr(self, ctx:AgentarParser.DeepCopyExprContext):
+        return ast.DeepCopyNode(variable=self.visit(ctx.expression()))
 
 
     def visitEqExpr(self, ctx:AgentarParser.EqExprContext):
@@ -595,12 +604,12 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitDictLiteral(self, ctx:AgentarParser.DictLiteralContext):
-        dictrionary = {}
+        keys = []
+        values = []
         for entry in ctx.dictEntry():
-            key = entry.key.getText()  # Get the key as a string
-            value = self.visit(entry.value)
-            dictrionary[key] = value
-        return ast.DictLiteralNode(dictionary=dictrionary)
+            keys.append(self.visit(entry.key))  # get the key expression
+            values.append(self.visit(entry.value))
+        return ast.DictLiteralNode(keys=keys, values=values)
 
 
     def visitIntLiteral(self, ctx:AgentarParser.IntLiteralContext):

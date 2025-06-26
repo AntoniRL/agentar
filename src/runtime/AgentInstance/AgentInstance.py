@@ -255,7 +255,7 @@ class AgentInstance:
             msg_to_send = []
             with self._runtime._lock:
                 for child in self._children:
-                    if agent_type != "_" and agent_type == self._runtime.agents[child]._name:
+                    if agent_type != "_" and agent_type == self._runtime.agents[child.path]._name:
                         new_msg = deepcopy(msg)
                         new_msg._content = content # Restore the content after deepcopy
                         new_msg._receiver = child
@@ -394,7 +394,7 @@ class AgentInstance:
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
             def update_loop_var():
                 self.execute_stmt(stmt.update, local_var, local_var_type)
-            while check_condition() and not self._break_flag:
+            while check_condition() and not self._break_flag and not self._return_flag:
                 for statement in stmt.body:
                     self.execute_stmt(statement, local_var, local_var_type)
                     if self._continue_flag: # If continue flag is set, skip to the next iteration
@@ -403,12 +403,13 @@ class AgentInstance:
                         break
                 update_loop_var()
             self.break_flag = False  # Reset break flag after loop execution
+            self._continue_flag = False  # Reset continue flag after loop execution
 
 
         elif isinstance(stmt, WhileLoopNode):
             def check_condition():
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
-            while check_condition() and not self._break_flag:
+            while check_condition() and not self._break_flag and not self._return_flag:
                 for statement in stmt.body:
                     self.execute_stmt(statement, local_var, local_var_type)
                     if self._continue_flag: # If continue flag is set, skip to the next iteration
@@ -442,13 +443,21 @@ class AgentInstance:
 
         elif isinstance(stmt, DictDelNode):
             base = self.eval_expr(stmt.base, local_var, local_var_type, message=message)
-            key = str(self.eval_expr(stmt.key, local_var, local_var_type, message=message))
-            if not isinstance(base, dict):
-                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
-            if key in base:
-                del base[key]
+            key = self.eval_expr(stmt.key, local_var, local_var_type, message=message)
+            if isinstance(base, dict):
+                if key in base:
+                    del base[key]
+                else:
+                    raise KeyError(f"Key '{key}' not found in dictionary.")
+            elif isinstance(base, list):
+                if not isinstance(key, int):
+                    raise TypeError(f"Expected an integer index for list, got {type(key).__name__}")
+                if 0 <= key < len(base):
+                    del base[key]
+                else:
+                    raise IndexError(f"List index out of range: {key}")
             else:
-                raise KeyError(f"Key '{key}' not found in dictionary.")
+                raise TypeError(f"Expected a dictionary or list, got {type(base).__name__}")
 
 
 # ---EVAL_EXPR-----------------------------------
@@ -469,8 +478,17 @@ class AgentInstance:
             else:
                 return expr.value
             
+
+        elif isinstance(expr, NegExprNode):
+            return -self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            
         elif isinstance(expr, NoneExprNode):
             return None
+        
+
+        elif isinstance(expr, DeepCopyNode):
+            value = self.eval_expr(expr.variable, local_var, local_var_type, message=message)
+            return deepcopy(value)
 
         
         elif isinstance(expr, VarRefNode):
@@ -518,7 +536,7 @@ class AgentInstance:
             base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
             index = self.eval_expr(expr.index, local_var, local_var_type, message=message)
             if type(base) == list or type(base) == tuple or check_if_var_is_pointer(base):
-                if index < 0 or index >= len(base):
+                if index < -len(base) or index >= len(base):
                     raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
                 return base[index]
             elif type(base) == dict or check_if_var_is_pointer(base):
@@ -549,6 +567,7 @@ class AgentInstance:
             else:
                 raise NameError(f"Variable '{name}' is not declared.")  
             
+
         elif isinstance(expr, MsgAccessNode):
             name = expr.path[1]
             if hasattr(message, name) or name in message._content:
@@ -578,8 +597,11 @@ class AgentInstance:
 
 
         elif isinstance(expr, DictLiteralNode):
-            return {key: self.eval_expr(value, local_var, local_var_type) for key, value in expr.dictionary.items()}
-
+            return {
+                self.eval_expr(key, local_var, local_var_type): 
+                self.eval_expr(value, local_var, local_var_type)
+                for key, value in zip(expr.keys, expr.values)
+            }
 
         elif isinstance(expr, DictKeysNode):
             base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
@@ -597,7 +619,7 @@ class AgentInstance:
 
         elif isinstance(expr, DictGetNode):
             base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
-            key = str(self.eval_expr(expr.key, local_var, local_var_type, message=message))
+            key = self.eval_expr(expr.key, local_var, local_var_type, message=message)
             if not isinstance(base, dict):
                 raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
             if key in base:
@@ -710,8 +732,12 @@ class AgentInstance:
             local_var[target_node] = value  # Assign the message instance to the local variable
             local_var_type[target_node] = MessageInstance  # Set the type of the local variable
         elif isinstance(target_node, IndexAccessNode): # Handle indexing
-            container, final_idx = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
-            container[final_idx] = value
+            if index == "add":
+                container, _ = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
+                container.append(value)
+            else:
+                container, final_idx = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
+                container[final_idx] = value
         elif isinstance(target_node, SliceAccessNode):
             self.handle_slice_assignment(target_node, value, local_var, local_var_type)
         else:

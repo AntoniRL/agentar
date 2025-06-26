@@ -155,7 +155,7 @@ sleepStmt
     ;
 
 returnStmt
-    : 'return' expression ';'
+    : 'return' expression? ';'
     ;
 
 
@@ -250,14 +250,14 @@ variableDecl
 assignment
     : expression '=' getTimeStmt                          # GetTimeAssign
     | ID '=' expression ';'                               # SimpleAssign
-    | ID '[' expression ']' '=' expression ';'            # IndexAssign
     | ID '['']' '=' expression ';'                        # ListAddAssign
+    | ID '[' expression ']' '=' expression ';'            # IndexAssign
     | ID '=' spawnStmt                                    # SpawnAssign
     | ID '=' doStmt                                       # DoAssign
     | ID '=' goalCheckStmt                                # GoalCheckAssign
     | expression '=' doStmt                               # DoSelfAssign
-    | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
     | expression'['']' '=' expression ';'                 # SelfListAddAssign
+    | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
     | expression '=' expression ';'                       # SelfAssign
     | expression '=' goalCheckStmt                        # SelfGoalCheckAssign
     ;
@@ -272,35 +272,39 @@ bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'tuple' | 'list' | 'dic
 
 expression
     : '(' expression ')'                    # ParenExpr
-    | 'len' '(' expression ')'              # LenExpr
-    | 'type' '(' expression ')'             # TypeExpr
-    | 'abs' '(' expression ')'              # AbsExpr  
+    | '-' expression                        # NegExpr
     | MSG '.' ID                            # MessageAccessExpr
     | SELF '.' ID                           # SelfAccessExpr
     | BELIEF '.' ID                         # BeliefAccessExpr
-    | NONE                                  # NoneExpr
-    | expression '.keys()'                  # DictKeysExpr   
-    | expression '.values()'                # DictValuesExpr  
-    | expression '.get('expression')'       # DictGetExpr
     | expression '[' expression ']'         # IndexExpr
     | expression '[' ':' expression ']'     # SliceToExpr
     | expression '[' expression ':' ']'     # SliceFromExpr
     | expression '[' expression ':' expression ']' # SliceRangeExpr
-    | expression op=MODULO expression       # ModuloExpr
+    | expression '.keys()'                  # DictKeysExpr   
+    | expression '.values()'                # DictValuesExpr  
+    | expression '.get('expression')'       # DictGetExpr
+    | 'len' '(' expression ')'              # LenExpr
+    | 'type' '(' expression ')'             # TypeExpr
+    | 'abs' '(' expression ')'              # AbsExpr  
+    | 'random' '(' expression ',' expression ')' # RandomExpr
+    | 'deepcopy' '(' expression ')'         # DeepCopyExpr
+    | NOT expression                        # NotExpr 
+    | '&' expression                        # AddressOfExpr
     | expression op=('*'|'/') expression    # MulDivExpr
     | expression op=('+'|'-') expression    # AddSubExpr
+    | expression op=MODULO expression       # ModuloExpr
     | expression op=EQ expression           # EqExpr
     | expression op=NEQ expression          # NeqExpr
     | expression op=LT expression           # LtExpr
     | expression op=GT expression           # GtExpr
     | expression op=LEQ expression          # LeqExpr
     | expression op=GEQ expression          # GeqExpr
-    | expression op=OR expression           # OrExpr
     | expression op=AND expression          # AndExpr
+    | expression op=OR expression           # OrExpr
     | expression op=XOR expression          # XorExpr
-    | NOT expression                        # NotExpr 
-    | '&' expression                        # AddressOfExpr
-    | 'random' '(' expression ',' expression ')' # RandomExpr
+    | NONE                                  # NoneExpr
+    | ID                                    # VarReference
+    | AGENTID                               # AgentIdExpr
     | messageInit                           # MessageInitExpr
     | msgTypeValue                          # MsgTypeValueExpr
     | tupleLiteral                          # TupleExpr
@@ -308,8 +312,6 @@ expression
     | dictLiteral                           # DictExpr
     | literal                               # LiteralExpr
     | doExpr                                # DoExpression
-    | ID                                    # VarReference
-    | AGENTID                               # AgentIdExpr
     ;
 
 
@@ -412,8 +414,8 @@ RETURN: 'return';
 
 
 
-INT: '-'? [0-9]+;
-FLOAT: '-'? [0-9]+ '.' [0-9]+;
+INT: [0-9]+;
+FLOAT: [0-9]+ '.' [0-9]+;
 AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
 BOOL: 'True' | 'False';
 STRING: '"' .*? '"';

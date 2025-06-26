@@ -240,7 +240,8 @@ class ListLiteralNode(ASTNode):
 
 @dataclass
 class DictLiteralNode(ASTNode):
-    dictionary: dict
+    keys: list[ASTNode]
+    values: list[ASTNode]
 
 
 @dataclass
@@ -375,3 +376,13 @@ class NoneExprNode(ASTNode):
 @dataclass
 class AbsExprNode(ASTNode):
     base: ASTNode
+
+
+@dataclass
+class NegExprNode(ASTNode):
+    base: ASTNode
+
+
+@dataclass
+class DeepCopyNode(ASTNode):
+    variable: ASTNode

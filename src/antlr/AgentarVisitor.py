@@ -254,13 +254,13 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#IndexAssign.
-    def visitIndexAssign(self, ctx:AgentarParser.IndexAssignContext):
+    # Visit a parse tree produced by AgentarParser#ListAddAssign.
+    def visitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#ListAddAssign.
-    def visitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
+    # Visit a parse tree produced by AgentarParser#IndexAssign.
+    def visitIndexAssign(self, ctx:AgentarParser.IndexAssignContext):
         return self.visitChildren(ctx)
 
 
@@ -284,13 +284,13 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#SelfIndexAssign.
-    def visitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
+    # Visit a parse tree produced by AgentarParser#SelfListAddAssign.
+    def visitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#SelfListAddAssign.
-    def visitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
+    # Visit a parse tree produced by AgentarParser#SelfIndexAssign.
+    def visitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
         return self.visitChildren(ctx)
 
 
@@ -341,6 +341,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#GeqExpr.
     def visitGeqExpr(self, ctx:AgentarParser.GeqExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#NegExpr.
+    def visitNegExpr(self, ctx:AgentarParser.NegExprContext):
         return self.visitChildren(ctx)
 
 
@@ -486,6 +491,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#AddressOfExpr.
     def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#DeepCopyExpr.
+    def visitDeepCopyExpr(self, ctx:AgentarParser.DeepCopyExprContext):
         return self.visitChildren(ctx)
 
 
