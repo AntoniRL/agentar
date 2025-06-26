@@ -20,6 +20,8 @@ def get_pointer_type(value):
         return StringPointer
     elif isinstance(value, list):
         return ListPointer
+    elif isinstance(value, dict):
+        return DictPointer
     else:
         raise TypeError(f"Unsupported type for pointer: {type(value)}")
 
@@ -132,4 +134,37 @@ class ListPointer(BasePointer):
             return item in self._ref
         
 
+
+class DictPointer(BasePointer):
+    def __getitem__(self, key):
+        with self._lock:
+            return self._ref[key]
+
+    def __setitem__(self, key, value):
+        with self._lock:
+            self._ref[key] = value
+
+    def get(self, key, default=None):
+        with self._lock:
+            return self._ref.get(key, default)
+
+    def keys(self):
+        with self._lock:
+            return list(self._ref.keys())
+
+    def values(self):
+        with self._lock:
+            return list(self._ref.values())
+
+    def items(self):
+        with self._lock:
+            return list(self._ref.items())
+
+    def __len__(self):
+        with self._lock:
+            return len(self._ref)
+
+    def __iter__(self):
+        with self._lock:
+            return iter(deepcopy(self._ref))
 

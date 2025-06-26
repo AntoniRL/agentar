@@ -1,10 +1,120 @@
+agent cleaner {
+    fields {
+        pointer<list> WORLD;
+    }
+    initialize {
+        logging("Cleaner pos: x=", bel.x, "y=", bel.y);
+        bel.world_map = {(0,0)=0};
+    }
+    destroy {
+    }
+    beliefs{
+        int cost_of_cleaning = 0;
+        int x = 0;      //agent pos x
+        int y = 0;      //agent pox y
+        bool is_field_derty = False;
+        dict world_map;
+    }
+    sense {
+        do(check_dirt, [bel.x, bel.y]);
+        //do(get_world_around, [bel.x, bel.y]);
+    }
+    goals{
+
+    }
+
+    rules { // if derty then clean
+        when () then {
+            do(clean, [bel.x, bel.y]);
+        }        
+        when () then {
+        }
+    }
+
+    action clean(int x, int y): void {
+        self.WORLD[x][y] = 0;
+        bel.cost = bel.cost + 1;
+    }
+
+    action check_dirt(int x, int y): bool {
+        if (self.WORLD[x][y] == 1){
+            return True;
+        } else {
+            if (self.WORLD[x][y] == 0){
+                return False;
+            }
+        }
+    }
+
+    action get_world_around(int x, int y): void {
+        list directions = [(0,1), (1,0), (0,-1), (-1,0)];
+        int i = 0;
+        while (i < len(directions)) {
+            tuple d = directions[i];
+            int nx = x + d[0];
+            int ny = y + d[1];
+            if (nx < 0 ||  nx > len(self.WORLD) || ny < 0 || ny < len(self.WORLD[0])) continue;
+            tuple np = (nx, ny);
+
+            if (self.world_map.get(np) == None ) {
+                bel.world_map[np] = -1; // unknown
+            }
+            i = i + 1;
+        }
+    }
+}
+
+
+
+agent mess {
+    fields{
+        pointer<list> WORLD;
+    }
+    rules {
+        when () then {
+            int x;
+            int y;
+            x = random(0,4);
+            y = random(0,4);
+            if (self.WORLD[x][y] != 2) self.WORLD[x][y] = 1;
+            sleep(2);
+        }
+    }
+}
+
+
 
 agent mother {
     fields {
+        list WORLD;
     }
     initialize {
-        dict myDict = {1=1, 2=3};
-        print(myDict.get(1));
-        print(myDict.get(3));
+        self.WORLD = [[0,0,2,0,0],
+                      [0,0,2,0,2],
+                      [0,0,0,0,0],
+                      [0,2,2,0,0],
+                      [0,2,0,0,0]];
+        agentid agentid_;
+        agentid_ = spawn(mess, [&self.WORLD]);
+        //agentid_ = spawn(cleaner, [&self.WORLD]);
+
+        int x = 0;
+        int y = 4;
+        list directions = [(0,1), (1,0), (0,-1), (-1,0)];
+        int i = 0;
+        while (i < len(directions)) {
+            tuple d = directions[i];
+            i = i + 1;
+            int nx = x + d[0];
+            int ny = y + d[1];
+            if ( nx < 0 ||  (nx > (len(self.WORLD) - 1)) || ny < 0 || (ny > (len(self.WORLD[0])-1)) ) continue;
+            tuple np = (nx, ny);
+            print(np);
+        }
+    }
+    rules{
+        when () then{
+            logging(self.WORLD);
+        }
     }
 }

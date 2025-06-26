@@ -184,6 +184,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#loggingStmt.
+    def visitLoggingStmt(self, ctx:AgentarParser.LoggingStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#ifStmt.
     def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
         return self.visitChildren(ctx)
@@ -221,6 +226,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#breakStmt.
     def visitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#continueStmt.
+    def visitContinueStmt(self, ctx:AgentarParser.ContinueStmtContext):
         return self.visitChildren(ctx)
 
 
@@ -449,6 +459,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#TupleExpr.
+    def visitTupleExpr(self, ctx:AgentarParser.TupleExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#OrExpr.
     def visitOrExpr(self, ctx:AgentarParser.OrExprContext):
         return self.visitChildren(ctx)
@@ -516,6 +531,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#dictEntry.
     def visitDictEntry(self, ctx:AgentarParser.DictEntryContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#tupleLiteral.
+    def visitTupleLiteral(self, ctx:AgentarParser.TupleLiteralContext):
         return self.visitChildren(ctx)
 
 

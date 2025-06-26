@@ -70,8 +70,8 @@ class AgentarSystem:
             raise ValueError(f"Agent type {agent_type} not found in system declarations.")
         
         declared_types = list(self.agents_decl[agent_type]._fields_type.values())
-        if len(declared_types) != len(fields): # Check if the number of fields matches the declared types
-            raise ValueError(f"Agent '{agent_type}' expects {len(declared_types)} fields, got {len(fields)}")
+        # if len(declared_types) != len(fields): # Check if the number of fields matches the declared types
+        #     raise ValueError(f"Agent '{agent_type}' expects {len(declared_types)} fields, got {len(fields)}")
         for i, field in enumerate(fields): # Check if each field matches the declared type
             if type(field) != declared_types[i]:
                 raise ValueError(f"Field {i}: got {type(field).__name__}, expected {declared_types[i].__name__}")

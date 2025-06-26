@@ -46,6 +46,7 @@ class AgentInstance:
         self._return_flag = False  # Flag to indicate if a return statement was executed
         self._return_object = None  # Object to return from the action
         self._break_flag = False   # Flag to indicate if a break statement was executed
+        self._continue_flag = False  # Flag to indicate if a continue statement was executed
 
     def __repr__(self):
         return (
@@ -303,16 +304,20 @@ class AgentInstance:
             
 
         # print statement
-        elif isinstance(stmt, PrintNode):
+        elif isinstance(stmt, PrintNode) or isinstance(stmt, LoggingNode):
             to_print = [self.eval_expr(value, local_var, local_var_type, message) for value in stmt.values]
             # make printing id of AgentId objects more readable
             for i, value in enumerate(to_print):
                 if type(value) is list:
                     for j, val in enumerate(value):
                         if type(val) == AgentId:
-                            to_print[i][j] = val.path                
-            print(f"AGENT {self._id}::", " ".join(str(v) for v in to_print))
-            logging.info(f"{self._id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
+                            to_print[i][j] = val.path   
+            if isinstance(stmt, PrintNode):
+                print(f"AGENT {self._id}::", " ".join(str(v) for v in to_print))
+                logging.info(f"{self._id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
+            else: 
+                logging.info(f"{self._id.path}:: (LOGGING) " + " ".join(str(v) for v in to_print))
+
 
 
         # KillNode handles agent termination
@@ -392,6 +397,10 @@ class AgentInstance:
             while check_condition() and not self._break_flag:
                 for statement in stmt.body:
                     self.execute_stmt(statement, local_var, local_var_type)
+                    if self._continue_flag: # If continue flag is set, skip to the next iteration
+                        self._continue_flag = False
+                        update_loop_var()
+                        break
                 update_loop_var()
             self.break_flag = False  # Reset break flag after loop execution
 
@@ -399,14 +408,22 @@ class AgentInstance:
         elif isinstance(stmt, WhileLoopNode):
             def check_condition():
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
-            while check_condition() and not self.break_flag:
+            while check_condition() and not self._break_flag:
                 for statement in stmt.body:
-                    return self.execute_stmt(statement, local_var, local_var_type)
+                    self.execute_stmt(statement, local_var, local_var_type)
+                    if self._continue_flag: # If continue flag is set, skip to the next iteration
+                        self._continue_flag = False
+                        break
+            self._continue_flag = False  # Reset continue flag after loop execution
             self._break_flag = False  # Reset break flag after loop execution
 
 
         elif isinstance(stmt, BreakNode):
             self._break_flag = True
+
+        
+        elif isinstance(stmt, ContinueNode):
+            self._continue_flag = True
 
 
         elif isinstance(stmt, SenseNode):
@@ -500,11 +517,11 @@ class AgentInstance:
         elif isinstance(expr, IndexAccessNode):
             base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
             index = self.eval_expr(expr.index, local_var, local_var_type, message=message)
-            if type(base) == list:
+            if type(base) == list or type(base) == tuple or check_if_var_is_pointer(base):
                 if index < 0 or index >= len(base):
                     raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
                 return base[index]
-            elif type(base) == dict:
+            elif type(base) == dict or check_if_var_is_pointer(base):
                 if index not in base:
                     raise KeyError(f"Key '{index}' not found in dictionary.")
                 return base[index]
@@ -555,6 +572,10 @@ class AgentInstance:
         elif isinstance(expr, ListLiteralNode):
             return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]
         
+
+        elif isinstance(expr, TupleLiteralNode):
+            return tuple(self.eval_expr(item, local_var, local_var_type) for item in expr.elements)
+
 
         elif isinstance(expr, DictLiteralNode):
             return {key: self.eval_expr(value, local_var, local_var_type) for key, value in expr.dictionary.items()}

@@ -8,10 +8,12 @@ program
 
 statement
     : printStmt
+    | loggingStmt
     | ifStmt
     | forStmt
     | whileStmt
     | breakStmt
+    | continueStmt
     | variableDecl
     | assignment
     | sendStmt
@@ -191,6 +193,10 @@ printStmt
     : 'print' '(' expression (',' expression)* ')' ';'
     ;
 
+loggingStmt
+    : 'logging' '(' expression (',' expression)* ')' ';'
+    ;
+
 ifStmt
     : 'if' '(' expression ')' blockOrStmt (elseStmt)?
     ;   
@@ -226,6 +232,10 @@ whileStmt
 breakStmt
     : 'break' ';'
     ;
+
+continueStmt
+    : 'continue' ';'
+    ;
     
 
 doStmt
@@ -257,12 +267,14 @@ type
     | 'pointer<'type'>'         # PointerType
     ;
 
-bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'dict' | 'agentid';
-
+bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'tuple' | 'list' | 'dict' | 'agentid';
 
 
 expression
     : '(' expression ')'                    # ParenExpr
+    | 'len' '(' expression ')'              # LenExpr
+    | 'type' '(' expression ')'             # TypeExpr
+    | 'abs' '(' expression ')'              # AbsExpr  
     | MSG '.' ID                            # MessageAccessExpr
     | SELF '.' ID                           # SelfAccessExpr
     | BELIEF '.' ID                         # BeliefAccessExpr
@@ -286,14 +298,12 @@ expression
     | expression op=OR expression           # OrExpr
     | expression op=AND expression          # AndExpr
     | expression op=XOR expression          # XorExpr
-    | NOT expression                        # NotExpr   
+    | NOT expression                        # NotExpr 
     | '&' expression                        # AddressOfExpr
-    | 'len' '(' expression ')'              # LenExpr
-    | 'type' '(' expression ')'             # TypeExpr
     | 'random' '(' expression ',' expression ')' # RandomExpr
-    | 'abs' '(' expression ')'              # AbsExpr
     | messageInit                           # MessageInitExpr
     | msgTypeValue                          # MsgTypeValueExpr
+    | tupleLiteral                          # TupleExpr
     | listLiteral                           # ListExpr
     | dictLiteral                           # DictExpr
     | literal                               # LiteralExpr
@@ -319,6 +329,10 @@ dictLiteral
 dictEntry
   : key=expression '=' value=expression
   ;
+
+tupleLiteral
+    : '(' expression ',' expression (',' expression)* ')'
+    ;
 
 
 literal
@@ -386,6 +400,7 @@ FOR: 'for';
 WHILE: 'while';
 BREAK: 'break';
 PRINT: 'print';
+LOGGING: 'logging';
 AGENT: 'agent';
 VOID: 'void';
 KILL: 'kill';

@@ -108,6 +108,11 @@ class PrintNode(ASTNode):
 
 
 @dataclass
+class LoggingNode(ASTNode):
+    values: List[ASTNode]
+
+
+@dataclass
 class AssignmentNode(ASTNode):
     target: Union[ASTNode]
     value: ASTNode
@@ -262,6 +267,11 @@ class DictDelNode(ASTNode):
 
 
 @dataclass
+class TupleLiteralNode(ASTNode):
+    elements: List[ASTNode]
+
+
+@dataclass
 class AgentIdNode(ASTNode):
     path: str  # np. '.1.2.3'
 
@@ -304,6 +314,11 @@ class WhileLoopNode(ASTNode):
 
 @dataclass
 class BreakNode(ASTNode):
+    pass
+
+
+@dataclass
+class ContinueNode(ASTNode):
     pass
 
 

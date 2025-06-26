@@ -200,9 +200,9 @@ if (msg.text=="text") print("tak"); // dla jednej instrukcji
 | `&var_name` | przekazanie referencji do obiektu |
 
 
-### Obsługa list i map
+### Obsługa list i słowników i krotek
 
-W AGENTAR listy i mapy (słowniki) są podstawowymi strukturami danych. Wersja języka prototypowego obsługuje je prostą składnią.
+W AGENTAR listy, słowniki i krotki są podstawowymi strukturami danych. Wersja języka prototypowego obsługuje je prostą składnią.
 
 Deklaracja listy:
 `list myList = [1, 2, 3];`
@@ -219,11 +219,17 @@ Aktualizacja elementu:
 Wybrór kawałka listy:
 `myList[2:-1]`
 
-TODO: obsługa map
 
-??? Deklaracja mapy:
+Krotka:
+`tuple myTuple = (1,2,3)`
+
+Odwołanie do krotki:
+`myTuple[1]`
+
+
+Deklaracja mapy:
 ```
-??? dict user = {
+dict user = {
     name = "Alice",
     age = 30
 };
@@ -246,12 +252,17 @@ Dodanie nowej pary:  (IndexAssign)
 `user["city"] = "Warsaw";`
 
 Usunoęcie element  (dictDelStmt)
-del user["city"];
+`del user["city"];`
+
+Dostęp do wartości w razie braku zwraca `None`:
+`user.get(1)`
+
 
 Uwagi projektowe:
 - Listy są indeksowane od 0.
 - Dodanie elementu [] = x to syntactic sugar dla append(x).
 - Nie można nadawać wartości początkowych w polu fields dla list i dict... 
+- Krotki są niemutowalne. Co oznacza że nie mozna dodać obiektu do krotki ani go zmienić.
 
 
 

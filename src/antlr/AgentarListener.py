@@ -323,6 +323,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#loggingStmt.
+    def enterLoggingStmt(self, ctx:AgentarParser.LoggingStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#loggingStmt.
+    def exitLoggingStmt(self, ctx:AgentarParser.LoggingStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#ifStmt.
     def enterIfStmt(self, ctx:AgentarParser.IfStmtContext):
         pass
@@ -392,6 +401,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#breakStmt.
     def exitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#continueStmt.
+    def enterContinueStmt(self, ctx:AgentarParser.ContinueStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#continueStmt.
+    def exitContinueStmt(self, ctx:AgentarParser.ContinueStmtContext):
         pass
 
 
@@ -800,6 +818,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#TupleExpr.
+    def enterTupleExpr(self, ctx:AgentarParser.TupleExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#TupleExpr.
+    def exitTupleExpr(self, ctx:AgentarParser.TupleExprContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#OrExpr.
     def enterOrExpr(self, ctx:AgentarParser.OrExprContext):
         pass
@@ -923,6 +950,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#dictEntry.
     def exitDictEntry(self, ctx:AgentarParser.DictEntryContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#tupleLiteral.
+    def enterTupleLiteral(self, ctx:AgentarParser.TupleLiteralContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#tupleLiteral.
+    def exitTupleLiteral(self, ctx:AgentarParser.TupleLiteralContext):
         pass
 
 

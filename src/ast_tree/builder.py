@@ -213,6 +213,10 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.PrintNode(values=[self.visit(expr) for expr in ctx.expression()])
 
 
+    def visitLoggingStmt(self, ctx:AgentarParser.LoggingStmtContext):
+        return ast.LoggingNode(values=[self.visit(expr) for expr in ctx.expression()])
+
+
     def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
         conditions = self.visit(ctx.expression()) if ctx.expression() else []
         statements = self.visit(ctx.blockOrStmt()) if ctx.blockOrStmt() else []
@@ -259,6 +263,10 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitBreakStmt(self, ctx:AgentarParser.BreakStmtContext):
         return ast.BreakNode()
+    
+
+    def visitContinueStmt(self, ctx:AgentarParser.ContinueStmtContext):
+        return ast.ContinueNode()
     
 
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
@@ -433,6 +441,11 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitTypeExpr(self, ctx:AgentarParser.TypeExprContext):
         base = self.visit(ctx.expression())
         return ast.TypeExprNode(base=base)
+    
+
+    def visitTupleExpr(self, ctx:AgentarParser.TupleExprContext):
+        elements = [self.visit(expr) for expr in ctx.tupleLiteral().expression()]
+        return ast.TupleLiteralNode(elements=elements)
 
 
     def visitOrExpr(self, ctx:AgentarParser.OrExprContext):

@@ -1,4 +1,4 @@
-// Podstawowe demo dla języka Agentar
+// Podstawowe demo dla jezyka Agentar
 
 agent mother {
     initialize{
