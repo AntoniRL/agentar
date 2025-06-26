@@ -1,6 +1,22 @@
+// Podstawowe demo dla jezyka Agentar
+
 agent mother {
+    fields{
+        int x = 5;
+    }
     initialize{
         print("Hello Agentar!");
+        int x = 10;
+        do(clear, [4,5]);
+        x = 9;
+        print(x);
         kill();
+        if () {
+            int x = 100;
+        }
+    }
+    action clear (int y, int z): void {
+        self.x = 7;
+        print(x);
     }
 }

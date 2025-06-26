@@ -108,10 +108,16 @@ class PrintNode(ASTNode):
 
 
 @dataclass
+class LoggingNode(ASTNode):
+    values: List[ASTNode]
+
+
+@dataclass
 class AssignmentNode(ASTNode):
     target: Union[ASTNode]
     value: ASTNode
     index: Optional[ASTNode] = None
+
 
 @dataclass
 class IndexRangeNode(ASTNode):
@@ -226,13 +232,43 @@ class BelAccessNode(ASTNode):
     path: List[str]  # e.g., ['bel', 'text', ...]
 
 
-@dataclass
-class MapLiteralNode(ASTNode):
-    entries: dict  # Dict[str, ASTNode]
-
 
 @dataclass
 class ListLiteralNode(ASTNode):
+    elements: List[ASTNode]
+
+
+@dataclass
+class DictLiteralNode(ASTNode):
+    keys: list[ASTNode]
+    values: list[ASTNode]
+
+
+@dataclass
+class DictKeysNode(ASTNode):
+    base: ASTNode
+
+
+@dataclass
+class DictValuesNode(ASTNode):
+    base: ASTNode
+
+
+@dataclass
+class DictGetNode(ASTNode):
+    base: ASTNode
+    key: ASTNode
+    default: Optional[ASTNode] = None # To implement: default value if key not found. 
+
+
+@dataclass
+class DictDelNode(ASTNode):
+    base: ASTNode
+    key: ASTNode
+
+
+@dataclass
+class TupleLiteralNode(ASTNode):
     elements: List[ASTNode]
 
 
@@ -283,6 +319,11 @@ class BreakNode(ASTNode):
 
 
 @dataclass
+class ContinueNode(ASTNode):
+    pass
+
+
+@dataclass
 class SenseNode(ASTNode):
     pass
 
@@ -319,3 +360,29 @@ class AddressOfExprNode(ASTNode):
 @dataclass 
 class GetTimeNode(ASTNode):
     pass
+
+
+@dataclass
+class RandomExprNode(ASTNode):
+    start: ASTNode
+    end: ASTNode
+
+
+@dataclass
+class NoneExprNode(ASTNode):
+    pass
+
+
+@dataclass
+class AbsExprNode(ASTNode):
+    base: ASTNode
+
+
+@dataclass
+class NegExprNode(ASTNode):
+    base: ASTNode
+
+
+@dataclass
+class DeepCopyNode(ASTNode):
+    variable: ASTNode

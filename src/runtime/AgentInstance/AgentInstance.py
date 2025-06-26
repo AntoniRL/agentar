@@ -13,6 +13,7 @@ from queue import Queue
 import logging
 import time
 from copy import deepcopy
+import random
 
 
 
@@ -45,6 +46,7 @@ class AgentInstance:
         self._return_flag = False  # Flag to indicate if a return statement was executed
         self._return_object = None  # Object to return from the action
         self._break_flag = False   # Flag to indicate if a break statement was executed
+        self._continue_flag = False  # Flag to indicate if a continue statement was executed
 
     def __repr__(self):
         return (
@@ -124,7 +126,7 @@ class AgentInstance:
                 else:
                     self._isGoalAchieved = False
         if self._isGoalAchieved:
-            print(f"{self._id.path}:: Goal  achieved!")  
+            logging.info(f"{self._id.path}:: Goal  achieved!")  
 
 
     def follow_rules(self):
@@ -253,15 +255,15 @@ class AgentInstance:
             msg_to_send = []
             with self._runtime._lock:
                 for child in self._children:
-                    if agent_type != "_" and agent_type == self._runtime.agents[child]._name:
+                    if agent_type != "_" and agent_type == self._runtime.agents[child.path]._name:
                         new_msg = deepcopy(msg)
                         new_msg._content = content # Restore the content after deepcopy
-                        new_msg._receiver = AgentId(child)
+                        new_msg._receiver = child
                         msg_to_send.append(new_msg)
                     elif agent_type == "_":
                         new_msg = deepcopy(msg)
                         new_msg._content = content # Restore the content after deepcopy
-                        new_msg._receiver = AgentId(child)
+                        new_msg._receiver = child
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
@@ -289,12 +291,12 @@ class AgentInstance:
                     if agent_type != "_" and agent_type == self._runtime.agents[child].name:
                         new_msg = deepcopy(msg)
                         new_msg._content = content
-                        new_msg._receiver = AgentId(child)
+                        new_msg._receiver = child
                         msg_to_send.append(new_msg)
                     elif agent_type == "_":
                         new_msg = deepcopy(msg)
                         new_msg._content = content
-                        new_msg._receiver = AgentId(child)
+                        new_msg._receiver = child
                         msg_to_send.append(new_msg)
 
             for msg in msg_to_send:
@@ -302,16 +304,20 @@ class AgentInstance:
             
 
         # print statement
-        elif isinstance(stmt, PrintNode):
+        elif isinstance(stmt, PrintNode) or isinstance(stmt, LoggingNode):
             to_print = [self.eval_expr(value, local_var, local_var_type, message) for value in stmt.values]
             # make printing id of AgentId objects more readable
             for i, value in enumerate(to_print):
                 if type(value) is list:
                     for j, val in enumerate(value):
                         if type(val) == AgentId:
-                            to_print[i][j] = val.path                
-            print(f"AGENT {self._id}::", " ".join(str(v) for v in to_print))
-            logging.info(f"{self._id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
+                            to_print[i][j] = val.path   
+            if isinstance(stmt, PrintNode):
+                print(f"AGENT {self._id}::", " ".join(str(v) for v in to_print))
+                logging.info(f"{self._id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
+            else: 
+                logging.info(f"{self._id.path}:: (LOGGING) " + " ".join(str(v) for v in to_print))
+
 
 
         # KillNode handles agent termination
@@ -388,24 +394,37 @@ class AgentInstance:
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
             def update_loop_var():
                 self.execute_stmt(stmt.update, local_var, local_var_type)
-            while check_condition() and not self._break_flag:
+            while check_condition() and not self._break_flag and not self._return_flag:
                 for statement in stmt.body:
                     self.execute_stmt(statement, local_var, local_var_type)
+                    if self._continue_flag: # If continue flag is set, skip to the next iteration
+                        self._continue_flag = False
+                        update_loop_var()
+                        break
                 update_loop_var()
             self.break_flag = False  # Reset break flag after loop execution
+            self._continue_flag = False  # Reset continue flag after loop execution
 
 
         elif isinstance(stmt, WhileLoopNode):
             def check_condition():
                 return self.eval_expr(stmt.condition, local_var, local_var_type)
-            while check_condition() and not self.break_flag:
+            while check_condition() and not self._break_flag and not self._return_flag:
                 for statement in stmt.body:
-                    return self.execute_stmt(statement, local_var, local_var_type)
+                    self.execute_stmt(statement, local_var, local_var_type)
+                    if self._continue_flag: # If continue flag is set, skip to the next iteration
+                        self._continue_flag = False
+                        break
+            self._continue_flag = False  # Reset continue flag after loop execution
             self._break_flag = False  # Reset break flag after loop execution
 
 
         elif isinstance(stmt, BreakNode):
             self._break_flag = True
+
+        
+        elif isinstance(stmt, ContinueNode):
+            self._continue_flag = True
 
 
         elif isinstance(stmt, SenseNode):
@@ -421,6 +440,24 @@ class AgentInstance:
             self._now = self._runtime.agentTime.getTime()
             return self._now
 
+
+        elif isinstance(stmt, DictDelNode):
+            base = self.eval_expr(stmt.base, local_var, local_var_type, message=message)
+            key = self.eval_expr(stmt.key, local_var, local_var_type, message=message)
+            if isinstance(base, dict):
+                if key in base:
+                    del base[key]
+                else:
+                    raise KeyError(f"Key '{key}' not found in dictionary.")
+            elif isinstance(base, list):
+                if not isinstance(key, int):
+                    raise TypeError(f"Expected an integer index for list, got {type(key).__name__}")
+                if 0 <= key < len(base):
+                    del base[key]
+                else:
+                    raise IndexError(f"List index out of range: {key}")
+            else:
+                raise TypeError(f"Expected a dictionary or list, got {type(base).__name__}")
 
 
 # ---EVAL_EXPR-----------------------------------
@@ -440,6 +477,19 @@ class AgentInstance:
                 return MessageType.DENY
             else:
                 return expr.value
+            
+
+        elif isinstance(expr, NegExprNode):
+            return -self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            
+        elif isinstance(expr, NoneExprNode):
+            return None
+        
+
+        elif isinstance(expr, DeepCopyNode):
+            value = self.eval_expr(expr.variable, local_var, local_var_type, message=message)
+            return deepcopy(value)
+
         
         elif isinstance(expr, VarRefNode):
             if expr.name in self._fields:
@@ -452,6 +502,10 @@ class AgentInstance:
                 raise NameError(f"Variable '{expr.name}' is not declared.")
             
 
+        elif isinstance(expr, DoNode):
+            return self.execute_stmt(expr, local_var, local_var_type, message)  # Execute the action with the provided local variables
+
+
         elif isinstance(expr, BaseTypeNode):
             return resolve_type(expr)[0]
             
@@ -459,6 +513,14 @@ class AgentInstance:
         elif isinstance(expr, LenNode):
             return len(self.eval_expr(expr.base, local_var, local_var_type, message=message))
             
+
+        elif isinstance(expr, AbsExprNode):
+            value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            if isinstance(value, (int, float)):
+                return abs(value)
+            else:
+                raise TypeError(f"abs() argument must be a number, not {type(value).__name__}")
+
 
         elif isinstance(expr, TypeExprNode):
             value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
@@ -473,9 +535,14 @@ class AgentInstance:
         elif isinstance(expr, IndexAccessNode):
             base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
             index = self.eval_expr(expr.index, local_var, local_var_type, message=message)
-            if index < 0 or index >= len(base):
-                raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
-            return base[index]
+            if type(base) == list or type(base) == tuple or check_if_var_is_pointer(base):
+                if index < -len(base) or index >= len(base):
+                    raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
+                return base[index]
+            elif type(base) == dict or check_if_var_is_pointer(base):
+                if index not in base:
+                    raise KeyError(f"Key '{index}' not found in dictionary.")
+                return base[index]
         
 
         elif isinstance(expr, SliceAccessNode):
@@ -500,6 +567,7 @@ class AgentInstance:
             else:
                 raise NameError(f"Variable '{name}' is not declared.")  
             
+
         elif isinstance(expr, MsgAccessNode):
             name = expr.path[1]
             if hasattr(message, name) or name in message._content:
@@ -522,6 +590,42 @@ class AgentInstance:
 
         elif isinstance(expr, ListLiteralNode):
             return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]
+        
+
+        elif isinstance(expr, TupleLiteralNode):
+            return tuple(self.eval_expr(item, local_var, local_var_type) for item in expr.elements)
+
+
+        elif isinstance(expr, DictLiteralNode):
+            return {
+                self.eval_expr(key, local_var, local_var_type): 
+                self.eval_expr(value, local_var, local_var_type)
+                for key, value in zip(expr.keys, expr.values)
+            }
+
+        elif isinstance(expr, DictKeysNode):
+            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            if not isinstance(base, dict):
+                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+            return list(base.keys())
+        
+
+        elif isinstance(expr, DictValuesNode):
+            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            if not isinstance(base, dict):
+                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+            return list(base.values())
+        
+
+        elif isinstance(expr, DictGetNode):
+            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+            key = self.eval_expr(expr.key, local_var, local_var_type, message=message)
+            if not isinstance(base, dict):
+                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+            if key in base:
+                return base[key]
+            else:
+                return None
 
 
         elif isinstance(expr, AddressOfExprNode):
@@ -529,6 +633,14 @@ class AgentInstance:
             pointer_type = get_pointer_type(var_to_ref)
             pointer_object = pointer_type(var_to_ref)  # Create a pointer to the variable\
             return pointer_object
+        
+
+        elif isinstance(expr, RandomExprNode):
+            start = self.eval_expr(expr.start, local_var, local_var_type, message=message)
+            end = self.eval_expr(expr.end, local_var, local_var_type, message=message)
+            if not (isinstance(start, int) and isinstance(end, int)):
+                raise TypeError("Arguments to random() must be integers.")
+            return random.randint(start, end)
 
 
         elif isinstance(expr, BinaryOpNode): 
@@ -578,6 +690,8 @@ class AgentInstance:
                 return left or right
             elif operator == 'XOR':
                 return left ^ right
+            elif operator == 'NOT':
+                return not left
             else:
                 raise ValueError(f"Unknown operator: {operator}")
             
@@ -610,16 +724,20 @@ class AgentInstance:
 
         if isinstance(target_node, SelfAccessNode):
             target = target_node.path[1]
-            self.assign_to_storage(self._fields, self._fields_type, target, value, index)
+            self.assign_to_storage(self._fields, self._fields_type, target, value, index, local_var, local_var_type)
         elif isinstance(target_node, BelAccessNode):
             target = target_node.path[1]
-            self.assign_to_storage(self._beliefs, self._beliefs_type, target, value, index)
+            self.assign_to_storage(self._beliefs, self._beliefs_type, target, value, index, local_var, local_var_type)
         elif isinstance(stmt.value, MessageInitNode):
             local_var[target_node] = value  # Assign the message instance to the local variable
             local_var_type[target_node] = MessageInstance  # Set the type of the local variable
         elif isinstance(target_node, IndexAccessNode): # Handle indexing
-            container, final_idx = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
-            container[final_idx] = value
+            if index == "add":
+                container, _ = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
+                container.append(value)
+            else:
+                container, final_idx = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
+                container[final_idx] = value
         elif isinstance(target_node, SliceAccessNode):
             self.handle_slice_assignment(target_node, value, local_var, local_var_type)
         else:
@@ -640,7 +758,7 @@ class AgentInstance:
                 local_var[target][idx] = value
 
 
-    def assign_to_storage(self, storage, type_info, target, value, index):
+    def assign_to_storage(self, storage, type_info, target, value, index, local_var=None, local_var_type=None):
         expected_type = type_info[target]
         if index is None:
             if not expected_type == type(value):
@@ -650,11 +768,8 @@ class AgentInstance:
             if expected_type != list:
                 raise TypeError(f"Cannot 'add' to non-list field '{target}'")
             storage[target].append(value)
-        elif isinstance(index, IndexRangeNode):
-            # TODO: implement range assignment
-            pass
         else:
-            idx = self.eval_expr(index)  # Assuming index expr independent
+            idx = self.eval_expr(index, local_var, local_var_type)  # Assuming index expr independent
             storage[target][idx] = value
 
 

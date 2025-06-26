@@ -164,6 +164,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#dictDelStmt.
+    def visitDictDelStmt(self, ctx:AgentarParser.DictDelStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#messageInit.
     def visitMessageInit(self, ctx:AgentarParser.MessageInitContext):
         return self.visitChildren(ctx)
@@ -176,6 +181,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#printStmt.
     def visitPrintStmt(self, ctx:AgentarParser.PrintStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#loggingStmt.
+    def visitLoggingStmt(self, ctx:AgentarParser.LoggingStmtContext):
         return self.visitChildren(ctx)
 
 
@@ -219,6 +229,16 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#continueStmt.
+    def visitContinueStmt(self, ctx:AgentarParser.ContinueStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#doStmt.
+    def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#VarDecl.
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
         return self.visitChildren(ctx)
@@ -234,13 +254,13 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#IndexAssign.
-    def visitIndexAssign(self, ctx:AgentarParser.IndexAssignContext):
+    # Visit a parse tree produced by AgentarParser#ListAddAssign.
+    def visitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#ListAddAssign.
-    def visitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
+    # Visit a parse tree produced by AgentarParser#IndexAssign.
+    def visitIndexAssign(self, ctx:AgentarParser.IndexAssignContext):
         return self.visitChildren(ctx)
 
 
@@ -264,13 +284,13 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#SelfIndexAssign.
-    def visitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
+    # Visit a parse tree produced by AgentarParser#SelfListAddAssign.
+    def visitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#SelfListAddAssign.
-    def visitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
+    # Visit a parse tree produced by AgentarParser#SelfIndexAssign.
+    def visitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
         return self.visitChildren(ctx)
 
 
@@ -281,11 +301,6 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#SelfGoalCheckAssign.
     def visitSelfGoalCheckAssign(self, ctx:AgentarParser.SelfGoalCheckAssignContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by AgentarParser#doStmt.
-    def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):
         return self.visitChildren(ctx)
 
 
@@ -304,11 +319,6 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#MapExpr.
-    def visitMapExpr(self, ctx:AgentarParser.MapExprContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by AgentarParser#AndExpr.
     def visitAndExpr(self, ctx:AgentarParser.AndExprContext):
         return self.visitChildren(ctx)
@@ -319,8 +329,23 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#AbsExpr.
+    def visitAbsExpr(self, ctx:AgentarParser.AbsExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#DoExpression.
+    def visitDoExpression(self, ctx:AgentarParser.DoExpressionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#GeqExpr.
     def visitGeqExpr(self, ctx:AgentarParser.GeqExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#NegExpr.
+    def visitNegExpr(self, ctx:AgentarParser.NegExprContext):
         return self.visitChildren(ctx)
 
 
@@ -374,8 +399,18 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#RandomExpr.
+    def visitRandomExpr(self, ctx:AgentarParser.RandomExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#LiteralExpr.
     def visitLiteralExpr(self, ctx:AgentarParser.LiteralExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#DictExpr.
+    def visitDictExpr(self, ctx:AgentarParser.DictExprContext):
         return self.visitChildren(ctx)
 
 
@@ -391,6 +426,16 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#MessageInitExpr.
     def visitMessageInitExpr(self, ctx:AgentarParser.MessageInitExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#DictKeysExpr.
+    def visitDictKeysExpr(self, ctx:AgentarParser.DictKeysExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#DictGetExpr.
+    def visitDictGetExpr(self, ctx:AgentarParser.DictGetExprContext):
         return self.visitChildren(ctx)
 
 
@@ -419,8 +464,18 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#TupleExpr.
+    def visitTupleExpr(self, ctx:AgentarParser.TupleExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#OrExpr.
     def visitOrExpr(self, ctx:AgentarParser.OrExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#DictValuesExpr.
+    def visitDictValuesExpr(self, ctx:AgentarParser.DictValuesExprContext):
         return self.visitChildren(ctx)
 
 
@@ -439,8 +494,18 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#DeepCopyExpr.
+    def visitDeepCopyExpr(self, ctx:AgentarParser.DeepCopyExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#EqExpr.
     def visitEqExpr(self, ctx:AgentarParser.EqExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#NoneExpr.
+    def visitNoneExpr(self, ctx:AgentarParser.NoneExprContext):
         return self.visitChildren(ctx)
 
 
@@ -459,13 +524,28 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#doExpr.
+    def visitDoExpr(self, ctx:AgentarParser.DoExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#listLiteral.
     def visitListLiteral(self, ctx:AgentarParser.ListLiteralContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#mapLiteral.
-    def visitMapLiteral(self, ctx:AgentarParser.MapLiteralContext):
+    # Visit a parse tree produced by AgentarParser#dictLiteral.
+    def visitDictLiteral(self, ctx:AgentarParser.DictLiteralContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#dictEntry.
+    def visitDictEntry(self, ctx:AgentarParser.DictEntryContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#tupleLiteral.
+    def visitTupleLiteral(self, ctx:AgentarParser.TupleLiteralContext):
         return self.visitChildren(ctx)
 
 

@@ -15,6 +15,7 @@ def resolve_type(var_type):
             elif inner.name == "bool": return BoolPointer, None
             elif inner.name == "string": return StringPointer, None
             elif inner.name == "list": return ListPointer, None
+            elif inner.name == "dict": return DictPointer, None
             else: raise TypeError(f"Unsupported pointer base type: {inner.name}")
             
     elif isinstance(var_type, BaseTypeNode):
@@ -35,6 +36,8 @@ def resolve_type(var_type):
             return AgentId, AgentId()
         elif name == "void":
             return 'void', None
+        elif name == "tuple":
+            return tuple, ()
     else:
         raise TypeError(f"Unknown AST type: {type(var_type)}")
     
@@ -56,4 +59,6 @@ AGENTAR_TYPE_MAP = {
     "agentid": AgentId,
     "list": list,
     "dict": dict,
+    "tuple": tuple,
+    "void": 'void',  # Special case for void type
 }

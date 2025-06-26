@@ -8,10 +8,12 @@ program
 
 statement
     : printStmt
+    | loggingStmt
     | ifStmt
     | forStmt
     | whileStmt
     | breakStmt
+    | continueStmt
     | variableDecl
     | assignment
     | sendStmt
@@ -27,6 +29,7 @@ statement
     | senseStmt
     | goalCheckStmt
     | getTimeStmt
+    | dictDelStmt
     ;
 
 // === Mother declaration
@@ -152,7 +155,7 @@ sleepStmt
     ;
 
 returnStmt
-    : 'return' expression ';'
+    : 'return' expression? ';'
     ;
 
 
@@ -170,7 +173,12 @@ getTimeStmt
     : 'getTime' '('')' ';'
     ;    
 
-// === End of statements
+
+dictDelStmt
+    : 'del' expression '[' expression ']' ';'
+    ;
+
+// === End_of_statements
 
 
 messageInit
@@ -183,6 +191,10 @@ messageFieldAssign
 
 printStmt
     : 'print' '(' expression (',' expression)* ')' ';'
+    ;
+
+loggingStmt
+    : 'logging' '(' expression (',' expression)* ')' ';'
     ;
 
 ifStmt
@@ -220,7 +232,16 @@ whileStmt
 breakStmt
     : 'break' ';'
     ;
+
+continueStmt
+    : 'continue' ';'
+    ;
     
+
+doStmt
+    : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
+    ;
+
 
 variableDecl
     : type ID ('=' expression)? ';'                       # VarDecl
@@ -229,20 +250,16 @@ variableDecl
 assignment
     : expression '=' getTimeStmt                          # GetTimeAssign
     | ID '=' expression ';'                               # SimpleAssign
-    | ID '[' expression ']' '=' expression ';'            # IndexAssign
     | ID '['']' '=' expression ';'                        # ListAddAssign
+    | ID '[' expression ']' '=' expression ';'            # IndexAssign
     | ID '=' spawnStmt                                    # SpawnAssign
     | ID '=' doStmt                                       # DoAssign
     | ID '=' goalCheckStmt                                # GoalCheckAssign
     | expression '=' doStmt                               # DoSelfAssign
-    | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
     | expression'['']' '=' expression ';'                 # SelfListAddAssign
+    | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
     | expression '=' expression ';'                       # SelfAssign
     | expression '=' goalCheckStmt                        # SelfGoalCheckAssign
-    ;
-
-doStmt
-    : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
     ;
 
 type
@@ -250,51 +267,75 @@ type
     | 'pointer<'type'>'         # PointerType
     ;
 
-bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'list' | 'map' | 'agentid';
-
+bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'tuple' | 'list' | 'dict' | 'agentid';
 
 
 expression
     : '(' expression ')'                    # ParenExpr
+    | '-' expression                        # NegExpr
+    | MSG '.' ID                            # MessageAccessExpr
+    | SELF '.' ID                           # SelfAccessExpr
+    | BELIEF '.' ID                         # BeliefAccessExpr
     | expression '[' expression ']'         # IndexExpr
     | expression '[' ':' expression ']'     # SliceToExpr
     | expression '[' expression ':' ']'     # SliceFromExpr
     | expression '[' expression ':' expression ']' # SliceRangeExpr
-    | expression op=MODULO expression       # ModuloExpr
+    | expression '.keys()'                  # DictKeysExpr   
+    | expression '.values()'                # DictValuesExpr  
+    | expression '.get('expression')'       # DictGetExpr
+    | 'len' '(' expression ')'              # LenExpr
+    | 'type' '(' expression ')'             # TypeExpr
+    | 'abs' '(' expression ')'              # AbsExpr  
+    | 'random' '(' expression ',' expression ')' # RandomExpr
+    | 'deepcopy' '(' expression ')'         # DeepCopyExpr
+    | NOT expression                        # NotExpr 
+    | '&' expression                        # AddressOfExpr
     | expression op=('*'|'/') expression    # MulDivExpr
     | expression op=('+'|'-') expression    # AddSubExpr
+    | expression op=MODULO expression       # ModuloExpr
     | expression op=EQ expression           # EqExpr
     | expression op=NEQ expression          # NeqExpr
     | expression op=LT expression           # LtExpr
     | expression op=GT expression           # GtExpr
     | expression op=LEQ expression          # LeqExpr
     | expression op=GEQ expression          # GeqExpr
-    | expression op=OR expression           # OrExpr
     | expression op=AND expression          # AndExpr
+    | expression op=OR expression           # OrExpr
     | expression op=XOR expression          # XorExpr
-    | NOT expression                        # NotExpr
-    | '&' expression                        # AddressOfExpr
-    | 'len' '(' expression ')'              # LenExpr
-    | 'type' '(' expression ')'             # TypeExpr
-    | MSG '.' ID                            # MessageAccessExpr
-    | SELF '.' ID                           # SelfAccessExpr
-    | BELIEF '.' ID                         # BeliefAccessExpr
-    | messageInit                           # MessageInitExpr
-    | msgTypeValue                          # MsgTypeValueExpr
-    | listLiteral                           # ListExpr
-    | mapLiteral                            # MapExpr
-    | literal                               # LiteralExpr
+    | NONE                                  # NoneExpr
     | ID                                    # VarReference
     | AGENTID                               # AgentIdExpr
+    | messageInit                           # MessageInitExpr
+    | msgTypeValue                          # MsgTypeValueExpr
+    | tupleLiteral                          # TupleExpr
+    | listLiteral                           # ListExpr
+    | dictLiteral                           # DictExpr
+    | literal                               # LiteralExpr
+    | doExpr                                # DoExpression
     ;
+
+
+doExpr
+    : 'do(' ID (',' '['expression (',' expression)*']')?  ')'
+    ;
+
 
 listLiteral
     : '[' (expression (',' expression)*)? ']'
     ;
 
-mapLiteral
-    : '{' (ID ':' expression (',' ID ':' expression)*)? '}'
+dictLiteral
+    : '{' dictEntry (',' dictEntry)* '}'
     ;
+
+dictEntry
+  : key=expression '=' value=expression
+  ;
+
+tupleLiteral
+    : '(' expression ',' expression (',' expression)* ')'
+    ;
+
 
 literal
     : INT       # IntLiteral
@@ -302,6 +343,7 @@ literal
     | STRING    # StringLiteral
     | BOOL      # BoolLiteral
     ;
+
 
 msgTypeValue
     : MSGTYPE_INFORM
@@ -353,12 +395,14 @@ NOT: '!';
 AND: '&&';
 OR: '||';
 XOR: '^';
+NONE: 'None';
 IF: 'if';
 ELSE: 'else';
 FOR: 'for';
 WHILE: 'while';
 BREAK: 'break';
 PRINT: 'print';
+LOGGING: 'logging';
 AGENT: 'agent';
 VOID: 'void';
 KILL: 'kill';
@@ -370,8 +414,8 @@ RETURN: 'return';
 
 
 
-INT: '-'? [0-9]+;
-FLOAT: '-'? [0-9]+ '.' [0-9]+;
+INT: [0-9]+;
+FLOAT: [0-9]+ '.' [0-9]+;
 AGENTID: '.' [0-9]+ ('.' [0-9]+)*;
 BOOL: 'True' | 'False';
 STRING: '"' .*? '"';

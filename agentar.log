@@ -1,6 +1,9 @@
-[15:38:16] INFO: Starting Agentar system...
-[15:38:16] INFO: .1:: Initializing agent
-[15:38:16] INFO: .1:: (PRINTING) [[1, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 1], [0, 0, 0, 1, 0, 0, 0, 0, 1, 0], [0, 0, 1, 0, 0, 0, 0, 1, 0, 0], [0, 1, 0, 0, 0, 0, 1, 0, 0, 0], [1, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 1], [0, 0, 0, 1, 0, 0, 0, 0, 1, 0], [0, 0, 1, 0, 0, 0, 0, 1, 0, 0], [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]]
-[15:38:16] INFO: Mother agent requested system shutdown.
-[15:38:16] INFO: Thread for agent .1 stopped.
-[15:38:16] INFO: Agentar system stopped.
+[19:07:43] INFO: Starting Agentar system...
+[19:07:43] INFO: .1:: Initializing agent
+[19:07:43] INFO: .1:: (PRINTING) Hello Agentar!
+[19:07:43] INFO: .1:: (PRINTING) 7
+[19:07:43] INFO: .1:: (PRINTING) 9
+[19:07:43] INFO: Mother agent requested system shutdown.
+[19:07:44] INFO: Thread for agent .0 stopped.
+[19:07:44] INFO: Thread for agent .1 stopped.
+[19:07:44] INFO: Agentar system stopped.

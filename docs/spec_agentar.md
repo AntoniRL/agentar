@@ -11,7 +11,6 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 * Dostęp do pól agenta poprzez `self.name`
 * Agent matka `mother` (Tworzony jako pierwszy, zarządza działaniem systemu)
 * Agent czas `time` `id=.0` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
-* 
 * Koniec działania systemu kiedy agent matka wywoła `kill()` LUB minie czas symulacji (parametr podczas uruchomienia)
 
 ---
@@ -28,9 +27,9 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 3. `destroy` — sprzątanie przed śmiercią
 
 Agent umiera, gdy:
-- wykona cel
 - wywoła `kill()`
 - jego rodzic go zlikwiduje
+- przy kończeniu działania rodzica wszysy jego potomkowie zostają zabici
 
 ## Struktura agenta
 
@@ -152,11 +151,13 @@ TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie 
 | `kill(child_id)` | Usunięcie dzieci | dowolnie |
 | `kill_children()` | Kończy działanie wszystkich dzieci |
 | `kill_children(childen_type_name)` | Kończy działanie wszystkich dzieci o podanym typie|
+| `kill_siblings()` | Kończy działanie wszystkich braci |
+| `kill_siblings(sibling_type_name)` | Kończy działanie wszystkich braci o podanym typie|
 | `spawn(agent_name, [fields_of_agent])`   | Tworzenie dzieci | `initialize`, `action` |
 | `sleep(ms)`    | Pauza w wykonaniu | `action`, `receive` |
 | `sense()`      | Możaliwość wywołania z dowolnego miejsca w ciele agenta. Wykonuje polecenia z `sense{}` |
-| `get_from_world()`      | Funkcja zwraca wartość pola z szachownicy świata (0 albo 1)|
-| `set_in_world()`      | Ustawiamy wartość na szachownicu world |
+| `random(start, end)` | Zwraca losową wartość całkowitą z przedziału [start, end] |
+
 
 ### Kontrola przepływów
 
@@ -167,6 +168,7 @@ TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie 
 | `for` | Pętla iteracyjna | dowolnie |
 | `while()`      | Pętla warunkowa | dowolnie |
 | `break`      | Przerywa pętlę | dowolnie |
+| `continue` | Idzie do następnej iteracji pętli przerywając aktualną | dowolnie |
 
 Przykład:
 ```agentar
@@ -181,7 +183,7 @@ if msg.text=="text"{
 } else { 
     print("nie");
 }
-if (msg.text=="text") print("tak");
+if (msg.text=="text") print("tak"); // dla jednej instrukcji
 ```
 
 ### Typy danych
@@ -193,15 +195,15 @@ if (msg.text=="text") print("tak");
 | `bool`   | Wartość logiczna `true` / `false` |
 | `string` | Tekst                             |
 | `list`   | Lista wartości                    |
-| `dict`   | Słownik (klucz → wartość)         |
+| TODO `dict`   | Słownik (klucz → wartość)         |
 | `agentID`| np. `.1.1`         |
 | `pointer<type>` | wspaźnik na obiekt. UWAGA! Posczas deklaracji nie da się przypisać |
 | `&var_name` | przekazanie referencji do obiektu |
 
 
-### Obsługa list i map
+### Obsługa list i słowników i krotek
 
-W AGENTAR listy i mapy (słowniki) są podstawowymi strukturami danych. Wersja języka prototypowego obsługuje je prostą składnią.
+W AGENTAR listy, słowniki i krotki są podstawowymi strukturami danych. Wersja języka prototypowego obsługuje je prostą składnią.
 
 Deklaracja listy:
 `list myList = [1, 2, 3];`
@@ -212,34 +214,59 @@ Odwołanie do elementu:
 Dodanie na koniec:
 `myList[] = 4;  // teraz myList = [1, 2, 3, 4]`
 
+Usunoęcie element  (dictDelStmt)
+`del myList[1];`
+
 Aktualizacja elementu:
 `myList[1] = 10;  // teraz myList = [1, 10, 3, 4]`
 
 Wybrór kawałka listy:
 `myList[2:-1]`
 
-TODO: obsługa map
 
-??? Deklaracja mapy:
+Krotka:
+`tuple myTuple = (1,2,3)`
+
+Odwołanie do krotki:
+`myTuple[1]`
+
+
+Deklaracja mapy:
 ```
-??? dict user = {
+dict user = {
     name = "Alice",
     age = 30
 };
 ```
 
-??? Dostęp do klucza:
-`let username = user["name"];`
+Dostęp do kluczy:
+`keys_list = user.keys()`    (DictKeysExpr)
 
-??? Modyfikacja wartości:
+dostęp do wartości:
+`values_list = user.values()`   (DictValuesExpr)
+
+Dostęp do wartości o podanym kluczu (IndexExpr)
+`user["name"];`    Zwraca wartość  
+`username = user["name"];` 
+
+Modyfikacja wartości:  (IndexAssign)
 `user["age"] = 31;`
 
-??? Dodanie nowej pary:
+Dodanie nowej pary:  (IndexAssign)
 `user["city"] = "Warsaw";`
+
+Usunoęcie element  (dictDelStmt)
+`del user["city"];`
+
+Dostęp do wartości w razie braku zwraca `None`:
+`user.get(1)`
+
 
 Uwagi projektowe:
 - Listy są indeksowane od 0.
 - Dodanie elementu [] = x to syntactic sugar dla append(x).
+- Nie można nadawać wartości początkowych w polu fields dla list i dict... 
+- Krotki są niemutowalne. Co oznacza że nie mozna dodać obiektu do krotki ani go zmienić.
 
 
 
@@ -261,9 +288,9 @@ message <msg_name>  {
 | Funkcja                          | Opis                                  |
 | -------------------------------- | ------------------------------------- |
 | `send(to_id, content, msg_type='inform')` | Wysyła wiadomość do wskazanego agenta (ID). Wiadomość jest dodawana na koniec kolejki odbiorcy i zostanie przetworzona asynchronicznie w jego kolejnej pętli.|
-| `send2children(content, msg_type='inform')`     | Wysyła wiadomość do wszystkich dzieci |
 | `send2parent(content, msg_type='inform')`            | Skrót do komunikacji z rodzicem       |
-| `send2siblings(content, msg_type='inform')`          | Wysyła wiadomość do wszystkich braci  |
+| `send2children(_/<agent_type>, content, msg_type='inform')`     | Wysyła wiadomość do wszystkich dzieci (`_`) lub tylko konkretnego typu|
+| `send2siblings(_/<agent_type>, content, msg_type='inform')`          | Wysyła wiadomość do wszystkich braci (`_`) lub tylko konkretnego typu |
 
 `msg` jako struktura zawierająca pola:
 ```
@@ -271,7 +298,7 @@ msg {
     _sender: ID        // nadawca wiadomości
     _receiver: ID      // adresat wiadomości
     _type: string      // systemowy typ wiadomości (inform, request ...)
-    ??? _sending_time: int         // czas wysłania wiadomości
+    _sending_time: int         // czas wysłania wiadomości
     <Pola wiadomości>   // treść wiadomości – instancja klasy zdefiniowanej w message { ... }
 }
 ```
@@ -284,8 +311,8 @@ Przykład:
 ```
 receive ping {
     when (
-        msg.type == request &&
-        msg.sender == "mother" &&
+        msg._type == request &&
+        msg._sender == "mother" &&
         msg.text == "hello"
     ) then {
         print("Received hello from mother");
@@ -325,8 +352,6 @@ Rodzaj wiadomości umożliwiają programiście rozszerzyć warunki komunikacji.
 
 
 
-# Przykład
+# Przykłady
 
-### Ping-pong
-
-TODO: 
+Przykłądy znajdują się w folderze `examples/`
