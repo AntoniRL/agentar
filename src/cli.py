@@ -21,6 +21,7 @@ def show_help():
     print("    -f / -file    Log output to agentar.log")
     print("    -t <seconds>  Set maximum runtime for the script (default is 5 seconds) or 'inf' for infinite runtime")
     print("  tree         Print the AST of a .agar file")
+    print("tree <paht_to_file> | tee ast.txt        Print the AST of a .agar file to the console and save it to ast.txt")
     print("\nExamples:")
     print("  agentar run examples/hello.agar -r -t 10")
 
@@ -28,15 +29,15 @@ def run_file(file_path, max_runtime):
     interpreter = AgentarInterpreter()
     mother, agents, messages = interpreter.runAgentar(file_path)
     system = AgentarSystem(mother, agents, messages)
-    system.start()
-    start_time = time.time()
-    while not system.terminated.is_set():
-        if time.time() - start_time > max_runtime:
-            logging.warning("Timeout reached. Stopping system.")
-            system.terminated.set()  # Signal termination
-            break
-        time.sleep(0.1)
-    system.stop()
+    # system.start()
+    # start_time = time.time()
+    # while not system.terminated.is_set():
+    #     if time.time() - start_time > max_runtime:
+    #         logging.warning("Timeout reached. Stopping system.")
+    #         system.terminated.set()  # Signal termination
+    #         break
+    #     time.sleep(0.1)
+    # system.stop()
 
 
 def ast_tree(file_path):

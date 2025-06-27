@@ -168,3 +168,21 @@ class DictPointer(BasePointer):
         with self._lock:
             return iter(deepcopy(self._ref))
 
+
+
+class TuplePointer(BasePointer):
+    def __getitem__(self, key):
+        with self._lock:
+            return self._ref[key]
+
+    def __len__(self):
+        with self._lock:
+            return len(self._ref)
+
+    def __iter__(self):
+        with self._lock:
+            return iter(deepcopy(self._ref))
+
+    def __contains__(self, item):
+        with self._lock:
+            return item in self._ref

@@ -13,9 +13,10 @@ class MessageInstance():
         self._sender: AgentId = None         # AgentId('.1')
         self._receiver: AgentId = None       # AgentId('.1.2')
         self._type = MessageType.INFORM      # np. MessageType.REQUEST
-        self._content = content or {}        # np. {'task': 3, 'value': 1.2}
+        self._content = content or None        # np. {'task': 3, 'value': 1.2}
         self._content_type = content_type or {}    # np. {'task': int, 'value': float}
         self._sending_time = 0                  # czas systemowy
+
 
     def __repr__(self):
         return (

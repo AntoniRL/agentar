@@ -7,7 +7,9 @@ from typing import List, Optional, Union
 # === Base AST class ===
 @dataclass
 class ASTNode:
-    pass
+    _line: Optional[int]   # Line number in the source code
+    _column: Optional[int]   # Column number in the source code
+    #_oryginal_text: Optional[str]   # Original text from the source code
 
 # === Program and declarations ===
 @dataclass

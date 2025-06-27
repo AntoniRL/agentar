@@ -3,13 +3,15 @@
 # System runner: starts/stops mother and other agents
 
 import logging
-from core.agent import AgentarAgent
-from runtime.agent_instance.AgentInstanceCopy import AgentInstance
-from runtime.agent_runner import AgentRunner
-from core.agent_id import AgentId
 import threading
 from copy import deepcopy
+
+from core.agent import AgentarAgent
+from core.agent_id import AgentId
+from runtime.agent_instance.AgentInstanceCopy import AgentInstance
+from runtime.agent_runner import AgentRunner
 from runtime.agent_time import AgentTime
+
 
 class AgentarSystem:
     def __init__(self, mother_decl, agents_decl, messages_decl):
@@ -31,16 +33,16 @@ class AgentarSystem:
         self.threads[self.mother_id.path] = AgentRunner(self.mother_instance, system=self, agent_id=self.mother_id)
 
         # Create agent time
-        self.agentTime = AgentTime(system=self, agent_id=AgentId(".0"))
-        self.threads[self.agentTime.agent_id.path] = self.agentTime
-        self.agents[self.agentTime.agent_id.path] = self.agentTime  # Add agent time to agents dict
+        # self.agentTime = AgentTime(system=self, agent_id=AgentId(".0"))
+        # self.threads[self.agentTime.agent_id.path] = self.agentTime
+        # self.agents[self.agentTime.agent_id.path] = self.agentTime  # Add agent time to agents dict
         
 
 
     def start(self):
         logging.info("Starting Agentar system...")
         self.threads[self.mother_id.path].start()
-        self.threads[self.agentTime.agent_id.path].start()
+        # self.threads[self.agentTime.agent_id.path].start()
 
 
     def stop(self):

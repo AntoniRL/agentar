@@ -39,11 +39,11 @@ class AgentInstance:
         self._continue_flag = False  # Flag to indicate if a continue statement was executed
 
         # TODO: Components
-        self.executor = StatementExecutor(self)
-        self.evaluator = ExpressionEvaluator(self)
-        self.message_handler = MessageHandler(self)
-        self.lifecycle = AgentLifecycleManager(self)
-        self.action_executor = ActionExecutor(self)
+        # self.executor = 
+        # self.evaluator = 
+        # self.message_handler = 
+        # self.lifecycle = 
+        # self.action_executor = 
 
 
     def __repr__(self):

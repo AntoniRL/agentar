@@ -1,18 +1,12 @@
 # -*- coding: utf-8 -*- 
-# runtime/agent_instance/variable_scope.py
+# runtime/definicion_containers/variable_container.py
 # variable scope is the scope of variables in the agent instance
 
 from typing import Optional, Dict
+from runtime.errors import VariableAlreadyDeclaredError, VariableNotFoundError
 
 class VariableInfo:
-    def __init__(
-        self,
-        name: str,
-        value,
-        var_type: str,
-        scope: str,  # 'local', 'field', 'belief', 'message', etc.
-        declaration_line: Optional[int] = None
-    ):
+    def __init__(self, name: str, value, var_type: str, scope: str, declaration_line: Optional[int] = None):
         self.name = name
         self.value = value
         self.var_type = var_type
@@ -26,10 +20,12 @@ class VariableInfo:
 class VariableContainer:
     def __init__(self):
         self._variables: Dict[str, VariableInfo] = {}
+        self._scope = None
 
     def declare(self, name: str, value, var_type: str, scope: str, declaration_line: Optional[int] = None):
         if name in self._variables:
-            raise ValueError(f"Variable '{name}' is already declared.")
+            raise VariableAlreadyDeclaredError(name, declaration_line, self._variables[name].declaration_line)
+        self._scope = scope
         self._variables[name] = VariableInfo(name, value, var_type, scope, declaration_line)
 
     def exists(self, name: str) -> bool:
@@ -57,7 +53,7 @@ class VariableContainer:
 
     def _require_variable(self, name: str) -> VariableInfo:
         if name not in self._variables:
-            raise NameError(f"Variable '{name}' not found.")
+            raise VariableNotFoundError(name, line=None)  # TODO: implement the errors with line number
         return self._variables[name]
 
     def items(self):
@@ -67,4 +63,4 @@ class VariableContainer:
         return iter(self._variables)
 
     def __repr__(self):
-        return f"VariableContainer({list(self._variables.keys())})"
+        return f"{self._scope}: ({list(self._variables.keys())})"
