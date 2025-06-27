@@ -3,9 +3,9 @@
 # Command Line Interface (CLI) for running Agentar scripts (.agar files)
 
 import sys
-from interpreter.AgentarInterpreter import AgentarInterpreter
+from interpreter.agentar_interpreter import AgentarInterpreter
 from ast_tree.print_ast import main as print_ast
-from runtime.AgentarSystem import AgentarSystem
+from runtime.agentar_system import AgentarSystem
 import time
 import logging
 

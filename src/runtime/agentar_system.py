@@ -4,12 +4,12 @@
 
 import logging
 from core.agent import AgentarAgent
-from runtime.AgentInstance.AgentInstance import AgentInstance
-from runtime.AgentRunner import AgentRunner
-from core.agentid import AgentId
+from runtime.agent_instance.AgentInstanceCopy import AgentInstance
+from runtime.agent_runner import AgentRunner
+from core.agent_id import AgentId
 import threading
 from copy import deepcopy
-from runtime.AgentTime import AgentTime
+from runtime.agent_time import AgentTime
 
 class AgentarSystem:
     def __init__(self, mother_decl, agents_decl, messages_decl):

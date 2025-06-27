@@ -5,7 +5,7 @@
 import sys
 from core.agent import AgentarAgent
 from core.message import AgentarMessage
-from core.agentid import AgentId
+from core.agent_id import AgentId
 from ast_tree.nodes import *
 from ast_tree.builder import AgentarToASTBuilder
 from antlr4 import *
@@ -13,7 +13,7 @@ from antlr.AgentarLexer import AgentarLexer
 from antlr.AgentarParser import AgentarParser
 from dataclasses import is_dataclass
 from dataclasses import dataclass, fields
-from core.agentarTypes import AGENTAR_TYPE_MAP, resolve_type
+from core.agentar_types import AGENTAR_TYPE_MAP, resolve_type
 from antlr4.error.ErrorListener import ErrorListener
 from core.pointer import *
 

@@ -1,6 +1,6 @@
 # core/agentarTypes.py
 
-from core.agentid import AgentId
+from core.agent_id import AgentId
 from ast_tree.nodes import PointerTypeNode, BaseTypeNode
 from core.pointer import *
 

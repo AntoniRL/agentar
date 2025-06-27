@@ -3,7 +3,7 @@
 # MessageInstance: represents a single message in the Agentar system
 
 from core.message import AgentarMessage, MessageType
-from core.agentid import AgentId
+from core.agent_id import AgentId
 from copy import deepcopy
 
 
