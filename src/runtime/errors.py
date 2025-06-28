@@ -81,7 +81,32 @@ class ASTNodeNotFoundError(AgentarRuntimeError):
         super().__init__(message, line)
 
 
+class WrongTypeError(AgentarRuntimeError):
+    """Raised when a value is of the wrong type."""
+    def __init__(self, var_name, expected_type, actual_type, line=None):
+        message = f"{var_name} expected type '{expected_type}', but got '{actual_type}'."
+        super().__init__(message, line)
 
+
+class IndexOutOfRangeError(AgentarRuntimeError):
+    """Raised when an index is out of range for a list or array."""
+    def __init__(self, index, length, line=None):
+        message = f"Index {index} out of range for length {length}."
+        super().__init__(message, line)
+
+
+class KeyNotFoundError(AgentarRuntimeError):
+    """Raised when a key is not found in a dictionary."""
+    def __init__(self, key, line=None):
+        message = f"Key '{key}' not found in dictionary."
+        super().__init__(message, line)
+
+
+class UnsupportedOperatorError(AgentarRuntimeError):
+    """Raised when an unsupported operator is used."""
+    def __init__(self, operator, line=None):
+        message = f"Unsupported operator '{operator}'."
+        super().__init__(message, line)
 
 
 # =============================================================================

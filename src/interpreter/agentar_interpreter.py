@@ -6,7 +6,6 @@ import sys
 from core.agent import AgentarAgent
 from core.message import AgentarMessage
 from core.pointer import *
-from core.agentar_types import resolve_type
 from runtime.definicion_containers.variable_container import VariableContainer
 from runtime.definicion_containers.agent_container import AgentContainer
 from runtime.definicion_containers.message_container import MessageContainer
@@ -99,27 +98,7 @@ class AgentarInterpreter:
 
     def FieldDeclare(self, node):
         for field in node.declarations:
-            # chek if field has value
-            if field.value is None:
-                type_name, default_value = resolve_type(field.var_type)     
-                self.agent._fields.declare(field.name, default_value, type_name, "Fields", field._line)
-            elif isinstance(field.value, LiteralNode):
-                type_name, _ = resolve_type(field.var_type)
-                self.agent._fields.declare(field.name, field.value, type_name, "Fields", field._line)
-            elif isinstance(field.value, ListLiteralNode):
-                pass # TODO: implement list literal fields
-                type_name, default_value = resolve_type(field.var_type)     
-                self.agent._fields.declare(field.name, default_value, type_name, "Fields", field._line)
-            elif isinstance(field.value, DictLiteralNode):
-                pass # TODO: implement dict literal fields
-                type_name, default_value = resolve_type(field.var_type)     
-                self.agent._fields.declare(field.name, default_value, type_name, "Fields", field._line)
-            elif isinstance(field.value, TupleLiteralNode):
-                pass # TODO: implement tuple literal fields
-                type_name, default_value = resolve_type(field.var_type)     
-                self.agent._fields.declare(field.name, default_value, type_name, "Fields", field._line)
-            else:
-                raise ValueError(f"ERROR at line {field._line}: Unsupported field value type: {type(field.value)}")
+            self.agent._fields.declare(field.name, field.value, field.var_type, field._line)
 
 
     def InitDeclare(self, node):
@@ -133,25 +112,8 @@ class AgentarInterpreter:
 
 
     def BeliefDeclare(self, node):
-        for belief in node.declarations:
-            # chek if field has value or not then make sure it is correct class
-            if belief.value is None:
-                type_name , default_value = resolve_type(belief.var_type)             
-                self.agent._beliefs.declare(belief.name, default_value, type_name, "Beliefs", belief._line)
-            elif isinstance(belief.value, LiteralNode):
-                type_name , _ = resolve_type(belief.var_type) 
-                self.agent._beliefs.declare(belief.name, belief.value, type_name, "Beliefs", belief._line)
-            elif isinstance(belief.value, ListLiteralNode): # TODO: implement list literal beliefs
-                type_name , default_value = resolve_type(belief.var_type)             
-                self.agent._beliefs.declare(belief.name, default_value, type_name, "Beliefs", belief._line)
-            elif isinstance(belief.value, DictLiteralNode): # TODO: implement dict literal beliefs
-                type_name , default_value = resolve_type(belief.var_type)             
-                self.agent._beliefs.declare(belief.name, default_value, type_name, "Beliefs", belief._line)
-            elif isinstance(belief.value, TupleLiteralNode): # TODO: implement tuple literal beliefs
-                type_name , default_value = resolve_type(belief.var_type)             
-                self.agent._beliefs.declare(belief.name, default_value, type_name, "Beliefs", belief._line)
-            else:
-                raise ValueError(f"ERROR at line {belief._line}: Unsupported belief value type: {type(belief.value)}")
+        for belief in node.declarations:         
+            self.agent._beliefs.declare(belief.name, belief.value, belief.var_type, belief._line)
 
 
     def SenseDeclare(self, node):
@@ -183,8 +145,7 @@ class AgentarInterpreter:
     
     def declareMessage(self, node):
         self.message._name = node.name
-        for field in node.fields:
-            type_name , default_value = resolve_type(field.var_type)            
-            self.message._content.declare(field.name, default_value, type_name, f"{node.name}_message", field._line)
+        for field in node.fields:       
+            self.message._content.declare(field.name, None, field.var_type, field._line)
 
         

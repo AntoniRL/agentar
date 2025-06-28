@@ -29,15 +29,15 @@ def run_file(file_path, max_runtime):
     interpreter = AgentarInterpreter()
     mother, agents, messages = interpreter.runAgentar(file_path)
     system = AgentarSystem(mother, agents, messages)
-    # system.start()
-    # start_time = time.time()
-    # while not system.terminated.is_set():
-    #     if time.time() - start_time > max_runtime:
-    #         logging.warning("Timeout reached. Stopping system.")
-    #         system.terminated.set()  # Signal termination
-    #         break
-    #     time.sleep(0.1)
-    # system.stop()
+    system.start()
+    start_time = time.time()
+    while not system.terminated.is_set():
+        if time.time() - start_time > max_runtime:
+            logging.warning("Timeout reached. Stopping system.")
+            system.terminated.set()  # Signal termination
+            break
+        time.sleep(0.1)
+    system.stop()
 
 
 def ast_tree(file_path):

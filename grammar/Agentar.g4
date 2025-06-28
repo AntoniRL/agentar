@@ -239,7 +239,7 @@ continueStmt
     
 
 doStmt
-    : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
+    : 'do' ID '(' (expression (',' expression)*)? ')' ';' 
     ;
 
 
@@ -362,11 +362,11 @@ MESSAGE: 'message';
 MSG: 'msg';
 SELF: 'self';
 BELIEF: 'bel';
-MSGTYPE_INFORM:  'inform';
-MSGTYPE_ASK:     'ask';
-MSGTYPE_REQUEST: 'request';
-MSGTYPE_CONFIRM: 'confirm';
-MSGTYPE_DENY:    'deny';
+MSGTYPE_INFORM:  'msgType_inform';
+MSGTYPE_ASK:     'msgType_ask';
+MSGTYPE_REQUEST: 'msgType_request';
+MSGTYPE_CONFIRM: 'msgType_confirm';
+MSGTYPE_DENY:    'msgType_deny';
 
 
 // Symbols

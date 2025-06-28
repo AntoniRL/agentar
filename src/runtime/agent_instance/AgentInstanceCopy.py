@@ -21,8 +21,8 @@ class AgentInstance:
     def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
         for key, value in agent_ast.__dict__.items():  # Copy all attributes from the agent_AST to the instance
             setattr(self, key, value)
-        self._agent = agent_ast
-        self._isMother = self._agent._isMother
+        # self._agent = agent_ast
+        # self._isMother = self._agent._isMother
         self._id = id        
         self._parent = id.parent() if not self._isMother else None
         self._children = []                  # List of agent children [AgentId]
@@ -55,33 +55,33 @@ class AgentInstance:
         )
 
 
-    def initializeAgent(self):
-        logging.info(f"{self._id}:: Initializing agent")
-        local_var = {}
-        local_var_type = {}
-        for stmt in self._agent._initialize:          # Execute the agent's initialization statements
-            self.execute_stmt(stmt, local_var, local_var_type)
+    # def initializeAgent(self):
+    #     logging.info(f"{self._id}:: Initializing agent")
+    #     local_var = {}
+    #     local_var_type = {}
+    #     for stmt in self._agent._initialize:          # Execute the agent's initialization statements
+    #         self.execute_stmt(stmt, local_var, local_var_type)
 
 
-    def step(self):
-        # print(f"{self._id.path}:: Agent step...")  # Print the current step of the agent
-        self.sense_world()                          # Sense the world and update beliefs
-        if not self._inbox.empty():
-            self.process_messages(self._inbox.get()) # Process incoming messages (first from the inbox)
-        self.check_global_goal()                    # Check if the agent's goals are achieved
-        self.follow_rules()
+    # def step(self):
+    #     # print(f"{self._id.path}:: Agent step...")  # Print the current step of the agent
+    #     self.sense_world()                          # Sense the world and update beliefs
+    #     if not self._inbox.empty():
+    #         self.process_messages(self._inbox.get()) # Process incoming messages (first from the inbox)
+    #     self.check_global_goal()                    # Check if the agent's goals are achieved
+    #     self.follow_rules()
 
 
-    def destroyAgent(self):
-        local_var = {}
-        local_var_type = {}
-        for stmt in self._agent._destroy:             # Execute the agent's destruction statements
-            self.execute_stmt(stmt, local_var, local_var_type)
+    # def destroyAgent(self):
+    #     local_var = {}
+    #     local_var_type = {}
+    #     for stmt in self._agent._destroy:             # Execute the agent's destruction statements
+    #         self.execute_stmt(stmt, local_var, local_var_type)
 
-        with self._runtime._lock:
-            if not self._isMother:
-                del self._runtime.agents[self._id.path]
-                del self._runtime.threads[self._id.path]    
+    #     with self._runtime._lock:
+    #         if not self._isMother:
+    #             del self._runtime.agents[self._id.path]
+    #             del self._runtime.threads[self._id.path]    
 
     
     def sense_world(self):
@@ -200,25 +200,26 @@ class AgentInstance:
 # ---EXECUTE_STMT-----------------------------------
     def execute_stmt(self, stmt, local_var, local_var_type, message=None):
         # logging.info(f"{self._id.path}:: Executing statement...{stmt}") # TODO: remove logging
-
-        # VariableDeclNode handles variable declarations
         if isinstance(stmt, VariableDeclNode):
-            if stmt.value is None:
-                var_type, var_base_decl = resolve_type(stmt.var_type)
-                local_var_type[stmt.name] = var_type
-                local_var[stmt.name] = var_base_decl
+            pass 
+        # # VariableDeclNode handles variable declarations
+        # if isinstance(stmt, VariableDeclNode):
+        #     if stmt.value is None:
+        #         var_type, var_base_decl = resolve_type(stmt.var_type)
+        #         local_var_type[stmt.name] = var_type
+        #         local_var[stmt.name] = var_base_decl
 
-            elif stmt.value is not None:
-                value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
-                if not resolve_type(stmt.var_type)[0] == type(value):
-                    raise TypeError(f"Type mismatch in variable declaration for {stmt.name}: expected {AGENTAR_TYPE_MAP[stmt.var_type]}, got {type(value)}")
-                local_var[stmt.name] = value
-                local_var_type[stmt.name] = resolve_type(stmt.var_type)[0] 
+        #     elif stmt.value is not None:
+        #         value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
+        #         if not resolve_type(stmt.var_type)[0] == type(value):
+        #             raise TypeError(f"Type mismatch in variable declaration for {stmt.name}: expected {AGENTAR_TYPE_MAP[stmt.var_type]}, got {type(value)}")
+        #         local_var[stmt.name] = value
+        #         local_var_type[stmt.name] = resolve_type(stmt.var_type)[0] 
                 
 
-        # AssignmentNode handles different types of assignments
-        elif isinstance(stmt, AssignmentNode):
-            self.handle_assignment(stmt, local_var, local_var_type, message)
+        # # AssignmentNode handles different types of assignments
+        # elif isinstance(stmt, AssignmentNode):
+        #     self.handle_assignment(stmt, local_var, local_var_type, message)
 
         # SendNode handles sending messages
         elif isinstance(stmt, SendNode):
@@ -303,20 +304,20 @@ class AgentInstance:
                 self._runtime.send_message(msg)
             
 
-        # print statement
-        elif isinstance(stmt, PrintNode) or isinstance(stmt, LoggingNode):
-            to_print = [self.eval_expr(value, local_var, local_var_type, message) for value in stmt.values]
-            # make printing id of AgentId objects more readable
-            for i, value in enumerate(to_print):
-                if type(value) is list:
-                    for j, val in enumerate(value):
-                        if type(val) == AgentId:
-                            to_print[i][j] = val.path   
-            if isinstance(stmt, PrintNode):
-                print(f"AGENT {self._id}::", " ".join(str(v) for v in to_print))
-                logging.info(f"{self._id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
-            else: 
-                logging.info(f"{self._id.path}:: (LOGGING) " + " ".join(str(v) for v in to_print))
+        # # print statement
+        # elif isinstance(stmt, PrintNode) or isinstance(stmt, LoggingNode):
+        #     to_print = [self.eval_expr(value, local_var, local_var_type, message) for value in stmt.values]
+        #     # make printing id of AgentId objects more readable
+        #     for i, value in enumerate(to_print):
+        #         if type(value) is list:
+        #             for j, val in enumerate(value):
+        #                 if type(val) == AgentId:
+        #                     to_print[i][j] = val.path   
+        #     if isinstance(stmt, PrintNode):
+        #         print(f"AGENT {self._id}::", " ".join(str(v) for v in to_print))
+        #         logging.info(f"{self._id.path}:: (PRINTING) " + " ".join(str(v) for v in to_print))
+        #     else: 
+        #         logging.info(f"{self._id.path}:: (LOGGING) " + " ".join(str(v) for v in to_print))
 
 
 
@@ -465,235 +466,232 @@ class AgentInstance:
         # TODO: add type checking for local_var and local_var_type
 
         if isinstance(expr, LiteralNode):
-            if expr.value == 'inform':
-                return MessageType.INFORM
-            elif expr.value == 'ask':
-                return MessageType.ASK
-            elif expr.value == 'request':
-                return MessageType.REQUEST
-            elif expr.value == 'confirm':
-                return MessageType.CONFIRM
-            elif expr.value == 'deny':
-                return MessageType.DENY
-            else:
-                return expr.value
+            pass
+            # if expr.value == 'inform':
+            #     return MessageType.INFORM
+            # elif expr.value == 'ask':
+            #     return MessageType.ASK
+            # elif expr.value == 'request':
+            #     return MessageType.REQUEST
+            # elif expr.value == 'confirm':
+            #     return MessageType.CONFIRM
+            # elif expr.value == 'deny':
+            #     return MessageType.DENY
+            # else:
+            #     return expr.value
             
 
-        elif isinstance(expr, NegExprNode):
-            return -self.eval_expr(expr.base, local_var, local_var_type, message=message)
+        # elif isinstance(expr, NegExprNode):
+        #     return -self.eval_expr(expr.base, local_var, local_var_type, message=message)
             
-        elif isinstance(expr, NoneExprNode):
-            return None
+
+        # elif isinstance(expr, NoneExprNode):
+        #     return None
         
 
-        elif isinstance(expr, DeepCopyNode):
-            value = self.eval_expr(expr.variable, local_var, local_var_type, message=message)
-            return deepcopy(value)
+        # elif isinstance(expr, DeepCopyNode):
+        #     value = self.eval_expr(expr.variable, local_var, local_var_type, message=message)
+        #     return deepcopy(value)
 
         
-        elif isinstance(expr, VarRefNode):
-            if expr.name in self._fields:
-                return self._fields[expr.name]
-            elif expr.name in local_var:
-                return local_var[expr.name]
-            elif expr.name == "_":
-                return "_"
-            else:
-                raise NameError(f"Variable '{expr.name}' is not declared.")
+        # elif isinstance(expr, VarRefNode):
+        #     if expr.name in self._fields:
+        #         return self._fields[expr.name]
+        #     elif expr.name in local_var:
+        #         return local_var[expr.name]
+        #     elif expr.name == "_":
+        #         return "_"
+        #     else:
+        #         raise NameError(f"Variable '{expr.name}' is not declared.")
             
 
         elif isinstance(expr, DoNode):
             return self.execute_stmt(expr, local_var, local_var_type, message)  # Execute the action with the provided local variables
 
 
-        elif isinstance(expr, BaseTypeNode):
-            return resolve_type(expr)[0]
+        # elif isinstance(expr, BaseTypeNode):
+        #     return resolve_type(expr)[0]
             
 
-        elif isinstance(expr, LenNode):
-            return len(self.eval_expr(expr.base, local_var, local_var_type, message=message))
+        # elif isinstance(expr, LenNode):
+        #     return len(self.eval_expr(expr.base, local_var, local_var_type, message=message))
             
 
-        elif isinstance(expr, AbsExprNode):
-            value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
-            if isinstance(value, (int, float)):
-                return abs(value)
-            else:
-                raise TypeError(f"abs() argument must be a number, not {type(value).__name__}")
+        # elif isinstance(expr, AbsExprNode):
+        #     value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+        #     if isinstance(value, (int, float)):
+        #         return abs(value)
+        #     else:
+        #         raise TypeError(f"abs() argument must be a number, not {type(value).__name__}")
 
 
-        elif isinstance(expr, TypeExprNode):
-            value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
-            if isinstance(value, list):
-                return list
-            elif isinstance(value, dict):
-                return dict
-            else:
-                return type(value)
+        # elif isinstance(expr, TypeExprNode):
+        #     value = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+        #     if isinstance(value, list):
+        #         return list
+        #     elif isinstance(value, dict):
+        #         return dict
+        #     else:
+        #         return type(value)
 
 
-        elif isinstance(expr, IndexAccessNode):
-            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
-            index = self.eval_expr(expr.index, local_var, local_var_type, message=message)
-            if type(base) == list or type(base) == tuple or check_if_var_is_pointer(base):
-                if index < -len(base) or index >= len(base):
-                    raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
-                return base[index]
-            elif type(base) == dict or check_if_var_is_pointer(base):
-                if index not in base:
-                    raise KeyError(f"Key '{index}' not found in dictionary.")
-                return base[index]
+        # elif isinstance(expr, IndexAccessNode):
+        #     base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+        #     index = self.eval_expr(expr.index, local_var, local_var_type, message=message)
+        #     if type(base) == list or type(base) == tuple or check_if_var_is_pointer(base):
+        #         if index < -len(base) or index >= len(base):
+        #             raise IndexError(f"Index {index} out of bounds for list of length {len(base)}.")
+        #         return base[index]
+        #     elif type(base) == dict or check_if_var_is_pointer(base):
+        #         if index not in base:
+        #             raise KeyError(f"Key '{index}' not found in dictionary.")
+        #         return base[index]
         
 
-        elif isinstance(expr, SliceAccessNode):
-            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
-            start = self.eval_expr(expr.start, local_var, local_var_type, message=message) if expr.start is not None else None
-            end = self.eval_expr(expr.end, local_var, local_var_type, message=message) if expr.end is not None else None
-            if start is not None and (start < 0 or start >= len(base)):
-                raise IndexError(f"Start index {start} out of bounds for list of length {len(base)}.")
-            if end is not None and (end < -len(base) or end > len(base)):
-                raise IndexError(f"End index {end} out of bounds for list of length {len(base)}.")
-            return base[start:end] if start is not None and end is not None else base[start:] if start is not None else base[:end] if end is not None else base
+        # elif isinstance(expr, SliceAccessNode):
+        #     base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+        #     start = self.eval_expr(expr.start, local_var, local_var_type, message=message) if expr.start is not None else None
+        #     end = self.eval_expr(expr.end, local_var, local_var_type, message=message) if expr.end is not None else None
+        #     if start is not None and (start < 0 or start >= len(base)):
+        #         raise IndexError(f"Start index {start} out of bounds for list of length {len(base)}.")
+        #     if end is not None and (end < -len(base) or end > len(base)):
+        #         raise IndexError(f"End index {end} out of bounds for list of length {len(base)}.")
+        #     return base[start:end] if start is not None and end is not None else base[start:] if start is not None else base[:end] if end is not None else base
 
             
-        elif isinstance(expr, SelfAccessNode):
-            name = expr.path[1]
-            if hasattr(self, name) or name in self._fields:
-                return (
-                    self._fields[name] if name in self._fields
-                    else getattr(self, name) if hasattr(self, name)
-                    else None
-                )
-            else:
-                raise NameError(f"Variable '{name}' is not declared.")  
+        # elif isinstance(expr, SelfAccessNode):
+        #     name = expr.path[1]
+        #     if hasattr(self, name) or name in self._fields:
+        #         return (
+        #             self._fields[name] if name in self._fields
+        #             else getattr(self, name) if hasattr(self, name)
+        #             else None
+        #         )
+        #     else:
+        #         raise NameError(f"Variable '{name}' is not declared.")  
             
 
-        elif isinstance(expr, MsgAccessNode):
-            name = expr.path[1]
-            if hasattr(message, name) or name in message._content:
-                return (
-                    message._content[name] if name in message._content
-                    else getattr(message, name) if hasattr(message, name)
-                    else None
-                )
-            else:
-                raise NameError(f"Variable '{name}' is not declared.")  
+        # elif isinstance(expr, MsgAccessNode):
+        #     name = expr.path[1]
+        #     if hasattr(message, name) or name in message._content:
+        #         return (
+        #             message._content[name] if name in message._content
+        #             else getattr(message, name) if hasattr(message, name)
+        #             else None
+        #         )
+        #     else:
+        #         raise NameError(f"Variable '{name}' is not declared.")  
 
 
-        elif isinstance(expr, BelAccessNode):
-            name = expr.path[1]
-            if name in self._beliefs:
-                return (self._beliefs[name])
-            else:
-                raise NameError(f"Variable '{name}' is not declared.") 
+        # elif isinstance(expr, BelAccessNode):
+        #     name = expr.path[1]
+        #     if name in self._beliefs:
+        #         return (self._beliefs[name])
+        #     else:
+        #         raise NameError(f"Variable '{name}' is not declared.") 
             
 
-        elif isinstance(expr, ListLiteralNode):
-            return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]
+        # elif isinstance(expr, ListLiteralNode):
+        #     return [self.eval_expr(item, local_var, local_var_type) for item in expr.elements]
         
 
-        elif isinstance(expr, TupleLiteralNode):
-            return tuple(self.eval_expr(item, local_var, local_var_type) for item in expr.elements)
+        # elif isinstance(expr, TupleLiteralNode):
+        #     return tuple(self.eval_expr(item, local_var, local_var_type) for item in expr.elements)
 
 
-        elif isinstance(expr, DictLiteralNode):
-            return {
-                self.eval_expr(key, local_var, local_var_type): 
-                self.eval_expr(value, local_var, local_var_type)
-                for key, value in zip(expr.keys, expr.values)
-            }
+        # elif isinstance(expr, DictLiteralNode):
+        #     return {
+        #         self.eval_expr(key, local_var, local_var_type): 
+        #         self.eval_expr(value, local_var, local_var_type)
+        #         for key, value in zip(expr.keys, expr.values)
+        #     }
 
-        elif isinstance(expr, DictKeysNode):
-            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
-            if not isinstance(base, dict):
-                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
-            return list(base.keys())
+        # elif isinstance(expr, DictKeysNode):
+        #     base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+        #     if not isinstance(base, dict):
+        #         raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+        #     return list(base.keys())
         
 
-        elif isinstance(expr, DictValuesNode):
-            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
-            if not isinstance(base, dict):
-                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
-            return list(base.values())
+        # elif isinstance(expr, DictValuesNode):
+        #     base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+        #     if not isinstance(base, dict):
+        #         raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+        #     return list(base.values())
         
 
-        elif isinstance(expr, DictGetNode):
-            base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
-            key = self.eval_expr(expr.key, local_var, local_var_type, message=message)
-            if not isinstance(base, dict):
-                raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
-            if key in base:
-                return base[key]
-            else:
-                return None
+        # elif isinstance(expr, DictGetNode):
+        #     base = self.eval_expr(expr.base, local_var, local_var_type, message=message)
+        #     key = self.eval_expr(expr.key, local_var, local_var_type, message=message)
+        #     if not isinstance(base, dict):
+        #         raise TypeError(f"Expected a dictionary, got {type(base).__name__}")
+        #     if key in base:
+        #         return base[key]
+        #     else:
+        #         return None
 
 
-        elif isinstance(expr, AddressOfExprNode):
-            var_to_ref = self.eval_expr(expr.variable, local_var, local_var_type, message=message)
-            pointer_type = get_pointer_type(var_to_ref)
-            pointer_object = pointer_type(var_to_ref)  # Create a pointer to the variable\
-            return pointer_object
+        # elif isinstance(expr, AddressOfExprNode):
+        #     var_to_ref = self.eval_expr(expr.variable, local_var, local_var_type, message=message)
+        #     pointer_type = get_pointer_type(var_to_ref)
+        #     pointer_object = pointer_type(var_to_ref)  # Create a pointer to the variable\
+        #     return pointer_object
         
 
-        elif isinstance(expr, RandomExprNode):
-            start = self.eval_expr(expr.start, local_var, local_var_type, message=message)
-            end = self.eval_expr(expr.end, local_var, local_var_type, message=message)
-            if not (isinstance(start, int) and isinstance(end, int)):
-                raise TypeError("Arguments to random() must be integers.")
-            return random.randint(start, end)
+        # elif isinstance(expr, RandomExprNode):
+        #     start = self.eval_expr(expr.start, local_var, local_var_type, message=message)
+        #     end = self.eval_expr(expr.end, local_var, local_var_type, message=message)
+        #     if not (isinstance(start, int) and isinstance(end, int)):
+        #         raise TypeError("Arguments to random() must be integers.")
+        #     return random.randint(start, end)
 
 
-        elif isinstance(expr, BinaryOpNode): 
-            left = expr.left
-            right = expr.right
-            operator = expr.op
+        # elif isinstance(expr, BinaryOpNode): 
+        #     left = expr.left
+        #     right = expr.right
+        #     operator = expr.op
 
-            if isinstance(left, BinaryOpNode):
-                left = self.eval_expr(left, local_var, local_var_type, message=message)
-            if isinstance(right, BinaryOpNode):
-                right = self.eval_expr(right, local_var, local_var_type, message=message)
+        #     if isinstance(left, BinaryOpNode) or not isinstance(left, (bool, int, float, str)):
+        #         left = self.eval_expr(left, local_var, local_var_type, message=message)
+        #     if isinstance(right, BinaryOpNode) or not isinstance(right, (bool, int, float, str)):
+        #         right = self.eval_expr(right, local_var, local_var_type, message=message)
 
-            if not isinstance(left, (bool, int, float, str)):
-                left = self.eval_expr(left, local_var, local_var_type, message=message)
-            if not isinstance(right, (bool, int, float, str)):
-                right = self.eval_expr(right, local_var, local_var_type, message=message)
-
-            if operator == '+':
-                return left + right
-            elif operator == '-':
-                return left - right
-            elif operator == '*':
-                return left * right
-            elif operator == '/':
-                if right == 0:
-                    raise ZeroDivisionError("Division by zero is not allowed.")
-                return left / right
-            elif operator == '%':
-                return left % right
-            elif operator == '**':
-                return left ** right
-            elif operator == '==':
-                return left == right
-            elif operator == '!=':
-                return left != right
-            elif operator == '<':
-                return left < right
-            elif operator == '<=':
-                return left <= right
-            elif operator == '>':
-                return left > right
-            elif operator == '>=':
-                return left >= right
-            elif operator == 'AND':
-                return left and right
-            elif operator == 'OR':
-                return left or right
-            elif operator == 'XOR':
-                return left ^ right
-            elif operator == 'NOT':
-                return not left
-            else:
-                raise ValueError(f"Unknown operator: {operator}")
+        #     if operator == '+':
+        #         return left + right
+        #     elif operator == '-':
+        #         return left - right
+        #     elif operator == '*':
+        #         return left * right
+        #     elif operator == '/':
+        #         if right == 0:
+        #             raise ZeroDivisionError("Division by zero is not allowed.")
+        #         return left / right
+            # elif operator == '%':
+            #     return left % right
+            # elif operator == '**':
+            #     return left ** right
+            # elif operator == '==':
+            #     return left == right
+            # elif operator == '!=':
+            #     return left != right
+            # elif operator == '<':
+            #     return left < right
+            # elif operator == '<=':
+            #     return left <= right
+            # elif operator == '>':
+            #     return left > right
+            # elif operator == '>=':
+            #     return left >= right
+            # elif operator == 'AND':
+            #     return left and right
+            # elif operator == 'OR':
+            #     return left or right
+            # elif operator == 'XOR':
+            #     return left ^ right
+            # elif operator == 'NOT':
+            #     return not left
+            # else:
+            #     raise ValueError(f"Unknown operator: {operator}")
             
 
 

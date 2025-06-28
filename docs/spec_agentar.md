@@ -139,7 +139,7 @@ TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie 
 | `when`         | Warunek wyzwolenia | `rules`, `receive` |
 | `then`         | Część wykonawcza reguły | `rules`, `receive` |
 | `send(...)`    | Wysyłanie wiadomości | dowolnie |
-| `do(...)`      | Wywoałanie akcji (zwraca wartość dla innych typów akcji niż `void`) | dowolnie |
+| `do <action_name>(x,...)`      | Wywoałanie akcji (zwraca wartość dla innych typów akcji niż `void`) | dowolnie |
 | ???`adopt_goal(...)` | Przyjęcie nowego celu | `action`, `receive` |
 | ???`drop_goal(...)`  | Porzucenie celu | `action`, `receive` |
 | ???`adopt_belief`    | Pezyjęcie nowe przekonanie                         |
