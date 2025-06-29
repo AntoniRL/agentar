@@ -16,6 +16,7 @@ statement
     | continueStmt
     | variableDecl
     | assignment
+    | listAddStmt
     | sendStmt
     | sendParentStmt
     | sendChildrenStmt
@@ -120,21 +121,17 @@ sendStmt
     : 'send' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'  
     ;
 
-
 sendParentStmt
     : 'send2parent' '(' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
     ;
-
 
 sendChildrenStmt
     : 'send2children' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
     ;
 
-
 sendSiblingStmt
     : 'send2siblings' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
     ;
-
 
 spawnStmt
     : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
@@ -144,11 +141,9 @@ killStmt
     : 'kill' '(' expression? ')' ';'
     ;
 
-
 killchildrenStmt
     : 'kill_children' '(' expression? ')' ';'
     ;
-
 
 sleepStmt  
     : 'sleep' '('expression')' ';'
@@ -158,35 +153,24 @@ returnStmt
     : 'return' expression? ';'
     ;
 
-
 senseStmt
     : 'sense' '('')' ';'
     ;
-
 
 goalCheckStmt
     : 'goal_check' '(' ID ')' ';'
     ;
 
-
 getTimeStmt
     : 'getTime' '('')' ';'
     ;    
-
 
 dictDelStmt
     : 'del' expression '[' expression ']' ';'
     ;
 
-// === End_of_statements
-
-
-messageInit
-    : ID '(' (messageFieldAssign (',' messageFieldAssign)*)? ')'
-    ;
-
-messageFieldAssign
-    : ID '=' expression
+listAddStmt
+    : expression '.add(' expression ')' ';'
     ;
 
 printStmt
@@ -201,17 +185,14 @@ ifStmt
     : 'if' '(' expression ')' blockOrStmt (elseStmt)?
     ;   
 
-
 blockOrStmt 
     : '{' statement* '}'
     | statement
     ;
 
-
 elseStmt
     : 'else' '{' statement* '}'
     ;
-
 
 forStmt
     : 'for' '(' variableDecl expression ';' forAssignExpr ')' '{' forBody '}'
@@ -236,38 +217,29 @@ breakStmt
 continueStmt
     : 'continue' ';'
     ;
-    
 
 doStmt
     : 'do' ID '(' (expression (',' expression)*)? ')' ';' 
     ;
 
-
 variableDecl
-    : type ID ('=' expression)? ';'                       # VarDecl
+    : type ID ('=' expression)? ';'             # VarDecl
+    | ID ID '=' messageInit ';'                 # MessageVarDecl
     ;
+
+
 
 assignment
-    : expression '=' getTimeStmt                          # GetTimeAssign
-    | ID '=' expression ';'                               # SimpleAssign
-    | ID '['']' '=' expression ';'                        # ListAddAssign
-    | ID '[' expression ']' '=' expression ';'            # IndexAssign
-    | ID '=' spawnStmt                                    # SpawnAssign
-    | ID '=' doStmt                                       # DoAssign
-    | ID '=' goalCheckStmt                                # GoalCheckAssign
-    | expression '=' doStmt                               # DoSelfAssign
-    | expression'['']' '=' expression ';'                 # SelfListAddAssign
-    | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
-    | expression '=' expression ';'                       # SelfAssign
-    | expression '=' goalCheckStmt                        # SelfGoalCheckAssign
+    : expression '=' assignValue ';'
     ;
 
-type
-    :  bodyType                 # BacisType
-    | 'pointer<'type'>'         # PointerType
+assignValue
+    : expression                 # SimpleAssignValue
+    | getTimeStmt                # GetTimeAssignValue 
+    | spawnStmt                  # SpawnAssignValue
+    | doStmt                     # DoAssignValue
+    | goalCheckStmt              # GoalCheckAssignValue
     ;
-
-bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'tuple' | 'list' | 'dict' | 'agentid';
 
 
 expression
@@ -311,12 +283,17 @@ expression
     | listLiteral                           # ListExpr
     | dictLiteral                           # DictExpr
     | literal                               # LiteralExpr
-    | doExpr                                # DoExpression
     ;
 
 
-doExpr
-    : 'do(' ID (',' '['expression (',' expression)*']')?  ')'
+
+messageInit
+    : ID '{' (messageFieldAssign (',' messageFieldAssign)*)? '}'
+    ;
+
+
+messageFieldAssign
+    : ID ':' expression
     ;
 
 
@@ -324,17 +301,29 @@ listLiteral
     : '[' (expression (',' expression)*)? ']'
     ;
 
+
 dictLiteral
     : '{' dictEntry (',' dictEntry)* '}'
     ;
+
 
 dictEntry
   : key=expression '=' value=expression
   ;
 
+
 tupleLiteral
     : '(' expression ',' expression (',' expression)* ')'
     ;
+
+
+type
+    :  bodyType                 # BasicType
+    | 'pointer<'type'>'         # PointerType
+    ;
+
+
+bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'tuple' | 'list' | 'dict' | 'agentid';
 
 
 literal

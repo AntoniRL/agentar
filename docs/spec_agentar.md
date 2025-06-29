@@ -195,7 +195,7 @@ if (msg.text=="text") print("tak"); // dla jednej instrukcji
 | `bool`   | Wartość logiczna `true` / `false` |
 | `string` | Tekst                             |
 | `list`   | Lista wartości                    |
-| TODO `dict`   | Słownik (klucz → wartość)         |
+| `dict`   | Słownik (klucz → wartość)         |
 | `agentID`| np. `.1.1`         |
 | `pointer<type>` | wspaźnik na obiekt. UWAGA! Posczas deklaracji nie da się przypisać |
 | `&var_name` | przekazanie referencji do obiektu |
@@ -212,7 +212,7 @@ Odwołanie do elementu:
 `first = myList[0];  // wartość: 1`
 
 Dodanie na koniec:
-`myList[] = 4;  // teraz myList = [1, 2, 3, 4]`
+`myList.add(4);  // teraz myList = [1, 2, 3, 4]`
 
 Usunoęcie element  (dictDelStmt)
 `del myList[1];`

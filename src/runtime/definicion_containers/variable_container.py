@@ -51,8 +51,8 @@ class VariableContainer:
         return info.value
 
 
-    def set(self, name: str, value):
-        info = self._require_variable(name)
+    def set(self, name: str, value, line):
+        info = self._require_variable(name, line)
         info.value = value
 
 

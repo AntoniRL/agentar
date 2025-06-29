@@ -3,10 +3,11 @@
 # StatementExecutor: executes statements in the context of an agent instance
 
 
-from ast_tree.nodes import *
 import logging
-from core.agent_id import AgentId
 
+from ast_tree.nodes import *
+from core.agent_id import AgentId
+from runtime.errors import *
 from core.agentar_types import resolve_type
 
 class StatementExecutor:
@@ -23,6 +24,7 @@ class StatementExecutor:
             
             case AssignmentNode():
                 self.handle_assignment(stmt, local_vars, message)
+
 
 
 
@@ -51,13 +53,28 @@ class StatementExecutor:
             logging.info(f"{self.agent._id.path}:: (LOGGING) " + " ".join(str(v) for v in to_print))
 
 
-    # ------------------------------------------
-    # Handle assignment 
-
+    
+    # ---- Handle assignment 
     def handle_assignment(self, stmt, local_vars, message=None):
+        target = self.get_target(stmt.target, local_vars, message)
         match stmt.value:
             case SpawnNode():
                 value = self.handle_spawn(stmt.value, local_vars, message)
             case MessageInitNode():
                 value = self.handle_message_init(stmt.value, local_vars, message)
-            # TODO: continue work here :))
+            case DoNode():
+                value = self.execute_stmt(stmt.value, local_vars, message)
+            case GoalCheckNode():
+                value = self.agent._actions.goal_check(stmt.value, local_vars, message)
+            case GetTimeNode():
+                value = self.execute_stmt(stmt.value, local_vars, message)
+            case _:
+                value = self.agent._evaluator.eval_expr(stmt.value, local_vars, message, stmt._line)
+
+        print(type(target), value)
+        target = value
+
+    
+    def get_target(self, target, local_vars, message):
+        pass # TODO:
+

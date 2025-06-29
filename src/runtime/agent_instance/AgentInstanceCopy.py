@@ -504,7 +504,7 @@ class AgentInstance:
         #     else:
         #         raise NameError(f"Variable '{expr.name}' is not declared.")
             
-
+        
         elif isinstance(expr, DoNode):
             return self.execute_stmt(expr, local_var, local_var_type, message)  # Execute the action with the provided local variables
 
@@ -698,22 +698,22 @@ class AgentInstance:
 
 # ---HANDLE_ASSIGNMENT-----------------------------------
 
-    def handle_assignment(self, stmt, local_var, local_var_type, message):
-        value = None
-        if isinstance(stmt.value, SpawnNode):
-            value = self.handle_spawn(stmt.value, local_var, local_var_type)
-        elif isinstance(stmt.value, MessageInitNode):
-            value = self.handle_message_init(stmt.value)
-        elif isinstance(stmt.value, DoNode):
-            value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
+    # def handle_assignment(self, stmt, local_var, local_var_type, message):
+    #     value = None
+    #     if isinstance(stmt.value, SpawnNode):
+    #         value = self.handle_spawn(stmt.value, local_var, local_var_type)
+    #     elif isinstance(stmt.value, MessageInitNode):
+    #         value = self.handle_message_init(stmt.value)
+    #     elif isinstance(stmt.value, DoNode):
+    #         value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
 
-        elif isinstance(stmt.value, GoalCheckNode):
-            value = self.check_goal(stmt.value, local_var, local_var_type)
-        elif isinstance(stmt.value, GetTimeNode):
-            value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
-        else:
-            value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
-        self.assign_to_target(stmt, value, local_var, local_var_type)
+    #     elif isinstance(stmt.value, GoalCheckNode):
+    #         value = self.check_goal(stmt.value, local_var, local_var_type)
+    #     elif isinstance(stmt.value, GetTimeNode):
+    #         value = self.execute_stmt(stmt.value, local_var, local_var_type, message=message)
+    #     else:
+    #         value = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
+    #     self.assign_to_target(stmt, value, local_var, local_var_type)
 
 
     def assign_to_target(self, stmt, value, local_var, local_var_type):
@@ -756,19 +756,19 @@ class AgentInstance:
                 local_var[target][idx] = value
 
 
-    def assign_to_storage(self, storage, type_info, target, value, index, local_var=None, local_var_type=None):
-        expected_type = type_info[target]
-        if index is None:
-            if not expected_type == type(value):
-                raise TypeError(f"Type mismatch in assignment to {target}: expected {expected_type}, got {type(value)}")
-            storage[target] = value
-        elif index == "add":
-            if expected_type != list:
-                raise TypeError(f"Cannot 'add' to non-list field '{target}'")
-            storage[target].append(value)
-        else:
-            idx = self.eval_expr(index, local_var, local_var_type)  # Assuming index expr independent
-            storage[target][idx] = value
+    # def assign_to_storage(self, storage, type_info, target, value, index, local_var=None, local_var_type=None):
+    #     expected_type = type_info[target]
+    #     if index is None:
+    #         if not expected_type == type(value):
+    #             raise TypeError(f"Type mismatch in assignment to {target}: expected {expected_type}, got {type(value)}")
+    #         storage[target] = value
+    #     elif index == "add":
+    #         if expected_type != list:
+    #             raise TypeError(f"Cannot 'add' to non-list field '{target}'")
+    #         storage[target].append(value)
+    #     else:
+    #         idx = self.eval_expr(index, local_var, local_var_type)  # Assuming index expr independent
+    #         storage[target][idx] = value
 
 
     def handle_spawn(self, spawn_node, local_var, local_var_type):

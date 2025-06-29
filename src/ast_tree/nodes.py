@@ -118,7 +118,6 @@ class LoggingNode(ASTNode):
 class AssignmentNode(ASTNode):
     target: Union[ASTNode]
     value: ASTNode
-    index: Optional[ASTNode] = None
 
 
 @dataclass
@@ -206,11 +205,19 @@ class IndexAccessNode(ASTNode):
     base: ASTNode
     index: ASTNode
 
+
 @dataclass
 class SliceAccessNode(ASTNode):
     base: ASTNode
     start: Optional[ASTNode] = None
     end: Optional[ASTNode] = None
+
+
+@dataclass 
+class MessageVarDeclNode(ASTNode):
+    name: str
+    message_type: str
+    message: ASTNode
 
 
 @dataclass
@@ -268,6 +275,11 @@ class DictDelNode(ASTNode):
     base: ASTNode
     key: ASTNode
 
+
+@dataclass
+class ListAddNode(ASTNode):
+    base: ASTNode
+    value: ASTNode
 
 @dataclass
 class TupleLiteralNode(ASTNode):

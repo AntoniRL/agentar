@@ -1,0 +1,13 @@
+message mes{
+    int x;
+}
+agent mother {
+    fields{
+        list y=[1,2];
+    }
+    initialize {
+        int x;
+        x = 5;
+        print(x);
+    }
+}

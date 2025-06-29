@@ -296,21 +296,12 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#messageInit.
-    def enterMessageInit(self, ctx:AgentarParser.MessageInitContext):
+    # Enter a parse tree produced by AgentarParser#listAddStmt.
+    def enterListAddStmt(self, ctx:AgentarParser.ListAddStmtContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#messageInit.
-    def exitMessageInit(self, ctx:AgentarParser.MessageInitContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#messageFieldAssign.
-    def enterMessageFieldAssign(self, ctx:AgentarParser.MessageFieldAssignContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#messageFieldAssign.
-    def exitMessageFieldAssign(self, ctx:AgentarParser.MessageFieldAssignContext):
+    # Exit a parse tree produced by AgentarParser#listAddStmt.
+    def exitListAddStmt(self, ctx:AgentarParser.ListAddStmtContext):
         pass
 
 
@@ -431,138 +422,66 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#GetTimeAssign.
-    def enterGetTimeAssign(self, ctx:AgentarParser.GetTimeAssignContext):
+    # Enter a parse tree produced by AgentarParser#MessageVarDecl.
+    def enterMessageVarDecl(self, ctx:AgentarParser.MessageVarDeclContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#GetTimeAssign.
-    def exitGetTimeAssign(self, ctx:AgentarParser.GetTimeAssignContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#SimpleAssign.
-    def enterSimpleAssign(self, ctx:AgentarParser.SimpleAssignContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#SimpleAssign.
-    def exitSimpleAssign(self, ctx:AgentarParser.SimpleAssignContext):
+    # Exit a parse tree produced by AgentarParser#MessageVarDecl.
+    def exitMessageVarDecl(self, ctx:AgentarParser.MessageVarDeclContext):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#ListAddAssign.
-    def enterListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
+    # Enter a parse tree produced by AgentarParser#assignment.
+    def enterAssignment(self, ctx:AgentarParser.AssignmentContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#ListAddAssign.
-    def exitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#IndexAssign.
-    def enterIndexAssign(self, ctx:AgentarParser.IndexAssignContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#IndexAssign.
-    def exitIndexAssign(self, ctx:AgentarParser.IndexAssignContext):
+    # Exit a parse tree produced by AgentarParser#assignment.
+    def exitAssignment(self, ctx:AgentarParser.AssignmentContext):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#SpawnAssign.
-    def enterSpawnAssign(self, ctx:AgentarParser.SpawnAssignContext):
+    # Enter a parse tree produced by AgentarParser#SimpleAssignValue.
+    def enterSimpleAssignValue(self, ctx:AgentarParser.SimpleAssignValueContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#SpawnAssign.
-    def exitSpawnAssign(self, ctx:AgentarParser.SpawnAssignContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#DoAssign.
-    def enterDoAssign(self, ctx:AgentarParser.DoAssignContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#DoAssign.
-    def exitDoAssign(self, ctx:AgentarParser.DoAssignContext):
+    # Exit a parse tree produced by AgentarParser#SimpleAssignValue.
+    def exitSimpleAssignValue(self, ctx:AgentarParser.SimpleAssignValueContext):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#GoalCheckAssign.
-    def enterGoalCheckAssign(self, ctx:AgentarParser.GoalCheckAssignContext):
+    # Enter a parse tree produced by AgentarParser#GetTimeAssignValue.
+    def enterGetTimeAssignValue(self, ctx:AgentarParser.GetTimeAssignValueContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#GoalCheckAssign.
-    def exitGoalCheckAssign(self, ctx:AgentarParser.GoalCheckAssignContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#DoSelfAssign.
-    def enterDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#DoSelfAssign.
-    def exitDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
+    # Exit a parse tree produced by AgentarParser#GetTimeAssignValue.
+    def exitGetTimeAssignValue(self, ctx:AgentarParser.GetTimeAssignValueContext):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#SelfListAddAssign.
-    def enterSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
+    # Enter a parse tree produced by AgentarParser#SpawnAssignValue.
+    def enterSpawnAssignValue(self, ctx:AgentarParser.SpawnAssignValueContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#SelfListAddAssign.
-    def exitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#SelfIndexAssign.
-    def enterSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#SelfIndexAssign.
-    def exitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
+    # Exit a parse tree produced by AgentarParser#SpawnAssignValue.
+    def exitSpawnAssignValue(self, ctx:AgentarParser.SpawnAssignValueContext):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#SelfAssign.
-    def enterSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
+    # Enter a parse tree produced by AgentarParser#DoAssignValue.
+    def enterDoAssignValue(self, ctx:AgentarParser.DoAssignValueContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#SelfAssign.
-    def exitSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#SelfGoalCheckAssign.
-    def enterSelfGoalCheckAssign(self, ctx:AgentarParser.SelfGoalCheckAssignContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#SelfGoalCheckAssign.
-    def exitSelfGoalCheckAssign(self, ctx:AgentarParser.SelfGoalCheckAssignContext):
+    # Exit a parse tree produced by AgentarParser#DoAssignValue.
+    def exitDoAssignValue(self, ctx:AgentarParser.DoAssignValueContext):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#BacisType.
-    def enterBacisType(self, ctx:AgentarParser.BacisTypeContext):
+    # Enter a parse tree produced by AgentarParser#GoalCheckAssignValue.
+    def enterGoalCheckAssignValue(self, ctx:AgentarParser.GoalCheckAssignValueContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#BacisType.
-    def exitBacisType(self, ctx:AgentarParser.BacisTypeContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#PointerType.
-    def enterPointerType(self, ctx:AgentarParser.PointerTypeContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#PointerType.
-    def exitPointerType(self, ctx:AgentarParser.PointerTypeContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#bodyType.
-    def enterBodyType(self, ctx:AgentarParser.BodyTypeContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#bodyType.
-    def exitBodyType(self, ctx:AgentarParser.BodyTypeContext):
+    # Exit a parse tree produced by AgentarParser#GoalCheckAssignValue.
+    def exitGoalCheckAssignValue(self, ctx:AgentarParser.GoalCheckAssignValueContext):
         pass
 
 
@@ -590,15 +509,6 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#AbsExpr.
     def exitAbsExpr(self, ctx:AgentarParser.AbsExprContext):
-        pass
-
-
-    # Enter a parse tree produced by AgentarParser#DoExpression.
-    def enterDoExpression(self, ctx:AgentarParser.DoExpressionContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#DoExpression.
-    def exitDoExpression(self, ctx:AgentarParser.DoExpressionContext):
         pass
 
 
@@ -935,12 +845,21 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#doExpr.
-    def enterDoExpr(self, ctx:AgentarParser.DoExprContext):
+    # Enter a parse tree produced by AgentarParser#messageInit.
+    def enterMessageInit(self, ctx:AgentarParser.MessageInitContext):
         pass
 
-    # Exit a parse tree produced by AgentarParser#doExpr.
-    def exitDoExpr(self, ctx:AgentarParser.DoExprContext):
+    # Exit a parse tree produced by AgentarParser#messageInit.
+    def exitMessageInit(self, ctx:AgentarParser.MessageInitContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#messageFieldAssign.
+    def enterMessageFieldAssign(self, ctx:AgentarParser.MessageFieldAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#messageFieldAssign.
+    def exitMessageFieldAssign(self, ctx:AgentarParser.MessageFieldAssignContext):
         pass
 
 
@@ -977,6 +896,33 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#tupleLiteral.
     def exitTupleLiteral(self, ctx:AgentarParser.TupleLiteralContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#BasicType.
+    def enterBasicType(self, ctx:AgentarParser.BasicTypeContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#BasicType.
+    def exitBasicType(self, ctx:AgentarParser.BasicTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#PointerType.
+    def enterPointerType(self, ctx:AgentarParser.PointerTypeContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#PointerType.
+    def exitPointerType(self, ctx:AgentarParser.PointerTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#bodyType.
+    def enterBodyType(self, ctx:AgentarParser.BodyTypeContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#bodyType.
+    def exitBodyType(self, ctx:AgentarParser.BodyTypeContext):
         pass
 
 

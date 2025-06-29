@@ -1,13 +1,8 @@
 // Podstawowe demo dla jezyka Agentar
 
 agent mother {
-    fields{
-        int x = 5;
-    }
     initialize {
-        list x = [1,2,3, 4, 5];
-        print(5-6);
-        //print("Hello Agentar!");
-        //kill();
+        print("Hello Agentar!");
+        kill();
     }
 }
