@@ -41,7 +41,8 @@ class VariableContainer:
         if value is None:
             value = defoult_value
         else: 
-            value = ExpressionEvaluator(None).eval_expr(value)  # Evaluate the expression to get the value
+            if isinstance(value, ASTNode):
+                value = ExpressionEvaluator(None).eval_expr(value)  # Evaluate the expression to get the value
             if type(value) != type_name:
                 raise WrongTypeError(name, type_name, type(value), declaration_line)
         self._variables[name] = VariableInfo(name, value, var_type, self._scope, declaration_line)

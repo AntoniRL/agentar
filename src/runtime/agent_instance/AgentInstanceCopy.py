@@ -105,53 +105,53 @@ class AgentInstance:
     #         logging.warning(f"{self._id.path}:: No receive method for message '{message._name}' found in agent {self._name}. Ignoring message.")
 
 
-    def check_global_goal(self):
-        if self._sub_goals == {}:
-            self._isGoalAchieved = False
-            return
-        else:
-            sub_goals = {}
-            sub_goals_type = {}
-            for goal, conditions in self._sub_goals.items():
-                check_the_condition = self.eval_expr(conditions)  # Evaluate the goal conditions
-                sub_goals[goal] = check_the_condition
-                sub_goals_type[goal] = type(check_the_condition)
-            if self._merge_goals_condition is None:
-                if all(sub_goals.values()):
-                    self._isGoalAchieved = True
-            else:
-                merge_condition = self.eval_expr(self._merge_goals_condition, sub_goals, sub_goals_type)
-                if merge_condition:
-                    self._isGoalAchieved = True
-                else:
-                    self._isGoalAchieved = False
-        if self._isGoalAchieved:
-            logging.info(f"{self._id.path}:: Goal  achieved!")  
+    # def check_global_goal(self):
+    #     if self._sub_goals == {}:
+    #         self._isGoalAchieved = False
+    #         return
+    #     else:
+    #         sub_goals = {}
+    #         sub_goals_type = {}
+    #         for goal, conditions in self._sub_goals.items():
+    #             check_the_condition = self.eval_expr(conditions)  # Evaluate the goal conditions
+    #             sub_goals[goal] = check_the_condition
+    #             sub_goals_type[goal] = type(check_the_condition)
+    #         if self._merge_goals_condition is None:
+    #             if all(sub_goals.values()):
+    #                 self._isGoalAchieved = True
+    #         else:
+    #             merge_condition = self.eval_expr(self._merge_goals_condition, sub_goals, sub_goals_type)
+    #             if merge_condition:
+    #                 self._isGoalAchieved = True
+    #             else:
+    #                 self._isGoalAchieved = False
+    #     if self._isGoalAchieved:
+    #         logging.info(f"{self._id.path}:: Goal  achieved!")  
 
 
-    def follow_rules(self):
-        for rule in self._rules:
-            if isinstance(rule, WhenBlockNode):
-                self.when_block(rule, message=None)  # Execute the when block if it exists
+    # def follow_rules(self):
+    #     for rule in self._rules:
+    #         if isinstance(rule, WhenBlockNode):
+    #             self.when_block(rule, message=None)  # Execute the when block if it exists
 
 
-    def when_block(self, when_node, message):
-            local_var = {}
-            local_var_type = {}
-            if message is not None:
-                for stmt in message._content.items():
-                    # Initialize local variables from message content
-                    local_var[stmt[0]] = stmt[1]
-                    local_var_type[stmt[0]] = type(stmt[1])
-            if when_node.conditions == []:
-                # If there is no condition, execute the statements directly
-                for stmt in when_node.statements:
-                    self.execute_stmt(stmt, local_var, local_var_type, message=message)
-            else:
-                bin_op = self.eval_expr(when_node.conditions, message=message)
-                if bin_op:
-                    for stmt in when_node.statements:
-                        self.execute_stmt(stmt, local_var, local_var_type, message=message)
+    # def when_block(self, when_node, message):
+    #         local_var = {}
+    #         local_var_type = {}
+    #         if message is not None:
+    #             for stmt in message._content.items():
+    #                 # Initialize local variables from message content
+    #                 local_var[stmt[0]] = stmt[1]
+    #                 local_var_type[stmt[0]] = type(stmt[1])
+    #         if when_node.conditions == []:
+    #             # If there is no condition, execute the statements directly
+    #             for stmt in when_node.statements:
+    #                 self.execute_stmt(stmt, local_var, local_var_type, message=message)
+    #         else:
+    #             bin_op = self.eval_expr(when_node.conditions, message=message)
+    #             if bin_op:
+    #                 for stmt in when_node.statements:
+    #                     self.execute_stmt(stmt, local_var, local_var_type, message=message)
 
 
     def execute_action(self, action_node, variables=None):

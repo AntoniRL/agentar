@@ -72,7 +72,10 @@ def resolve_type(var_type):
             return 'void', None
         elif name == "tuple":
             return tuple, ()
-    elif isinstance(var_type, type(AgentId)):
+    elif var_type == AgentId:
         return AgentId, AgentId()
+    elif var_type == bool:
+        return bool, False
     else:
+        print(var_type)
         raise TypeError(f"Unknown AST type: {type(var_type)}")

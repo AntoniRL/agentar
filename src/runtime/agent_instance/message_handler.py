@@ -16,7 +16,6 @@ class MessageHandler:
         if self.agent._receive.exists(message._name):
             receive_method = self.agent._receive.get(message._name, message._line)
             for when_method in receive_method:
-                local_vars = VariableContainer("Receive")
-                self.agent._action_executor.when_block(when_method, local_vars, message)
+                self.agent._action_executor.when_block(when_method, "Receive", message)
         else:
             logging.warning(f"{self.agent._id.path}:: No receive method for message '{message._name}' found in agent {self.agent._name}. Ignoring message.")

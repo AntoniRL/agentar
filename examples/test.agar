@@ -8,6 +8,14 @@ agent mother {
     initialize {
         dict my_dict; 
         my_dict[(1,2)] = "value";
-        print(my_dict);
+    }    
+    goals {
+        g1: 4 == 4;
+        g2: 5 < 6;
+    }
+    rules {
+        when (5==4 || 5==5) then {
+            print("I am here");
+        }
     }
 }

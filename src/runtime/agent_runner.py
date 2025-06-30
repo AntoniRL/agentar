@@ -22,9 +22,9 @@ class AgentRunner(threading.Thread):
     def run(self):
         self.instance.initializeAgent()
 
-        # while self.running.is_set() and not self.system.terminated.is_set():
-        #     self.instance.step()
-        #     time.sleep(self.tick_interval)
+        while self.running.is_set() and not self.system.terminated.is_set():
+            self.instance.step()
+            time.sleep(self.tick_interval)
         
         # self.instance.destroyAgent()
 
