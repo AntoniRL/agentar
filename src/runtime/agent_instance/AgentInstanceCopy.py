@@ -84,25 +84,25 @@ class AgentInstance:
     #             del self._runtime.threads[self._id.path]    
 
     
-    def sense_world(self):
-        if self._sense != []:        # If the agent has any sense statements, execute them
-            local_var = {}
-            local_var_type = {}
-            for stmt in self._sense:
-                self.execute_stmt(stmt, local_var, local_var_type)
+    # def sense_world(self):
+    #     if self._sense != []:        # If the agent has any sense statements, execute them
+    #         local_var = {}
+    #         local_var_type = {}
+    #         for stmt in self._sense:
+    #             self.execute_stmt(stmt, local_var, local_var_type)
 
 
-    def process_messages(self, message):
-        logging.info(f"{self._id.path}:: Received message from {message._sender.path}")
-        # comper the name of the message with the agent's receive method
-        if message._name in self._receive:
-            # Get the corresponding method from the agent's receive method
-            receive_method = self._receive[message._name]
+    # def process_messages(self, message):
+    #     logging.info(f"{self._id.path}:: Received message from {message._sender.path}")
+    #     # comper the name of the message with the agent's receive method
+    #     if message._name in self._receive:
+    #         # Get the corresponding method from the agent's receive method
+    #         receive_method = self._receive[message._name]
 
-            for when_met in receive_method:          # Iterate over all when blocks in the receive method
-                self.when_block(when_met, message)
-        else:
-            logging.warning(f"{self._id.path}:: No receive method for message '{message._name}' found in agent {self._name}. Ignoring message.")
+    #         for when_met in receive_method:          # Iterate over all when blocks in the receive method
+    #             self.when_block(when_met, message)
+    #     else:
+    #         logging.warning(f"{self._id.path}:: No receive method for message '{message._name}' found in agent {self._name}. Ignoring message.")
 
 
     def check_global_goal(self):
@@ -504,7 +504,7 @@ class AgentInstance:
         #     else:
         #         raise NameError(f"Variable '{expr.name}' is not declared.")
             
-        
+
         elif isinstance(expr, DoNode):
             return self.execute_stmt(expr, local_var, local_var_type, message)  # Execute the action with the provided local variables
 
@@ -716,44 +716,44 @@ class AgentInstance:
     #     self.assign_to_target(stmt, value, local_var, local_var_type)
 
 
-    def assign_to_target(self, stmt, value, local_var, local_var_type):
-        target_node = stmt.target
-        index = stmt.index
+    # def assign_to_target(self, stmt, value, local_var, local_var_type):
+    #     target_node = stmt.target
+    #     index = stmt.index
 
-        if isinstance(target_node, SelfAccessNode):
-            target = target_node.path[1]
-            self.assign_to_storage(self._fields, self._fields_type, target, value, index, local_var, local_var_type)
-        elif isinstance(target_node, BelAccessNode):
-            target = target_node.path[1]
-            self.assign_to_storage(self._beliefs, self._beliefs_type, target, value, index, local_var, local_var_type)
-        elif isinstance(stmt.value, MessageInitNode):
-            local_var[target_node] = value  # Assign the message instance to the local variable
-            local_var_type[target_node] = MessageInstance  # Set the type of the local variable
-        elif isinstance(target_node, IndexAccessNode): # Handle indexing
-            if index == "add":
-                container, _ = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
-                container.append(value)
-            else:
-                container, final_idx = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
-                container[final_idx] = value
-        elif isinstance(target_node, SliceAccessNode):
-            self.handle_slice_assignment(target_node, value, local_var, local_var_type)
-        else:
-            target = target_node if isinstance(target_node, str) else target_node.name
-            if target not in local_var:
-                raise NameError(f"Variable '{target}' is not declared.")
-            if index is None:
-                if not local_var_type[target] == type(value):
-                    raise TypeError(f"Type mismatch in assignment to {target}: expected {local_var_type[target]}, got {type(value)}")
-                local_var[target] = value
-            elif index == "add":
-                local_var[target].append(value)
-            elif isinstance(index, IndexRangeNode):
-                # TODO: implement index range assignment
-                pass
-            else:
-                idx = self.eval_expr(index, local_var, local_var_type)
-                local_var[target][idx] = value
+    #     if isinstance(target_node, SelfAccessNode):
+    #         target = target_node.path[1]
+    #         self.assign_to_storage(self._fields, self._fields_type, target, value, index, local_var, local_var_type)
+    #     elif isinstance(target_node, BelAccessNode):
+    #         target = target_node.path[1]
+    #         self.assign_to_storage(self._beliefs, self._beliefs_type, target, value, index, local_var, local_var_type)
+    #     elif isinstance(stmt.value, MessageInitNode):
+    #         local_var[target_node] = value  # Assign the message instance to the local variable
+    #         local_var_type[target_node] = MessageInstance  # Set the type of the local variable
+    #     elif isinstance(target_node, IndexAccessNode): # Handle indexing
+    #         if index == "add":
+    #             container, _ = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
+    #             container.append(value)
+    #         else:
+    #             container, final_idx = self.resolve_index_chain(target_node, stmt.index, local_var, local_var_type)
+    #             container[final_idx] = value
+    #     elif isinstance(target_node, SliceAccessNode):
+    #         self.handle_slice_assignment(target_node, value, local_var, local_var_type)
+    #     else:
+    #         target = target_node if isinstance(target_node, str) else target_node.name
+    #         if target not in local_var:
+    #             raise NameError(f"Variable '{target}' is not declared.")
+    #         if index is None:
+    #             if not local_var_type[target] == type(value):
+    #                 raise TypeError(f"Type mismatch in assignment to {target}: expected {local_var_type[target]}, got {type(value)}")
+    #             local_var[target] = value
+    #         elif index == "add":
+    #             local_var[target].append(value)
+    #         elif isinstance(index, IndexRangeNode):
+    #             # TODO: implement index range assignment
+    #             pass
+    #         else:
+    #             idx = self.eval_expr(index, local_var, local_var_type)
+    #             local_var[target][idx] = value
 
 
     # def assign_to_storage(self, storage, type_info, target, value, index, local_var=None, local_var_type=None):
@@ -769,6 +769,69 @@ class AgentInstance:
     #     else:
     #         idx = self.eval_expr(index, local_var, local_var_type)  # Assuming index expr independent
     #         storage[target][idx] = value
+
+
+
+    
+
+
+    # def resolve_index_chain(self, target_node, final_index, local_var, local_var_type):
+    #     indices = []
+
+    #     # make list of indices from IndexAccessNode chain
+    #     base_node = target_node
+    #     while isinstance(base_node, IndexAccessNode):
+    #         indices.insert(0, base_node.index)
+    #         base_node = base_node.base
+
+    #     if final_index is not None:
+    #         indices.append(final_index)
+
+    #     if isinstance(base_node, SelfAccessNode):
+    #         var_name = base_node.path[1]
+    #         current = self._fields[var_name]
+    #     elif isinstance(base_node, BelAccessNode):
+    #         var_name = base_node.path[1]
+    #         current = self._beliefs[var_name]
+    #     elif isinstance(base_node, VarRefNode):
+    #         var_name = base_node.name
+    #         current = local_var[var_name]
+    #     else:
+    #         raise NotImplementedError("Unsupported base for indexing")
+
+    #     for index_expr in indices[:-1]:
+    #         idx = self.eval_expr(index_expr, local_var, local_var_type)
+    #         current = current[idx]
+
+    #     last_index = self.eval_expr(indices[-1], local_var, local_var_type)
+    #     return current, last_index
+    
+
+
+    # def handle_slice_assignment(self, target_node, value, local_var, local_var_type):
+    #     base_node = target_node.base
+    #     start = target_node.start
+    #     end = target_node.end
+    #     start_idx = self.eval_expr(start, local_var, local_var_type) if start else None
+    #     end_idx = self.eval_expr(end, local_var, local_var_type) if end else None
+
+    #     if isinstance(base_node, SelfAccessNode):
+    #         var_name = base_node.path[1]
+    #         target_list = self._fields[var_name]
+    #     elif isinstance(base_node, BelAccessNode):
+    #         var_name = base_node.path[1]
+    #         target_list = self._beliefs[var_name]
+    #     elif isinstance(base_node, VarRefNode):
+    #         var_name = base_node.name
+    #         target_list = local_var[var_name]
+    #     else:
+    #         raise NotImplementedError("Unsupported base for slice assignment")
+
+    #     if not isinstance(value, list):
+    #         raise TypeError("Slice assignment requires a list value")
+
+    #     target_list[start_idx:end_idx] = value
+
 
 
     def handle_spawn(self, spawn_node, local_var, local_var_type):
@@ -809,62 +872,3 @@ class AgentInstance:
             content_type[key] = expected_type
             
         return MessageInstance(name=msg_type, content=content, content_type=content_type)
-    
-
-
-    def resolve_index_chain(self, target_node, final_index, local_var, local_var_type):
-        indices = []
-
-        # make list of indices from IndexAccessNode chain
-        base_node = target_node
-        while isinstance(base_node, IndexAccessNode):
-            indices.insert(0, base_node.index)
-            base_node = base_node.base
-
-        if final_index is not None:
-            indices.append(final_index)
-
-        if isinstance(base_node, SelfAccessNode):
-            var_name = base_node.path[1]
-            current = self._fields[var_name]
-        elif isinstance(base_node, BelAccessNode):
-            var_name = base_node.path[1]
-            current = self._beliefs[var_name]
-        elif isinstance(base_node, VarRefNode):
-            var_name = base_node.name
-            current = local_var[var_name]
-        else:
-            raise NotImplementedError("Unsupported base for indexing")
-
-        for index_expr in indices[:-1]:
-            idx = self.eval_expr(index_expr, local_var, local_var_type)
-            current = current[idx]
-
-        last_index = self.eval_expr(indices[-1], local_var, local_var_type)
-        return current, last_index
-    
-
-
-    def handle_slice_assignment(self, target_node, value, local_var, local_var_type):
-        base_node = target_node.base
-        start = target_node.start
-        end = target_node.end
-        start_idx = self.eval_expr(start, local_var, local_var_type) if start else None
-        end_idx = self.eval_expr(end, local_var, local_var_type) if end else None
-
-        if isinstance(base_node, SelfAccessNode):
-            var_name = base_node.path[1]
-            target_list = self._fields[var_name]
-        elif isinstance(base_node, BelAccessNode):
-            var_name = base_node.path[1]
-            target_list = self._beliefs[var_name]
-        elif isinstance(base_node, VarRefNode):
-            var_name = base_node.name
-            target_list = local_var[var_name]
-        else:
-            raise NotImplementedError("Unsupported base for slice assignment")
-
-        if not isinstance(value, list):
-            raise TypeError("Slice assignment requires a list value")
-
-        target_list[start_idx:end_idx] = value

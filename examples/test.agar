@@ -3,9 +3,11 @@ message mes{
 }
 agent mother {
     fields{
-        list x=[1,2,3];
+        int x;
     }
     initialize {
-        self.x[2] = 5;
+        dict my_dict; 
+        my_dict[(1,2)] = "value";
+        print(my_dict);
     }
 }

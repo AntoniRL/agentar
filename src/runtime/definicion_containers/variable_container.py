@@ -27,11 +27,11 @@ class VariableContainer:
         self._variables: Dict[str, VariableInfo] = {}
         self._scope = scope
         self._parent = parent
-        self._children: List['VariableContainer'] = []
 
-        if parent:
-            parent._children.append(self)
-
+    def create_child_scope(self, scope_name: str) -> 'VariableContainer':
+        """Create a new child scope that can shadow variables from this scope"""
+        return VariableContainer(scope_name, parent=self)
+    
 
     # Declare a variable with a name, value, type, and optional declaration line
     def declare(self, name: str, value: Optional[ASTNode], var_type: ASTNode, declaration_line: Optional[int] = None):
@@ -48,42 +48,51 @@ class VariableContainer:
 
 
     def exists(self, name: str) -> bool:
-        return name in self._variables
+        return name in self._variables or (self._parent is not None and self._parent.exists(name))
 
 
     def get(self, name: str, line: int):
-        info = self._require_variable(name, line)
-        return info.value
+        return self._find(name, line).value
 
 
     def set(self, name: str, value, line):
-        info = self._require_variable(name, line)
-        expexted_type, _ = resolve_type(info.var_type)  # Ensure the type is valid
+        var_info = self._find(name, line)
+        expexted_type, _ = resolve_type(var_info.var_type)  # Ensure the type is valid
         if type(value) != expexted_type:
             raise WrongTypeError(name, expexted_type, type(value), line)
-        info.value = value
+        var_info.value = value
 
 
-    def get_info(self, name: str) -> VariableInfo:
-        return self._require_variable(name)
+    def get_info(self, name: str, line: int) -> VariableInfo:
+        return self._find(name, line)
 
 
-    def type_of(self, name: str) -> Optional[str]:
-        return self._variables[name].var_type if name in self._variables else None
+    def type_of(self, name: str, line: int) -> Optional[str]:
+        return self._find(name, line).var_type
 
 
-    def scope_of(self, name: str) -> Optional[str]:
-        return self._variables[name].scope if name in self._variables else None
+    def scope_of(self, name: str, line: int) -> Optional[str]:
+        return self._find(name).scope
 
 
-    def declared_at(self, name: str) -> Optional[int]:
-        return self._variables[name].declaration_line if name in self._variables else None
+    def declared_at(self, name: str, line: int) -> Optional[int]:
+        return self._find(name, line).declaration_line
 
 
-    def _require_variable(self, name: str, line: int) -> VariableInfo:
-        if name not in self._variables:
+    def _find(self, name: str, line: int) -> VariableInfo:
+        var = self._find_or_none(name)
+        if not var:
             raise VariableNotFoundError(name, line)
-        return self._variables[name]
+        return var
+
+
+    def _find_or_none(self, name: str) -> Optional[VariableInfo]:
+        if name in self._variables:
+            return self._variables[name]
+        elif self._parent is not None:
+            return self._parent._find_or_none(name)
+        else:
+            return None
 
 
     def items(self):
@@ -95,14 +104,9 @@ class VariableContainer:
 
 
     def __repr__(self):
-        return f"{self._scope}: ({list(self._variables.keys())})"
-
-
-
-class ScopeMenager:
-    """Manages variable scopes, allowing for nested scopes and variable shadowing."""
-    def __init__(self, scope: Optional[str] = None):
-        self.current_scope = VariableContainer(scope=scope)
-        self.scope_stack = [self.current_scope]
-
-    
+        scopes, current = [], self
+        while current:
+            scopes.append(current._scope)
+            current = current._parent
+        chain = " -> ".join(reversed(scopes))
+        return f"{chain}: ({list(self._variables.keys())})"
