@@ -151,6 +151,10 @@ class ExpressionEvaluator:
                 else:
                     raise VariableNotFoundError(f"msg.{name}", line)
                 
+
+            case MessageInitNode(path=path, _line=line):
+                pass # TODO: handle message initialization, this is just a placeholder
+                
             
             case BelAccessNode(path=path, _line=line):
                 name = path[1]

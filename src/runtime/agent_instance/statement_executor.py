@@ -56,25 +56,40 @@ class StatementExecutor:
     
     # ---- Handle assignment 
     def handle_assignment(self, stmt, local_vars, message=None):
-        target = self.get_target(stmt.target, local_vars, message)
         match stmt.value:
             case SpawnNode():
-                value = self.handle_spawn(stmt.value, local_vars, message)
-            case MessageInitNode():
-                value = self.handle_message_init(stmt.value, local_vars, message)
+                value = self.execute_stmt(stmt.value, local_vars, message)
             case DoNode():
                 value = self.execute_stmt(stmt.value, local_vars, message)
             case GoalCheckNode():
-                value = self.agent._actions.goal_check(stmt.value, local_vars, message)
+                value = self.execute_stmt(stmt.value, local_vars, message)
             case GetTimeNode():
                 value = self.execute_stmt(stmt.value, local_vars, message)
             case _:
                 value = self.agent._evaluator.eval_expr(stmt.value, local_vars, message, stmt._line)
 
-        print(type(target), value)
-        target = value
+        self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
 
     
-    def get_target(self, target, local_vars, message):
-        pass # TODO:
+    # TODO: handle_spawn should return AgentId
+    def assign_to_target(self, target_node, value, local_vars, message, line):
+        print(target_node)
+        match target_node:
+            case VarRefNode(name=name):
+                local_vars.set(name, value, line)
+            case IndexAccessNode():
+                pass 
+            case SelfAccessNode():
+                target = target_node.path[1]
+                self.assign_to_storage()
+            case BelAccessNode():
+                pass
+            case MessageInitNode():
+                pass
+
+    
+    def assign_to_storage(self, storage, target, value):
+        pass
+
+
 

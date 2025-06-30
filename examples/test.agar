@@ -3,11 +3,9 @@ message mes{
 }
 agent mother {
     fields{
-        list y=[1,2];
+        list x=[1,2,3];
     }
     initialize {
-        int x;
-        x = 5;
-        print(x);
+        self.x[2] = 5;
     }
 }

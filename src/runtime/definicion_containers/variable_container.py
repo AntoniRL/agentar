@@ -23,9 +23,14 @@ class VariableInfo:
 
 
 class VariableContainer:
-    def __init__(self, scope: Optional[str] = None):
+    def __init__(self, scope: Optional[str] = None, parent: Optional['VariableContainer'] = None):
         self._variables: Dict[str, VariableInfo] = {}
         self._scope = scope
+        self._parent = parent
+        self._children: List['VariableContainer'] = []
+
+        if parent:
+            parent._children.append(self)
 
 
     # Declare a variable with a name, value, type, and optional declaration line
@@ -53,6 +58,9 @@ class VariableContainer:
 
     def set(self, name: str, value, line):
         info = self._require_variable(name, line)
+        expexted_type, _ = resolve_type(info.var_type)  # Ensure the type is valid
+        if type(value) != expexted_type:
+            raise WrongTypeError(name, expexted_type, type(value), line)
         info.value = value
 
 
@@ -88,3 +96,13 @@ class VariableContainer:
 
     def __repr__(self):
         return f"{self._scope}: ({list(self._variables.keys())})"
+
+
+
+class ScopeMenager:
+    """Manages variable scopes, allowing for nested scopes and variable shadowing."""
+    def __init__(self, scope: Optional[str] = None):
+        self.current_scope = VariableContainer(scope=scope)
+        self.scope_stack = [self.current_scope]
+
+    
