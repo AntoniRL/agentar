@@ -154,46 +154,46 @@ class AgentInstance:
     #                     self.execute_stmt(stmt, local_var, local_var_type, message=message)
 
 
-    def execute_action(self, action_node, variables=None):
-        # logging.info(f"{self._id.path}:: Executing action '{action_node.name}'...")
-        if variables != None:    
-            local_var = {}
-            local_var_type = {}
-            for i, stmt in enumerate(action_node.parameters):
-                var_type, _ = resolve_type(stmt.param_type)
-                if type(variables[i]) == var_type:
-                    # Initialize local variables from action parameters
-                    local_var[stmt.name] = variables[i]
-                    local_var_type[stmt.name] = var_type
-                else:
-                    raise TypeError(f"Type mismatch in action parameter '{stmt.name}': expected {var_type}, got {type(variables[i])}")
-        return_type = self.eval_expr(action_node.return_type)
-        if return_type == "void":
-            for stmt in action_node.body:
-                self.execute_stmt(stmt, local_var, local_var_type)
-                if self._return_flag:
-                    self._return_flag = False
-                    break
-        elif return_type != "void":
-            for stmt in action_node.body:
-                self.execute_stmt(stmt, local_var, local_var_type)
-                if self._return_flag:
-                    self._return_flag = False
-                    break
-            return return_type(self._return_object)
+    # def execute_action(self, action_node, variables=None):
+    #     # logging.info(f"{self._id.path}:: Executing action '{action_node.name}'...")
+    #     if variables != None:    
+    #         local_var = {}
+    #         local_var_type = {}
+    #         for i, stmt in enumerate(action_node.parameters):
+    #             var_type, _ = resolve_type(stmt.param_type)
+    #             if type(variables[i]) == var_type:
+    #                 # Initialize local variables from action parameters
+    #                 local_var[stmt.name] = variables[i]
+    #                 local_var_type[stmt.name] = var_type
+    #             else:
+    #                 raise TypeError(f"Type mismatch in action parameter '{stmt.name}': expected {var_type}, got {type(variables[i])}")
+    #     return_type = self.eval_expr(action_node.return_type)
+    #     if return_type == "void":
+    #         for stmt in action_node.body:
+    #             self.execute_stmt(stmt, local_var, local_var_type)
+    #             if self._return_flag:
+    #                 self._return_flag = False
+    #                 break
+    #     elif return_type != "void":
+    #         for stmt in action_node.body:
+    #             self.execute_stmt(stmt, local_var, local_var_type)
+    #             if self._return_flag:
+    #                 self._return_flag = False
+    #                 break
+    #         return return_type(self._return_object)
 
 
-    def check_goal(self, stmt, local_var, local_var_type):
-        goal_to_check = stmt.goal_name
-        if goal_to_check in self._sub_goals:
-            conditions = self._sub_goals[goal_to_check]
-            check_the_condition = self.eval_expr(conditions, local_var, local_var_type)
-            if check_the_condition:
-                return True
-            else:
-                return False
-        else:
-            raise NameError(f"Goal '{goal_to_check}' is not declared.")
+    # def check_goal(self, stmt, local_var, local_var_type):
+    #     goal_to_check = stmt.goal_name
+    #     if goal_to_check in self._sub_goals:
+    #         conditions = self._sub_goals[goal_to_check]
+    #         check_the_condition = self.eval_expr(conditions, local_var, local_var_type)
+    #         if check_the_condition:
+    #             return True
+    #         else:
+    #             return False
+    #     else:
+    #         raise NameError(f"Goal '{goal_to_check}' is not declared.")
 
 
 
@@ -340,36 +340,36 @@ class AgentInstance:
             time.sleep(duration)
 
 
-        # DoNode handles executing actions
-        elif isinstance(stmt, DoNode):
-            # logging.info(f"{self._id.path}:: Executing action '{stmt.name}'")
-            # TODO: deepcopy of variables and 
-            if stmt.name in self._agent._actions:
-                variables = []
-                for param in stmt.variables:
-                    var = self.eval_expr(param, local_var, local_var_type, message=message)
-                    if isinstance(var, AddressOfExprNode):
-                        var = self.eval_expr(var, local_var, local_var_type, message=message)
-                    elif check_if_var_is_pointer(var):
-                        pass
-                    else:
-                        var = deepcopy(var)  # Ensure we work with a copy of the variable
-                    variables.append(var)
-                action = self._agent._actions[stmt.name]
-                if isinstance(action, ActionNode):
-                    if action.return_type == "void":
-                        self.execute_action(action, variables)
-                    else:
-                        return self.execute_action(action, variables)
+        # # DoNode handles executing actions
+        # elif isinstance(stmt, DoNode):
+        #     # logging.info(f"{self._id.path}:: Executing action '{stmt.name}'")
+        #     # TODO: deepcopy of variables and 
+        #     if stmt.name in self._agent._actions:
+        #         variables = []
+        #         for param in stmt.variables:
+        #             var = self.eval_expr(param, local_var, local_var_type, message=message)
+        #             if isinstance(var, AddressOfExprNode):
+        #                 var = self.eval_expr(var, local_var, local_var_type, message=message)
+        #             elif check_if_var_is_pointer(var):
+        #                 pass
+        #             else:
+        #                 var = deepcopy(var)  # Ensure we work with a copy of the variable
+        #             variables.append(var)
+        #         action = self._agent._actions[stmt.name]
+        #         if isinstance(action, ActionNode):
+        #             if action.return_type == "void":
+        #                 self.execute_action(action, variables)
+        #             else:
+        #                 return self.execute_action(action, variables)
 
 
-        # ReturnNode handles returning values from actions        
-        elif isinstance(stmt, ReturnNode):
-            if stmt.value is not None:
-                self._return_flag = True
-                self._return_object = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
-            else:
-                self._return_flag = True
+        # # ReturnNode handles returning values from actions        
+        # elif isinstance(stmt, ReturnNode):
+        #     if stmt.value is not None:
+        #         self._return_flag = True
+        #         self._return_object = self.eval_expr(stmt.value, local_var, local_var_type, message=message)
+        #     else:
+        #         self._return_flag = True
 
 
         # IfStmtNode handles conditional statements

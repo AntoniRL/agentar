@@ -6,16 +6,11 @@ agent mother {
         int x;
     }
     initialize {
-        dict my_dict; 
-        my_dict[(1,2)] = "value";
-    }    
+        mes msg_ = mes{x: 5};
+        print(msg_);
+    } 
     goals {
-        g1: 4 == 4;
-        g2: 5 < 6;
-    }
-    rules {
-        when (5==4 || 5==5) then {
-            print("I am here");
-        }
-    }
+        g1: 5==5;
+        g2: 4>7;
+    } 
 }

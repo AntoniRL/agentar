@@ -35,7 +35,7 @@ class VariableContainer:
 
     # Declare a variable with a name, value, type, and optional declaration line
     def declare(self, name: str, value: Optional[ASTNode], var_type: ASTNode, declaration_line: Optional[int] = None):
-        type_name, defoult_value = resolve_type(var_type)  # This will raise an error if the type is not valid
+        type_name, defoult_value = resolve_type(var_type)
         if name in self._variables:
             raise VariableAlreadyDeclaredError(name, declaration_line, self._variables[name].declaration_line)
         if value is None:
@@ -57,6 +57,8 @@ class VariableContainer:
 
 
     def set(self, name: str, value, line):
+        if isinstance(value, ASTNode):
+            value = ExpressionEvaluator(None).eval_expr(value)
         var_info = self._find(name, line)
         expexted_type, _ = resolve_type(var_info.var_type)  # Ensure the type is valid
         if type(value) != expexted_type:
@@ -105,9 +107,4 @@ class VariableContainer:
 
 
     def __repr__(self):
-        scopes, current = [], self
-        while current:
-            scopes.append(current._scope)
-            current = current._parent
-        chain = " -> ".join(reversed(scopes))
-        return f"{chain}: ({list(self._variables.keys())})"
+        return f"({list(self._variables.keys())})"

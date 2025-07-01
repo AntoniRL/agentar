@@ -55,13 +55,13 @@ def resolve_type(var_type):
     elif isinstance(var_type, BaseTypeNode):
         name = var_type.name
         if name == "int":
-            return int, 0
+            return int, None
         elif name == "float":
-            return float, 0.0
+            return float, None
         elif name == "bool":
-            return bool, False
+            return bool, None
         elif name == "string":
-            return str, ""
+            return str, None
         elif name == "list":
             return list, []
         elif name == "dict":
@@ -77,5 +77,4 @@ def resolve_type(var_type):
     elif var_type == bool:
         return bool, False
     else:
-        print(var_type)
         raise TypeError(f"Unknown AST type: {type(var_type)}")

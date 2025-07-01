@@ -6,7 +6,8 @@ import logging
 
 from runtime.definicion_containers.variable_container import VariableContainer
 from ast_tree.nodes import WhenBlockNode
-
+from core.agentar_types import resolve_type
+from runtime.errors import *
 
 class ActionExecutor:
     def __init__(self, agent):
@@ -61,5 +62,30 @@ class ActionExecutor:
             pass # logging.info(f"{self.agent._id.path}:: Global goal achieved!")
 
 
-    def execute_action(self, action_node, variables):
-        pass
+    def goal_check(self, stmt, local_vars):
+        goal_to_check = stmt.goal_name
+        if goal_to_check not in self.agent._sub_goals._value:
+            raise ASTNodeNotFoundError(goal_to_check, "Goal", stmt._line)
+        condition = self.agent._sub_goals._value[goal_to_check]
+        sub_goals_results = VariableContainer("SubGoals")
+        return self.agent._evaluator.eval_expr(condition, sub_goals_results, None, condition._line)
+        
+
+
+    def execute_action(self, action_node, parameters, line_of_call_action=None):
+        local_vars = VariableContainer("Action")
+        for i, stmt in enumerate(action_node.parameters):
+            self.agent._executor.execute_stmt(stmt, local_vars, None)
+            if (local_vars.get(stmt.name, action_node._line) == None) and (i >= len(parameters)):
+                raise NoValueInActionCall(stmt.name, line_of_call_action, action_node._line)
+            if parameters is not None and i < len(parameters):
+                local_vars.set(stmt.name, parameters[i], action_node._line)
+        return_type = self.agent._evaluator.eval_expr(action_node.return_type, local_vars, None, action_node._line)
+        for stmt in action_node.body:
+            return_object = self.agent._executor.execute_stmt(stmt, local_vars, None)
+            if self.agent._return_flag:
+                self.agent._return_flag = False
+                break
+        if type(return_object) != return_type:
+            raise WrongTypeError("Return value", return_type, type(self.agent._return_object), action_node._line)
+        return return_object

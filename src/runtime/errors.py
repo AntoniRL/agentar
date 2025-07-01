@@ -77,14 +77,14 @@ class ASTNodeAlreadyDeclaredError(AgentarRuntimeError):
 class ASTNodeNotFoundError(AgentarRuntimeError):
     """Raised when an AST node is not found."""
     def __init__(self, node_name, container_type, line=None):
-        message = f"{container_type} of type '{node_name}' not found."
+        message = f"{container_type} with name '{node_name}' not found."
         super().__init__(message, line)
 
 
 class WrongTypeError(AgentarRuntimeError):
     """Raised when a value is of the wrong type."""
     def __init__(self, var_name, expected_type, actual_type, line=None):
-        message = f"{var_name} expected type '{expected_type}', but got '{actual_type}'."
+        message = f"'{var_name}' expected type '{expected_type}', but got '{actual_type}'."
         super().__init__(message, line)
 
 
@@ -108,6 +108,24 @@ class UnsupportedOperatorError(AgentarRuntimeError):
         message = f"Unsupported operator '{operator}'."
         super().__init__(message, line)
 
+
+class NoValueInActionCall(AgentarRuntimeError):
+    def __init__(self, param_name, line_of_call_action, line=None):
+        message = f"Parameter '{param_name}' has no value. Declare it in action call in line {line_of_call_action}"
+        super().__init__(message, line)
+
+
+class MismatchTypeWithDeclarationError(AgentarRuntimeError):
+    def __init__(self, expected_type, actual_type, line=None):
+        message = f"Mismach of message type and declaration. Message type '{expected_type}' but declaration '{actual_type}'."
+        super().__init__(message, line)
+
+
+class MismatchMessageContentError(AgentarRuntimeError):
+    """Raised when the content of a message does not match its declaration."""
+    def __init__(self, message_type, expected_length, actual_length, line=None):
+        message = f"Message '{message_type}' content mismatch: expected {expected_length} fields, but got {actual_length}."
+        super().__init__(message, line)        
 
 # =============================================================================
 # 3. Error listener for ANTLR

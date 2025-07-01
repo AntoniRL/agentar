@@ -19,9 +19,9 @@ class ASTNodeContainer:
     def exists(self, name: str) -> bool:
         return name in self._value
 
-    def get(self, name: str) -> ASTNode:
+    def get(self, name: str, line: int) -> ASTNode:
         if name not in self._value:
-            raise ASTNodeNotFoundError(name, self._container_type, line=None)  # TODO: implement the errors with line number
+            raise ASTNodeNotFoundError(name, self._container_type, line=line)  # TODO: implement the errors with line number
         return self._value[name]
 
     def items(self):

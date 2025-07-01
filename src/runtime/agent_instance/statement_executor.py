@@ -26,20 +26,29 @@ class StatementExecutor:
             case AssignmentNode():
                 self.handle_assignment(stmt, local_vars, message)
 
-            case MessageDeclNode():
-                print(stmt)
+            case MessageVarDeclNode():
+                self.agent._message_handler.handle_message_declaration(stmt, local_vars)
 
             case SpawnNode():
                 print(stmt)
 
             case DoNode():
-                print(stmt)
+                action_node = self.agent._actions.get(stmt.name, stmt._line)
+                parameters = [self.agent._evaluator.eval_expr(param, local_vars, message, stmt._line) for param in stmt.variables]
+                return self.agent._action_executor.execute_action(action_node, parameters, stmt._line)
 
             case GoalCheckNode():
-                print(stmt)
+                return self.agent._action_executor.goal_check(stmt, local_vars)
 
             case GetTimeNode():
                 print(stmt)
+
+            case ReturnNode():
+                self.agent._return_flag = True
+                return self.agent._evaluator.eval_expr(stmt.value, local_vars, message, stmt._line)
+            
+            case SendNode():
+                self.agent._message_handler.send_message(stmt, local_vars)
 
 
 

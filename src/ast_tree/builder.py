@@ -100,7 +100,7 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitActionSection(self, ctx:AgentarParser.ActionSectionContext):
         name = ctx.ID().getText()
-        parameters = [self.visit(param) for param in ctx.parameterList().parameter()] if ctx.parameterList() else []
+        parameters = self.visit(ctx.parameterList()) if ctx.parameterList() else []
         if ctx.type_() is None:
             raise ValueError("Return type is required for action section.")
         return_type = self.visit(ctx.type_())
@@ -108,12 +108,24 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.ActionNode(name=name, parameters=parameters, return_type=return_type, body=body, **self.node_meta(ctx))
 
 
+    def visitParameterList(self, ctx:AgentarParser.ParameterListContext):
+        list_of_param = []
+        value_for_param_required = False
+        for param in ctx.parameter():
+            parameter = self.visit(param)
+            list_of_param.append(parameter)
+            if parameter.value is not None:
+                value_for_param_required = True
+            if parameter.value is None and value_for_param_required:
+                raise ValueError(f"Error in line {ctx.start.line}: Parameter '{parameter.name}' has no value. Parameter value is required for all parameters after the first one with a value.")
+        return list_of_param
+
+
     def visitParameter(self, ctx:AgentarParser.ParameterContext):
         param_type = self.visit(ctx.type_()) if ctx.type_() else None
         name = ctx.ID().getText()
-        if not param_type or not name:
-            raise ValueError("Parameter type and name are required.")
-        return ast.ParameterNode(param_type=param_type, name=name, **self.node_meta(ctx))
+        value = self.visit(ctx.expression()) if ctx.expression() else None
+        return ast.VariableDeclNode(var_type=param_type, name=name, value=value, **self.node_meta(ctx))
 
 
     def visitMessageDecl(self, ctx:AgentarParser.MessageDeclContext):
@@ -313,84 +325,6 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitGoalCheckAssignValue(self, ctx:AgentarParser.GoalCheckAssignValueContext):
         return self.visit(ctx.goalCheckStmt())
-
-# # ----------
-#     def visitSimpleAssign(self, ctx: AgentarParser.SimpleAssignContext):
-#         target = ctx.ID().getText()
-#         value = self.visit(ctx.expression())
-#         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
-
-
-#     def visitIndexAssign(self, ctx: AgentarParser.IndexAssignContext):
-#         target = ctx.ID().getText()    # np. x
-#         index = self.visit(ctx.expression(0))   # np. 3
-#         value = self.visit(ctx.expression(1))   # np. 10
-#         return ast.AssignmentNode(target=target, index=index, value=value, **self.node_meta(ctx))
-
-
-#     def visitListAddAssign(self, ctx:AgentarParser.ListAddAssignContext):
-#         target = ctx.ID().getText()
-#         value = self.visit(ctx.expression())
-#         index = "add"
-#         return ast.AssignmentNode(target=target, index=index, value=value, **self.node_meta(ctx))
-
-
-#     def visitSpawnAssign(self, ctx: AgentarParser.SpawnAssignContext):
-#         target = ctx.ID().getText()
-#         value = self.visit(ctx.spawnStmt())
-#         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
-    
-       
-#     def visitDoAssign(self, ctx:AgentarParser.DoAssignContext):
-#         target = ctx.ID().getText()
-#         value = self.visit(ctx.doStmt())
-#         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
-
-
-#     def visitGoalCheckAssign(self, ctx:AgentarParser.GoalCheckAssignContext):
-#         target = ctx.ID().getText()
-#         value = self.visit(ctx.goalCheckStmt())
-#         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
-
-
-#     def visitGetTimeAssign(self, ctx:AgentarParser.GetTimeAssignContext):
-#         target = self.visit(ctx.expression())
-#         value = self.visit(ctx.getTimeStmt())
-#         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
-
-
-#     def visitDoSelfAssign(self, ctx:AgentarParser.DoSelfAssignContext):
-#         target = self.visit(ctx.expression())
-#         value = self.visit(ctx.doStmt())
-#         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
-
-
-#     def visitSelfAssign(self, ctx:AgentarParser.SelfAssignContext):
-#         target = self.visit(ctx.expression(0))
-#         value = self.visit(ctx.expression(1))
-#         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
-
-
-#     def visitSelfIndexAssign(self, ctx:AgentarParser.SelfIndexAssignContext):
-#         target = self.visit(ctx.expression(0))
-#         index = self.visit(ctx.expression(1))
-#         value = self.visit(ctx.expression(2))
-#         return ast.AssignmentNode(target=target, index=index, value=value, **self.node_meta(ctx))
-
-
-#     def visitSelfListAddAssign(self, ctx:AgentarParser.SelfListAddAssignContext):
-#         target = self.visit(ctx.expression(0))
-#         index = "add"
-#         value = self.visit(ctx.expression(1))
-#         return ast.AssignmentNode(target=target, index=index, value=value, **self.node_meta(ctx))
-
-
-#     def visitSelfGoalCheckAssign(self, ctx:AgentarParser.SelfGoalCheckAssignContext):
-#         target = self.visit(ctx.expression())
-#         value = self.visit(ctx.goalCheckStmt())
-#         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
-
-# #-------------------------------
 
 
     def visitAndExpr(self, ctx:AgentarParser.AndExprContext):

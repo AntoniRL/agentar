@@ -106,7 +106,8 @@ parameterList
     ;
 
 parameter
-    : type ID
+    : type ID            
+    | type ID '=' expression
     ;
 // === End agent declaration
 
@@ -230,11 +231,11 @@ variableDecl
 
 
 assignment
-    : expression '=' assignValue ';'
+    : expression '=' assignValue
     ;
 
 assignValue
-    : expression                 # SimpleAssignValue
+    : expression ';'             # SimpleAssignValue
     | getTimeStmt                # GetTimeAssignValue 
     | spawnStmt                  # SpawnAssignValue
     | doStmt                     # DoAssignValue

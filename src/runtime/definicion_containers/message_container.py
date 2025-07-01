@@ -18,9 +18,9 @@ class MessageContainer:
     def exists(self, name: str) -> bool:
         return name in self._messages
 
-    def get(self, name: str) -> AgentarMessage:
+    def get(self, name: str, line) -> AgentarMessage:
         if name not in self._messages:
-            raise MessageNotFoundError(name, line=None)  # TODO: implement the errors with line number
+            raise MessageNotFoundError(name, line=line)
         return self._messages[name]
 
     def items(self):

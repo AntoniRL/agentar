@@ -9,7 +9,7 @@ from runtime.definicion_containers.variable_container import VariableContainer
 class AgentarMessage:
     def __init__(self):
         self._name = None
-        self._content = VariableContainer(f"{self._name}_message")
+        self._content = VariableContainer(f"Message")
 
         self._line_declaration = None
 
