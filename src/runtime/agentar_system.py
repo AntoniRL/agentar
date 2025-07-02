@@ -32,7 +32,7 @@ class AgentarSystem:
         self.agents[self.mother_id.path] = self.mother_instance  # Add mother instance to agents dict
         self.threads[self.mother_id.path] = AgentRunner(self.mother_instance, system=self, agent_id=self.mother_id)
 
-        # Create agent time
+        # TODO: Create agent time
         # self.agentTime = AgentTime(system=self, agent_id=AgentId(".0"))
         # self.threads[self.agentTime.agent_id.path] = self.agentTime
         # self.agents[self.agentTime.agent_id.path] = self.agentTime  # Add agent time to agents dict

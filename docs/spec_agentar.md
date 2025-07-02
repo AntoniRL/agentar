@@ -285,6 +285,9 @@ message <msg_name>  {
 ```
 ---
 
+Przed wysłaniem wiadomości należy zdefiniować jej instancję:
+`<msg_name> <instance_name> = <msg_name>(task: "content", ...)`
+
 | Funkcja                          | Opis                                  |
 | -------------------------------- | ------------------------------------- |
 | `send(to_id, content, msg_type='inform')` | Wysyła wiadomość do wskazanego agenta (ID). Wiadomość jest dodawana na koniec kolejki odbiorcy i zostanie przetworzona asynchronicznie w jego kolejnej pętli.|
@@ -326,11 +329,11 @@ Rodzaj wiadomości umożliwiają programiście rozszerzyć warunki komunikacji.
 
 | Rodzaj                           | Opis                                  |
 | -------------------------------- | ------------------------------------- |
-| `inform` (defoult)               | Prośba o informację                   |
-| `ask`                            | Zapytanie (oczekuje odpowiedzi)       |
-| `request `                       | Prośba o zrealizowanie czegoś (musi podjąć próbę lub odmówić)|
-| `confirm`                        | Potiwerdzenie np. wykonania celu      |
-| `deny `                          | Zaprzeczenie np. wykonania celu       |
+| `msgType_inform`                 | Prośba o informację                   |
+| `msgType_ask`                    | Zapytanie (oczekuje odpowiedzi)       |
+| `msgType_request `               | Prośba o zrealizowanie czegoś (musi podjąć próbę lub odmówić)|
+| `msgType_confirm`                | Potiwerdzenie np. wykonania celu      |
+| `msgType_deny`                   | Zaprzeczenie np. wykonania celu       |
 
 ---
 

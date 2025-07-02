@@ -5,7 +5,7 @@
 from typing import Optional, Dict
 
 from ast_tree.nodes import *
-from core.agentar_types import resolve_type
+from core.agentar_types import resolve_type, resolve_type_normal
 from runtime.agent_instance.expression_evaluator import ExpressionEvaluator
 from runtime.errors import VariableAlreadyDeclaredError, VariableNotFoundError, WrongTypeError
 
@@ -34,8 +34,12 @@ class VariableContainer:
     
 
     # Declare a variable with a name, value, type, and optional declaration line
-    def declare(self, name: str, value: Optional[ASTNode], var_type: ASTNode, declaration_line: Optional[int] = None):
-        type_name, defoult_value = resolve_type(var_type)
+    def declare(self, name: str, value: Optional[ASTNode], var_type, declaration_line: Optional[int] = None):
+        if isinstance(var_type, ASTNode):
+            type_name, defoult_value= resolve_type(var_type)
+        else: 
+            type_name, defoult_value = resolve_type_normal(var_type)
+
         if name in self._variables:
             raise VariableAlreadyDeclaredError(name, declaration_line, self._variables[name].declaration_line)
         if value is None:
@@ -60,9 +64,13 @@ class VariableContainer:
         if isinstance(value, ASTNode):
             value = ExpressionEvaluator(None).eval_expr(value)
         var_info = self._find(name, line)
-        expexted_type, _ = resolve_type(var_info.var_type)  # Ensure the type is valid
-        if type(value) != expexted_type:
-            raise WrongTypeError(name, expexted_type, type(value), line)
+        # Check if the type of the value matches the expected type
+        if isinstance(var_info.var_type, ASTNode):
+            expected_type, _ = resolve_type(var_info.var_type)  # For ASTNode types, resolve the type
+        else: 
+            expected_type, _ = resolve_type_normal(var_info.var_type) # For normal types, resolve the type
+        if type(value) != expected_type:
+            raise WrongTypeError(name, expected_type, type(value), line)
         var_info.value = value
 
 

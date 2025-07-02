@@ -3,6 +3,8 @@
 from core.agent_id import AgentId
 from ast_tree.nodes import PointerTypeNode, BaseTypeNode
 from core.pointer import *
+from runtime.message_instance import MessageInstance
+
 from enum import Enum
 
 
@@ -72,9 +74,21 @@ def resolve_type(var_type):
             return 'void', None
         elif name == "tuple":
             return tuple, ()
-    elif var_type == AgentId:
-        return AgentId, AgentId()
-    elif var_type == bool:
-        return bool, False
     else:
         raise TypeError(f"Unknown AST type: {type(var_type)}")
+
+
+# Function to resolve normal types (not AST nodes) to Agentar types and their default values.
+def resolve_type_normal(var_type):
+    if var_type == AgentId:
+        return var_type, None
+    elif var_type == MessageInstance:
+        return var_type, None
+    elif var_type == (int, float, str, bool):
+        return var_type, None
+    elif var_type == list:
+        return var_type, []
+    elif var_type == dict:
+        return var_type, {}
+    elif var_type == tuple:
+        return var_type, ()

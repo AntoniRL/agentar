@@ -333,11 +333,11 @@ class AgentInstance:
                     self._runtime.killAgent(self._id)
 
 
-        # SllepNode handles sleeping for a specified duration
-        elif isinstance(stmt, SleepNode):
-            duration = self.eval_expr(stmt.duration, local_var, local_var_type)
-            logging.info(f"{self._id.path}:: Sleeping for {duration}s...")
-            time.sleep(duration)
+        # # SllepNode handles sleeping for a specified duration
+        # elif isinstance(stmt, SleepNode):
+        #     duration = self.eval_expr(stmt.duration, local_var, local_var_type)
+        #     logging.info(f"{self._id.path}:: Sleeping for {duration}s...")
+        #     time.sleep(duration)
 
 
         # # DoNode handles executing actions
@@ -850,25 +850,25 @@ class AgentInstance:
         return self._runtime.spawn_agent(parentInstance=self, agent_type=spawn_node.agent_type, fields=fields)
     
 
-    def handle_message_init(self, msg_node):
-        msg_type = msg_node.message_type
-        if msg_type not in self._runtime.messages_decl:
-            raise NameError(f"Message type '{msg_type}' is not declared.")
+    # def handle_message_init(self, msg_node):
+    #     msg_type = msg_node.message_type
+    #     if msg_type not in self._runtime.messages_decl:
+    #         raise NameError(f"Message type '{msg_type}' is not declared.")
 
-        decl = self._runtime.messages_decl[msg_type]
-        if decl._content.keys() != msg_node.fields.keys():
-            raise ValueError(f"Message fields mismatch for {msg_type}. Expected {decl._content.keys()}, got {msg_node.fields.keys()}")
+    #     decl = self._runtime.messages_decl[msg_type]
+    #     if decl._content.keys() != msg_node.fields.keys():
+    #         raise ValueError(f"Message fields mismatch for {msg_type}. Expected {decl._content.keys()}, got {msg_node.fields.keys()}")
 
-        content = {}
-        content_type = {}
-        for key, val_expr, expected_type in zip(msg_node.fields.keys(), msg_node.fields.values(), decl._content_type.values()):
-            val = self.eval_expr(val_expr)
-            if not isinstance(val_expr, AddressOfExprNode):
-                val = deepcopy(val)  # Ensure we copy the value if it's not a pointer
-                expected_type = deepcopy(expected_type)
-            if not isinstance(val, expected_type):
-                raise TypeError(f"Type mismatch in field '{key}': expected {expected_type}, got {type(val)}")
-            content[key] = val
-            content_type[key] = expected_type
+    #     content = {}
+    #     content_type = {}
+    #     for key, val_expr, expected_type in zip(msg_node.fields.keys(), msg_node.fields.values(), decl._content_type.values()):
+    #         val = self.eval_expr(val_expr)
+    #         if not isinstance(val_expr, AddressOfExprNode):
+    #             val = deepcopy(val)  # Ensure we copy the value if it's not a pointer
+    #             expected_type = deepcopy(expected_type)
+    #         if not isinstance(val, expected_type):
+    #             raise TypeError(f"Type mismatch in field '{key}': expected {expected_type}, got {type(val)}")
+    #         content[key] = val
+    #         content_type[key] = expected_type
             
-        return MessageInstance(name=msg_type, content=content, content_type=content_type)
+    #     return MessageInstance(name=msg_type, content=content, content_type=content_type)

@@ -15,22 +15,6 @@ class MessageHandler:
         self.agent = agent
 
 
-
-
-    def send_message(self, stmt,  message): 
-        pass
-
-
-    def process_messages(self, message):
-        logging.info(f"{self.agent._id.path}:: Received message from {message._sender.path}")
-        if self.agent._receive.exists(message._name):
-            receive_method = self.agent._receive.get(message._name, message._line)
-            for when_method in receive_method:
-                self.agent._action_executor.when_block(when_method, "Receive", message)
-        else:
-            logging.warning(f"{self.agent._id.path}:: No receive method for message '{message._name}' found in agent {self.agent._name}. Ignoring message.")
-
-
     def handle_message_init(self, msg_node):
         message_type = msg_node.message_type
         if not self.agent._runtime.messages_decl.exists(message_type):
@@ -58,5 +42,21 @@ class MessageHandler:
         if message_type != msg_decl_node.message.message_type:
             raise MismatchTypeWithDeclarationError(message_type, msg_decl_node.message.message_type, msg_decl_node._line)
         message_instance = self.handle_message_init(msg_decl_node.message)
-        # TODO: How to handle the message instance in the local variables?
-        local_vars.declare(msg_decl_node.name, message_instance, "Mess", msg_decl_node._line)
+        local_vars.declare(msg_decl_node.name, message_instance, MessageInstance, msg_decl_node._line)
+
+
+    def send_message(self, stmt,  message): 
+        pass
+        # TODO: implement SendNode
+
+
+    def process_messages(self, message):
+        logging.info(f"{self.agent._id.path}:: Received message from {message._sender.path}")
+        if self.agent._receive.exists(message._name):
+            receive_method = self.agent._receive.get(message._name, message._line)
+            for when_method in receive_method:
+                self.agent._action_executor.when_block(when_method, "Receive", message)
+        else:
+            logging.warning(f"{self.agent._id.path}:: No receive method for message '{message._name}' found in agent {self.agent._name}. Ignoring message.")
+
+

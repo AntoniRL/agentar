@@ -35,7 +35,7 @@ class AgentInstance:
             #     if type(value) == val_type:
             #         self._fields[key] = value
 
-        self._fields.declare("id", self._id, AgentId) # Declare the agent's ID in the fields container
+        self._fields.declare("id", self._id, AgentId) # Declare the agent's ID in the fields container # TODO: is it necessary to declare the ID in the fields container?
 
         self._return_flag = False  # Flag to indicate if a return statement was executed
         self._return_object = None  # Object to return from the action

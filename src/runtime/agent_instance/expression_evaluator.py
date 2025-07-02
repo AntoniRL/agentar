@@ -152,8 +152,8 @@ class ExpressionEvaluator:
                     raise VariableNotFoundError(f"msg.{name}", line)
                 
 
-            case MessageInitNode(path=path, _line=line):
-                pass # TODO: handle message initialization, this is just a placeholder
+            case MessageInitNode():
+                return self.agent._message_handler.handle_message_init(expr)
                 
             
             case BelAccessNode(path=path, _line=line):

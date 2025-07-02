@@ -1,16 +1,20 @@
 message mes{
     int x;
 }
-agent mother {
+
+agent child{
     fields{
         int x;
+        float y;
+    }
+}
+
+agent mother {
+    fields{
+        //int x;
     }
     initialize {
-        mes msg_ = mes{x: 5};
-        print(msg_);
-    } 
-    goals {
-        g1: 5==5;
-        g2: 4>7;
+        agentid agentid_;
+        agentid_ = spawn(child, {x: 5, y: 5.5});
     } 
 }

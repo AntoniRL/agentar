@@ -4,6 +4,7 @@
 
 
 import logging
+import time
 
 from ast_tree.nodes import *
 from core.agent_id import AgentId
@@ -30,7 +31,9 @@ class StatementExecutor:
                 self.agent._message_handler.handle_message_declaration(stmt, local_vars)
 
             case SpawnNode():
+                # TODO: implement SpawnNode
                 print(stmt)
+                return AgentId()
 
             case DoNode():
                 action_node = self.agent._actions.get(stmt.name, stmt._line)
@@ -41,14 +44,23 @@ class StatementExecutor:
                 return self.agent._action_executor.goal_check(stmt, local_vars)
 
             case GetTimeNode():
-                print(stmt)
+                # TODO: implement GetTimeNode. Fists think about how to handle time in the agentar runtime
+                pass
 
             case ReturnNode():
                 self.agent._return_flag = True
                 return self.agent._evaluator.eval_expr(stmt.value, local_vars, message, stmt._line)
             
             case SendNode():
+                # TODO: implement SendNode
                 self.agent._message_handler.send_message(stmt, local_vars)
+
+            case SleepNode():
+                dutarion = self.agent._evaluator.eval_expr(stmt.duration, local_vars, message, stmt._line)
+                if not isinstance(dutarion, (int, float)):
+                    raise WrongTypeError("Sleep duration", "int or float", type(dutarion), stmt._line)
+                logging.info(f"{self.agent._id.path}:: Sleeping for {dutarion} seconds")
+                time.sleep(dutarion)
 
 
 

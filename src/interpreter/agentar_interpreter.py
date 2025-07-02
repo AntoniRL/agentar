@@ -6,7 +6,6 @@ import sys
 from core.agent import AgentarAgent
 from core.message import AgentarMessage
 from core.pointer import *
-from runtime.definicion_containers.variable_container import VariableContainer
 from runtime.definicion_containers.agent_container import AgentContainer
 from runtime.definicion_containers.message_container import MessageContainer
 from runtime.errors import ThrowingErrorListener
