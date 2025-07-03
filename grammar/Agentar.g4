@@ -135,8 +135,13 @@ sendSiblingStmt
     ;
 
 spawnStmt
-    : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
+    : 'spawn' '(' ID (',' '{'spawnFieldAssign (',' spawnFieldAssign)*'}')? ')' ';'
     ;
+
+spawnFieldAssign
+    : ID ':' expression
+    ;
+
 
 killStmt  
     : 'kill' '(' expression? ')' ';'

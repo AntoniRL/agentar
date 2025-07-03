@@ -125,7 +125,14 @@ class MismatchMessageContentError(AgentarRuntimeError):
     """Raised when the content of a message does not match its declaration."""
     def __init__(self, message_type, expected_length, actual_length, line=None):
         message = f"Message '{message_type}' content mismatch: expected {expected_length} fields, but got {actual_length}."
-        super().__init__(message, line)        
+        super().__init__(message, line) 
+
+
+class FieldWithNoneValueError(AgentarRuntimeError):
+    """Raised when a field is accessed but not declared."""
+    def __init__(self, field_name, line=None):
+        message = f"Field '{field_name}' doas not have a value. Declare it in the agent declaration or agent spawn() method."
+        super().__init__(message, line)
 
 # =============================================================================
 # 3. Error listener for ANTLR

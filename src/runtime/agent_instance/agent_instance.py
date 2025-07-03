@@ -15,7 +15,7 @@ from runtime.agent_instance.action_executor import ActionExecutor
 
 
 class AgentInstance:
-    def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
+    def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None):
         for key, value in agent_ast.__dict__.items():  # Copy all attributes from the agent_AST to the instance
             setattr(self, key, value)
         self._id = id        
@@ -27,13 +27,6 @@ class AgentInstance:
         self._is_goal_achived = False         # Flag to indicate if the agent's goal is achieved        
 
         self._runtime = system               # Reference to the AgentarSystem instance
-
-        # Initialize agent fields from the agent declaration
-        if fields is not None:
-            pass # TODO: Initialize fields from the agent declaration
-            # for key, value in zip(self._fields, fields):
-            #     if type(value) == val_type:
-            #         self._fields[key] = value
 
         self._fields.declare("id", self._id, AgentId) # Declare the agent's ID in the fields container # TODO: is it necessary to declare the ID in the fields container?
 

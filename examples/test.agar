@@ -5,7 +5,10 @@ message mes{
 agent child{
     fields{
         int x;
-        float y;
+        float y = 5.0;
+    }
+    initialize {
+        print("Hello");
     }
 }
 
@@ -16,5 +19,6 @@ agent mother {
     initialize {
         agentid agentid_;
         agentid_ = spawn(child, {x: 5, y: 5.5});
+        print(agentid_);
     } 
 }

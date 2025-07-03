@@ -166,8 +166,14 @@ class AgentarToASTBuilder(AgentarVisitor):
         agent_type = ctx.ID().getText()
         if not agent_type:
             raise ValueError("Agent type is required for spawn statement.")
-        args = [self.visit(arg) for arg in ctx.expression()]
+        args = [self.visit(arg) for arg in ctx.spawnFieldAssign()] if ctx.spawnFieldAssign() else []
         return ast.SpawnNode(agent_type=agent_type, args=args, **self.node_meta(ctx))
+
+
+    def visitSpawnFieldAssign(self, ctx:AgentarParser.SpawnFieldAssignContext):
+        key = ctx.ID().getText()
+        value = self.visit(ctx.expression())
+        return key, value
 
 
     def visitKillStmt(self, ctx:AgentarParser.KillStmtContext):

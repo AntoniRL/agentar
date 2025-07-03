@@ -5,12 +5,14 @@
 
 import logging
 import time
+from copy import deepcopy
 
 from ast_tree.nodes import *
 from core.agent_id import AgentId
 from runtime.errors import *
 from core.agentar_types import resolve_type
 from runtime.definicion_containers.variable_container import VariableContainer
+
 
 class StatementExecutor:
     def __init__(self, agent):
@@ -21,39 +23,70 @@ class StatementExecutor:
             case VariableDeclNode(var_type=var_type, name=var_name, value=value_expr, _line=line):
                 self.variable_declaration(local_vars, var_name, value_expr, var_type, line)
 
+
             case PrintNode() | LoggingNode():
                 self.print_stmt(stmt, local_vars, message, stmt._line)
             
+
             case AssignmentNode():
                 self.handle_assignment(stmt, local_vars, message)
 
-            case MessageVarDeclNode():
-                self.agent._message_handler.handle_message_declaration(stmt, local_vars)
 
             case SpawnNode():
-                # TODO: implement SpawnNode
-                print(stmt)
-                return AgentId()
+                return self.spawn_agent(stmt, local_vars, message)
+
+
+            case MessageVarDeclNode():
+                self.agent._message_handler.handle_message_declaration(stmt, local_vars)
+            
+
+            case SendNode():
+                # TODO: implement SendNode
+                self.agent._message_handler.send_message(stmt, local_vars)
+            
+
+            case SendToChildrenNode():
+                pass
+
+
+            case SendToSiblingsNode():
+                pass
+
+
+            case KillNode():
+                if stmt.agent_id:
+                    agent_id = self.agent._evaluator.eval_expr(stmt.agent_id, local_vars, message, stmt._line)
+                    self.agent._runtime.kill_agent(agent_id, stmt._line)
+                elif self.agent._isMother:
+                    self.agent._runtime.kill_mother()
+                else:
+                    self.agent._runtime.kill_agent(self.agent._id, stmt._line)
+
+
+            case KillChildrenNode():
+                agent_type = stmt.agent_type.name if stmt.agent_type else None
+                self.agent._runtime.kill_children(self.agent._id, agent_type, stmt._line) # kill all children of this agent with the specified type
+
+
+            case GoalCheckNode():
+                return self.agent._action_executor.goal_check(stmt, local_vars)
+
+
+            case GetTimeNode():
+                # TODO: implement GetTimeNode. Fists think about how to handle time in the agentar runtime
+                pass
+
 
             case DoNode():
                 action_node = self.agent._actions.get(stmt.name, stmt._line)
                 parameters = [self.agent._evaluator.eval_expr(param, local_vars, message, stmt._line) for param in stmt.variables]
                 return self.agent._action_executor.execute_action(action_node, parameters, stmt._line)
 
-            case GoalCheckNode():
-                return self.agent._action_executor.goal_check(stmt, local_vars)
-
-            case GetTimeNode():
-                # TODO: implement GetTimeNode. Fists think about how to handle time in the agentar runtime
-                pass
 
             case ReturnNode():
                 self.agent._return_flag = True
                 return self.agent._evaluator.eval_expr(stmt.value, local_vars, message, stmt._line)
-            
-            case SendNode():
-                # TODO: implement SendNode
-                self.agent._message_handler.send_message(stmt, local_vars)
+
 
             case SleepNode():
                 dutarion = self.agent._evaluator.eval_expr(stmt.duration, local_vars, message, stmt._line)
@@ -63,6 +96,33 @@ class StatementExecutor:
                 time.sleep(dutarion)
 
 
+            case IfStmtNode():
+                pass
+
+
+            case ForLoopNode():
+                pass
+
+
+            case WhileLoopNode():
+                pass
+
+
+            case BreakNode():
+                pass
+
+
+            case ContinueNode():
+                pass
+
+
+            case SenseNode():
+                pass
+
+
+            case DictDelNode():
+                pass
+
 
 
 # ------------------------------------------
@@ -71,6 +131,22 @@ class StatementExecutor:
 
     def variable_declaration(self, local_vars, var_name, value_expr, var_type, line):
         local_vars.declare(var_name, value_expr, var_type, line)
+
+
+    def spawn_agent(self, spawn_node, local_vars, message):
+        if spawn_node.args:
+            fields = {}
+            for arg in spawn_node.args:
+                key, value = arg
+                value_to_assign = self.agent._evaluator.eval_expr(value, local_vars, message, spawn_node._line)
+                if isinstance(value, AddressOfExprNode):
+                    fields[key] = value_to_assign
+                else:
+                    fields[key] = deepcopy(value_to_assign)
+        else:
+            fields = {}
+        return self.agent._runtime.spawn_agent(parentInstance=self.agent, agent_type=spawn_node.agent_type, fields=fields, line=spawn_node._line)
+
 
 
     def print_stmt(self, stmt, local_vars, message, line): 

@@ -11,6 +11,7 @@ from core.agent_id import AgentId
 from runtime.agent_instance.agent_instance import AgentInstance
 from runtime.agent_runner import AgentRunner
 from runtime.agent_time import AgentTime
+from runtime.errors import FieldWithNoneValueError
 
 
 class AgentarSystem:
@@ -65,33 +66,31 @@ class AgentarSystem:
             receiver._inbox.put(message)
 
 
-    def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None):
+    def spawn_agent(self, parentInstance: AgentInstance, agent_type: AgentarAgent, fields=None, line=None):
         if self.terminated.is_set():
             return None
-        if agent_type not in self.agents_decl:
-            raise ValueError(f"Agent type {agent_type} not found in system declarations.")
+        agent_decl = deepcopy(self.agents_decl.get(agent_type))
+
+        for key, value in fields.items():
+            agent_decl._fields.set(key, value, line)
+
+        # check if all fields has values in the agent instance
+        for field_name in agent_decl._fields._variables.keys():
+            if agent_decl._fields.get(field_name, line) is None:
+                raise FieldWithNoneValueError(field_name, line)
         
-        declared_types = list(self.agents_decl[agent_type]._fields_type.values())
-        # if len(declared_types) != len(fields): # Check if the number of fields matches the declared types
-        #     raise ValueError(f"Agent '{agent_type}' expects {len(declared_types)} fields, got {len(fields)}")
-        for i, field in enumerate(fields): # Check if each field matches the declared type
-            if type(field) != declared_types[i]:
-                raise ValueError(f"Field {i}: got {type(field).__name__}, expected {declared_types[i].__name__}")
-            
-        id = parentInstance._id.child(parentInstance._next_child)     # Create new AgentId for the child agent
-        parentInstance._next_child += 1                              # Increment child index for next spawn
-        parentInstance._children.append(id)                          # Add child id to parent's children list
-        new_agent_inst = deepcopy(self.agents_decl[agent_type])               # Get the agent declaration from the system
-        agent = AgentInstance(new_agent_inst, system=self, id=id, fields=fields)
-        
+        id = parentInstance._id.child(parentInstance._next_child)  # Create new AgentId for the child agent
+        parentInstance._next_child += 1                           # Increment child index for next spawn
+        parentInstance._children.append(id)                       # Add child id to parent's children list
+        agent = AgentInstance(agent_decl, system=self, id=id)  # Create
         with self._lock:
             self.agents[id.path] = agent
             self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)
             self.threads[id.path].start()
         return id
-        
+
     
-    def killChildren(self, agent_id: AgentId, agent_type):
+    def kill_children(self, agent_id: AgentId, agent_type, line=None):
         # Kill all children of the agent
         if agent_type == None: # 
             with self._lock:
@@ -99,19 +98,19 @@ class AgentarSystem:
                 for child in self.agents[agent_id.path]._children:
                     agents_to_kill.append(child)
             for aid in agents_to_kill:
-                self.killAgent(AgentId(aid))
+                self.kill_agent(aid)
         # Kill only children of the specified type
         else: 
             with self._lock:
                 agents_to_kill = []
                 for child in self.agents[agent_id.path]._children:
-                    if self.agents[child].name == agent_type:
+                    if self.agents[child.path]._name == agent_type:
                         agents_to_kill.append(child)
             for aid in agents_to_kill:
-                self.killAgent(AgentId(aid))
+                self.kill_agent(aid)
 
 
-    def killAgent(self, agent_id: AgentId):
+    def kill_agent(self, agent_id: AgentId, line=None):
         agents_to_kill = []
 
         def collect_descendants(aid):
@@ -140,6 +139,6 @@ class AgentarSystem:
                 logging.info(f"{aid.path}:: Agent killed.")
                 
 
-    def killMother(self):
+    def kill_mother(self):
         logging.info("Mother agent requested system shutdown.")
         self.terminated.set()

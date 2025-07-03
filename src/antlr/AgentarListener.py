@@ -224,6 +224,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#spawnFieldAssign.
+    def enterSpawnFieldAssign(self, ctx:AgentarParser.SpawnFieldAssignContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#spawnFieldAssign.
+    def exitSpawnFieldAssign(self, ctx:AgentarParser.SpawnFieldAssignContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#killStmt.
     def enterKillStmt(self, ctx:AgentarParser.KillStmtContext):
         pass

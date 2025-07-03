@@ -322,15 +322,15 @@ class AgentInstance:
 
 
         # KillNode handles agent termination
-        elif isinstance(stmt, KillNode):
-            if stmt.agent_id is not None:
-                agent_id = self.eval_expr(stmt.agent_id, local_var, local_var_type)
-                self._runtime.killAgent(agent_id)
-            else:
-                if self._isMother:
-                    self._runtime.killMother()
-                else:
-                    self._runtime.killAgent(self._id)
+        # elif isinstance(stmt, KillNode):
+        #     if stmt.agent_id is not None:
+        #         agent_id = self.eval_expr(stmt.agent_id, local_var, local_var_type)
+        #         self._runtime.killAgent(agent_id)
+        #     else:
+        #         if self._isMother:
+        #             self._runtime.killMother()
+        #         else:
+        #             self._runtime.killAgent(self._id)
 
 
         # # SllepNode handles sleeping for a specified duration
@@ -432,9 +432,9 @@ class AgentInstance:
             self.sense_world()  # Sense the world and update beliefs
 
     
-        elif isinstance(stmt, KillChildrenNode):
-            agent_type = stmt.agent_type.name if stmt.agent_type is not None else None
-            self._runtime.killChildren(self._id, agent_type)  # Kill all children of the agent with the specified type
+        # elif isinstance(stmt, KillChildrenNode):
+        #     agent_type = stmt.agent_type.name if stmt.agent_type is not None else None
+        #     self._runtime.killChildren(self._id, agent_type)  # Kill all children of the agent with the specified type
 
 
         elif isinstance(stmt, GetTimeNode):
@@ -834,20 +834,20 @@ class AgentInstance:
 
 
 
-    def handle_spawn(self, spawn_node, local_var, local_var_type):
-        if spawn_node.args:
-            fields = []
-            for arg in spawn_node.args:
-                arg_to_fields = self.eval_expr(arg, local_var, local_var_type)
-                if isinstance(arg, AddressOfExprNode):
-                    fields.append(arg_to_fields)
-                elif check_if_var_is_pointer(arg_to_fields):
-                    fields.append(arg_to_fields)  # If it's a pointer, we can use it directly
-                else:
-                    fields.append(deepcopy(arg_to_fields))
-        else:
-            fields = []
-        return self._runtime.spawn_agent(parentInstance=self, agent_type=spawn_node.agent_type, fields=fields)
+    # def handle_spawn(self, spawn_node, local_var, local_var_type):
+    #     if spawn_node.args:
+    #         fields = []
+    #         for arg in spawn_node.args:
+    #             arg_to_fields = self.eval_expr(arg, local_var, local_var_type)
+    #             if isinstance(arg, AddressOfExprNode):
+    #                 fields.append(arg_to_fields)
+    #             elif check_if_var_is_pointer(arg_to_fields):
+    #                 fields.append(arg_to_fields)  # If it's a pointer, we can use it directly
+    #             else:
+    #                 fields.append(deepcopy(arg_to_fields))
+    #     else:
+    #         fields = []
+    #     return self._runtime.spawn_agent(parentInstance=self, agent_type=spawn_node.agent_type, fields=fields)
     
 
     # def handle_message_init(self, msg_node):

@@ -129,6 +129,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#spawnFieldAssign.
+    def visitSpawnFieldAssign(self, ctx:AgentarParser.SpawnFieldAssignContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#killStmt.
     def visitKillStmt(self, ctx:AgentarParser.KillStmtContext):
         return self.visitChildren(ctx)

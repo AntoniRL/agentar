@@ -84,7 +84,7 @@ def resolve_type_normal(var_type):
         return var_type, None
     elif var_type == MessageInstance:
         return var_type, None
-    elif var_type == (int, float, str, bool):
+    elif isinstance(var_type, (int, float, str, bool)):
         return var_type, None
     elif var_type == list:
         return var_type, []
