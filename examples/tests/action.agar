@@ -1,0 +1,15 @@
+agent mother {
+    fields{
+        int x = 4;
+    }
+    initialize {
+        list l;
+        do run();
+        print(l);
+    } 
+    action run(list l = [1,1,1]): void {
+        print(l);
+        l[0] = 100;
+        print(l);
+    }
+}

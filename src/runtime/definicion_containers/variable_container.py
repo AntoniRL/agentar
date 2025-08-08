@@ -5,73 +5,87 @@
 from typing import Optional, Dict
 
 from ast_tree.nodes import *
-from core.agentar_types import resolve_type, resolve_type_normal
-from runtime.agent_instance.expression_evaluator import ExpressionEvaluator
+from core.agentar_types import resolve_type
 from runtime.errors import VariableAlreadyDeclaredError, VariableNotFoundError, WrongTypeError
+from core.pointer import Pointer
+from core.variable_info import VariableInfo
+from runtime.agent_instance.expression_evaluator import ExpressionEvaluator
+from core.typed_structures import TypedList, TypedDict, TypedTuple
 
-
-class VariableInfo:
-    def __init__(self, name: str, value, var_type, scope: str, declaration_line: Optional[int] = None):
-        self.name: str = name
-        self.value = value
-        self.var_type = var_type
-        self.scope = scope
-        self.declaration_line = declaration_line
-
-    def __repr__(self):
-        return f"VariableInfo(name={self.name}, type={self.var_type}, scope={self.scope}, value={self.value})"
-
+# VariableContainer (self._variables) is a set of VariableInfo objects, where each VariableInfo contains:
+# - name: name of the variable
+# - value: Pointer(value) to the value of the variable
+# - var_type: type of the variable (e.g., int, str, list, dict, etc.)
+# - scope: scope of the variable (e.g., "global", "local", "when_block", etc.)
+# - declaration_line: line number where the variable was declared
 
 class VariableContainer:
-    def __init__(self, scope: Optional[str] = None, parent: Optional['VariableContainer'] = None):
+    def __init__(self, agent=None, scope: Optional[str] = None, parent_container: Optional['VariableContainer'] = None):
+        self._agent = agent  # Reference to the agent instance where this container is used (to get fields, etc.)
         self._variables: Dict[str, VariableInfo] = {}
         self._scope = scope
-        self._parent = parent
+        self._parent_container = parent_container  # Parent container for scope resolution
+
 
     def create_child_scope(self, scope_name: str) -> 'VariableContainer':
         """Create a new child scope that can shadow variables from this scope"""
-        return VariableContainer(scope_name, parent=self)
+        return VariableContainer(self._agent, scope_name, parent_container=self)
     
 
-    # Declare a variable with a name, value, type, and optional declaration line
     def declare(self, name: str, value: Optional[ASTNode], var_type, declaration_line: Optional[int] = None):
-        if isinstance(var_type, ASTNode):
-            type_name, defoult_value= resolve_type(var_type)
-        else: 
-            type_name, defoult_value = resolve_type_normal(var_type)
+        """Declare a variable in the current scope."""
 
         if name in self._variables:
             raise VariableAlreadyDeclaredError(name, declaration_line, self._variables[name].declaration_line)
-        if value is None:
-            value = defoult_value
-        else: 
-            if isinstance(value, ASTNode):
-                value = ExpressionEvaluator(None).eval_expr(value)  # Evaluate the expression to get the value
-            if type(value) != type_name:
-                raise WrongTypeError(name, type_name, type(value), declaration_line)
-        self._variables[name] = VariableInfo(name, value, var_type, self._scope, declaration_line)
+
+        reference_type, default_value = resolve_type(var_type)
+
+        if value is not None:
+            if self._agent is None:
+                value = ExpressionEvaluator(None).eval_expr(value)  # Evaluate the expression to get the value (for VariableContainer Fields and Beliefs)
+            else:
+                value = self._agent._evaluator.eval_expr(value)  # Evaluate the expression to get the value
+
+            if not isinstance(value, reference_type):
+                raise WrongTypeError(name, reference_type, type(value), declaration_line)
+            
+            default_value = Pointer(default_value)
+            default_value.set(value)  # Set the value in the Pointer
+        
+        else:
+            default_value = Pointer()
+
+        self._variables[name] = VariableInfo(name, default_value, var_type, self._scope, declaration_line) 
 
 
     def exists(self, name: str) -> bool:
         return name in self._variables or (self._parent is not None and self._parent.exists(name))
 
 
-    def get(self, name: str, line: int):
+    def get_pointer(self, name: str, line: int) -> Pointer:
         return self._find(name, line).value
 
 
+    def get(self, name: str, line: int):
+        return self._find(name, line).value.get()  # Get the value from the Pointer
+    
+
     def set(self, name: str, value, line):
+        # TODO: Implement variable setting
         if isinstance(value, ASTNode):
             value = ExpressionEvaluator(None).eval_expr(value)
-        var_info = self._find(name, line)
-        # Check if the type of the value matches the expected type
-        if isinstance(var_info.var_type, ASTNode):
-            expected_type, _ = resolve_type(var_info.var_type)  # For ASTNode types, resolve the type
-        else: 
-            expected_type, _ = resolve_type_normal(var_info.var_type) # For normal types, resolve the type
+
+        var_pointer = self.get_pointer(name, line)
+        var_info = var_pointer.get() # Get the VariableInfo object
+
+        expected_type, _ = resolve_type(var_info.var_type)
+
+        print(f"name: {name}, expected_type: {expected_type}, value: {value}, type(value): {type(value)}") # TODO: Remove this debug print
+
         if type(value) != expected_type:
             raise WrongTypeError(name, expected_type, type(value), line)
-        var_info.value = value
+        
+        var_pointer.set_value(value)
 
 
     def get_info(self, name: str, line: int) -> VariableInfo:
@@ -83,23 +97,23 @@ class VariableContainer:
 
 
     def scope_of(self, name: str, line: int) -> Optional[str]:
-        return self._find(name).scope
+        return self._find(name, line).scope
 
 
     def declared_at(self, name: str, line: int) -> Optional[int]:
         return self._find(name, line).declaration_line
 
 
-    def _find(self, name: str, line: int) -> VariableInfo:
+    def _find(self, name: str, line: int) -> Pointer:
         var = self._find_or_none(name)
         if not var:
             raise VariableNotFoundError(name, line)
         return var
 
 
-    def _find_or_none(self, name: str) -> Optional[VariableInfo]:
+    def _find_or_none(self, name: str) -> Optional[Pointer]:
         if name in self._variables:
-            return self._variables[name]
+            return self._variables[name]  # Return the VariableInfo object
         elif self._parent is not None:
             return self._parent._find_or_none(name)
         else:
@@ -108,6 +122,10 @@ class VariableContainer:
 
     def items(self):
         return self._variables.items()
+    
+
+    def values(self):
+        return self._variables.values()
 
 
     def __iter__(self):

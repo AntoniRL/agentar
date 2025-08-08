@@ -44,7 +44,7 @@ class AgentarInterpreter:
         builder = AgentarToASTBuilder()
         ast_root = builder.visit(tree)
 
-        self.visitAST(ast_root)
+        self.visitAST(ast_root) # Process the AST and fill the declarations
 
         return self.mother_decl, self.agents_decl, self.messages_decl
 
@@ -58,12 +58,14 @@ class AgentarInterpreter:
                 self.mother_decl._name = "MOTHER"
                 self.mother_decl._line_declaration = decl._line
                 self.agent = AgentarAgent()  # Reset for next agent
+
             elif isinstance(decl, AgentNode):
                 self.declareAgent(decl)
                 self.agent._name = decl.name
                 self.agent._line_declaration = decl._line
                 self.agents_decl.declare(decl.name, self.agent)  # Add to the agent container
                 self.agent = AgentarAgent()     # Reset for next agent
+                
             elif isinstance(decl, MessageDeclNode):
                 self.declareMessage(decl)
                 self.message._line_declaration = decl._line

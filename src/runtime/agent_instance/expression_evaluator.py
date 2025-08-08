@@ -6,8 +6,11 @@ from ast_tree.nodes import *
 from core.agentar_types import MessageType
 from core.agent_id import AgentId
 from core.agentar_types import resolve_type
-from core.pointer import *
+from core.pointer import Pointer
 from runtime.errors import *
+from core.variable_info import VariableInfo
+from core.typed_structures import TypedList, TypedDict, TypedTuple
+
 
 from copy import deepcopy
 import random
@@ -16,7 +19,7 @@ class ExpressionEvaluator:
     def __init__(self, agent):
         self.agent = agent
 
-    def eval_expr(self, expr, local_vars = None, message=None, line=None):
+    def eval_expr(self, expr, local_vars=None, message=None, line=None):
         match expr:
 
             case LiteralNode(value=value):
@@ -33,6 +36,10 @@ class ExpressionEvaluator:
                         return MessageType.DENY
                     case _:
                         return value
+
+
+            case AgentIdNode(path=path):
+                return AgentId(path)
 
 
             case AgentId():
@@ -64,7 +71,7 @@ class ExpressionEvaluator:
                 
 
             case BaseTypeNode():
-                return resolve_type(expr)[0]
+                return resolve_type(expr)[0] # TODO: Check if it works correctly with all types
             
 
             case LenNode(base=base, _line=line):
@@ -89,13 +96,15 @@ class ExpressionEvaluator:
             
 
             case ListLiteralNode(elements=elements, _line=line):
-                return [self.eval_expr(item, local_vars, message) for item in expr.elements]
-                
+                newList = TypedList(AnyTypeNode)
+                for item in elements:
+                    newList.append(self.eval_expr(item, local_vars, message))
+                return newList
 
             case IndexAccessNode(base=base, index=index, _line=line):
                 base_value = self.eval_expr(base, local_vars, message)
                 index_value = self.eval_expr(index, local_vars, message)
-                if type(base_value) in (list, tuple, ListPointer, TuplePointer):
+                if type(base_value) in (list, tuple, Pointer, Pointer):
                     if isinstance(index_value, int):
                         if index_value < -len(base_value) or index_value >= len(base_value):
                             raise IndexOutOfRangeError(index_value, len(base_value), line)
@@ -103,7 +112,7 @@ class ExpressionEvaluator:
                             return base_value[index_value]
                     else:
                         raise WrongTypeError("index", "int", type(index_value).__name__, line)
-                elif type(base_value) in (dict, DictPointer):
+                elif type(base_value) in (dict, Pointer):
                     if isinstance(index_value, str):
                         if index_value in base_value:
                             return base_value[index_value]
@@ -119,7 +128,7 @@ class ExpressionEvaluator:
                 base_value = self.eval_expr(base, local_vars, message)
                 start_value = self.eval_expr(start, local_vars, message) if start is not None else 0
                 end_value = self.eval_expr(end, local_vars, message) if end is not None else None
-                if type(base_value) in (list, tuple, ListPointer, TuplePointer):
+                if type(base_value) in (list, tuple, Pointer, Pointer):
                     if end_value is None: end_value = len(base_value)
                     if isinstance(start_value, int) and isinstance(end_value, int):
                         if start_value <= abs(len(base_value)) and end_value <= abs(len(base_value)):

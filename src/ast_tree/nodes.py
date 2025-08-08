@@ -4,9 +4,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional, Union
 
+
+# Custom metaclass to provide a custom __repr__ for all ASTNode subclasses
+class CustomReprMeta(type):
+    def __repr__(cls):
+        return f"<class '{cls.__name__}'>"
+    
+
 # === Base AST class ===
 @dataclass
-class ASTNode:
+class ASTNode(metaclass=CustomReprMeta):
     _line: Optional[int]   # Line number in the source code
     _column: Optional[int]   # Column number in the source code
     #_oryginal_text: Optional[str]   # Original text from the source code
@@ -356,14 +363,40 @@ class LenNode(ASTNode):
 class TypeExprNode(ASTNode):
     base: ASTNode
 
-
 @dataclass
 class BaseTypeNode(ASTNode):
-    name: str  # np. 'int', 'list', 'bool', ...
+    name: str  # 'int', 'float', 'str', 'bool', 'void', 'agentid'
+
 
 @dataclass
 class PointerTypeNode(ASTNode):
-    inner: ASTNode  # inny TypeNode, np. BaseTypeNode lub kolejny PointerTypeNode
+    inner_type: ASTNode  
+
+
+@dataclass
+class ListTypeNode(ASTNode):
+    inner_type: ASTNode
+    _type: type = list
+
+
+@dataclass
+class DictTypeNode(ASTNode):
+    key_type: ASTNode
+    value_type: ASTNode
+    _type: type = dict
+
+
+@dataclass
+class TupleTypeNode(ASTNode):
+    elements_type: List[ASTNode]
+    _type: type = tuple
+
+
+@dataclass
+class AnyTypeNode(ASTNode):
+    pass
+
+
 
 
 @dataclass

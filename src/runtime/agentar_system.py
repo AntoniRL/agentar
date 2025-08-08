@@ -25,7 +25,7 @@ class AgentarSystem:
         self.terminated = threading.Event()     # Event to signal termination of the system
         self.terminated.clear()                 # Clear the termination event
 
-        self._lock = threading.Lock()
+        self._lock = threading.Lock()           # Lock for thread-safe access to agents and threads
 
         # Create mother
         self.mother_id = AgentId(".1")
@@ -43,7 +43,7 @@ class AgentarSystem:
     def start(self):
         logging.info("Starting Agentar system...")
         self.threads[self.mother_id.path].start()
-        # self.threads[self.agentTime.agent_id.path].start()
+        # self.threads[self.agentTime.agent_id.path].start() # TODO: Start agent time thread
 
 
     def stop(self):
@@ -80,9 +80,9 @@ class AgentarSystem:
                 raise FieldWithNoneValueError(field_name, line)
         
         id = parentInstance._id.child(parentInstance._next_child)  # Create new AgentId for the child agent
-        parentInstance._next_child += 1                           # Increment child index for next spawn
-        parentInstance._children.append(id)                       # Add child id to parent's children list
-        agent = AgentInstance(agent_decl, system=self, id=id)  # Create
+        parentInstance._next_child += 1                            # Increment child index for next spawn
+        parentInstance._children.append(id)                        # Add child id to parent's children list
+        agent = AgentInstance(agent_decl, system=self, id=id)      # Create
         with self._lock:
             self.agents[id.path] = agent
             self.threads[id.path] = AgentRunner(agent, system=self, agent_id=id)

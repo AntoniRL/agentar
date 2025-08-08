@@ -6,7 +6,6 @@ import logging
 
 from runtime.definicion_containers.variable_container import VariableContainer
 from ast_tree.nodes import WhenBlockNode
-from core.agentar_types import resolve_type
 from runtime.errors import *
 
 class ActionExecutor:
@@ -29,8 +28,9 @@ class ActionExecutor:
     def when_block(self, when_node, local_vars_name, message):
         local_vars = VariableContainer(f"{local_vars_name}")
         if message is not None:
-            for stmt in message._content.items():
-                local_vars.declare(stmt[0], stmt[1], type(stmt[1]), message._line)
+            for var_info in message._content.values():
+                local_vars.declare(var_info.name, var_info.value, var_info.var_type, when_node._line)
+        local_vars = local_vars.create_child_scope("when_block")
         if when_node.conditions == []:
             for stmt in when_node.statements:
                 self.agent._executor.execute_stmt(stmt, local_vars, message)
@@ -80,12 +80,14 @@ class ActionExecutor:
                 raise NoValueInActionCall(stmt.name, line_of_call_action, action_node._line)
             if parameters is not None and i < len(parameters):
                 local_vars.set(stmt.name, parameters[i], action_node._line)
+
         return_type = self.agent._evaluator.eval_expr(action_node.return_type, local_vars, None, action_node._line)
         for stmt in action_node.body:
             return_object = self.agent._executor.execute_stmt(stmt, local_vars, None)
             if self.agent._return_flag:
                 self.agent._return_flag = False
                 break
-        if type(return_object) != return_type:
-            raise WrongTypeError("Return value", return_type, type(self.agent._return_object), action_node._line)
-        return return_object
+        if return_type != 'void':
+            if type(return_object) != return_type:
+                raise WrongTypeError("Return value", return_type, type(self.agent._return_object), action_node._line)
+            return return_object

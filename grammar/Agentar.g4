@@ -6,33 +6,6 @@ program
     : (motherDecl | agentDecl | messageDecl)* EOF
     ;
 
-statement
-    : printStmt
-    | loggingStmt
-    | ifStmt
-    | forStmt
-    | whileStmt
-    | breakStmt
-    | continueStmt
-    | variableDecl
-    | assignment
-    | listAddStmt
-    | sendStmt
-    | sendParentStmt
-    | sendChildrenStmt
-    | sendSiblingStmt
-    | spawnStmt
-    | killStmt
-    | killchildrenStmt
-    | doStmt
-    | sleepStmt
-    | returnStmt
-    | senseStmt
-    | goalCheckStmt
-    | getTimeStmt
-    | dictDelStmt
-    ;
-
 // === Mother declaration
 motherDecl
     : 'agent' 'mother' '{' agentBody '}'
@@ -46,12 +19,12 @@ agentDecl
 
 agentBody
     : fieldSection? 
-    initialSection?
-    destroySection?
     beliefsSection?
-    senseSection?
     goalsSection?
+    initialSection?
+    senseSection?
     rulesSection?
+    destroySection?
     receiveSection*
     actionSection*
     ;
@@ -60,16 +33,12 @@ fieldSection
     : 'fields' '{' variableDecl* '}'
     ;
 
-initialSection
-    : 'initialize' '{' statement* '}'
-    ;
-
-destroySection
-    : 'destroy' '{' statement* '}'
-    ;
-
 beliefsSection
     : 'beliefs' '{' variableDecl* '}'
+    ;
+
+initialSection
+    : 'initialize' '{' statement* '}'
     ;
 
 senseSection
@@ -88,13 +57,16 @@ rulesSection
     : 'rules' '{' whenBlock* '}'
     ;
 
+destroySection
+    : 'destroy' '{' statement* '}'
+    ;
+
 receiveSection
     : 'receive' ID '{' whenBlock* '}'
     ;
 
 whenBlock
-    : 'when' '(' expression ')' 'then' '{' statement* '}'
-    | 'when' '(' ')' 'then' '{' statement* '}'
+    : 'when' '(' expression* ')' 'then' '{' statement* '}'
     ;
 
 actionSection
@@ -106,8 +78,8 @@ parameterList
     ;
 
 parameter
-    : type ID            
-    | type ID '=' expression
+    : type ID ('=' expression)?
+    | type star=STAR ID ('=' expression)?
     ;
 // === End agent declaration
 
@@ -117,21 +89,58 @@ messageDecl
     ;
 // === end of message declaration
 
+
 // === Statements
+statement
+    : printStmt
+    | loggingStmt
+    | ifStmt
+    | forStmt
+    | whileStmt
+    | breakStmt
+    | continueStmt
+    | variableDecl
+    | assignment
+    | listAddStmt
+    | sendStmt
+    | sendParentStmt
+    | sendChildrenStmt
+    | sendSiblingStmt
+    | spawnStmt
+    | killStmt
+    | killChildrenStmt
+    | doStmt
+    | sleepStmt
+    | returnStmt
+    | senseStmt
+    | goalCheckStmt
+    | getTimeStmt
+    | dictDelStmt
+    ;
+
+
+printStmt
+    : 'print' '(' expression (',' expression)* ')' ';'
+    ;
+
+loggingStmt
+    : 'logging' '(' expression (',' expression)* ')' ';'
+    ;
+
 sendStmt
-    : 'send' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'  
+    : 'send' '(' expression ',' expression (','  msgTypeValue)? ')' ';'  
     ;
 
 sendParentStmt
-    : 'send2parent' '(' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    : 'send2parent' '(' expression (',' msgTypeValue)? ')' ';'
     ;
 
 sendChildrenStmt
-    : 'send2children' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    : 'send2children' '(' expression ',' expression (',' msgTypeValue)? ')' ';'
     ;
 
 sendSiblingStmt
-    : 'send2siblings' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
+    : 'send2siblings' '(' expression ',' expression (',' msgTypeValue)? ')' ';'
     ;
 
 spawnStmt
@@ -142,17 +151,16 @@ spawnFieldAssign
     : ID ':' expression
     ;
 
-
 killStmt  
     : 'kill' '(' expression? ')' ';'
     ;
 
-killchildrenStmt
-    : 'kill_children' '(' expression? ')' ';'
+killChildrenStmt
+    : 'killChildren' '(' expression? ')' ';'
     ;
 
 sleepStmt  
-    : 'sleep' '('expression')' ';'
+    : 'sleep' '(' expression ')' ';'
     ;
 
 returnStmt
@@ -179,38 +187,33 @@ listAddStmt
     : expression '.add(' expression ')' ';'
     ;
 
-printStmt
-    : 'print' '(' expression (',' expression)* ')' ';'
-    ;
-
-loggingStmt
-    : 'logging' '(' expression (',' expression)* ')' ';'
-    ;
 
 ifStmt
-    : 'if' '(' expression ')' blockOrStmt (elseStmt)?
+    : 'if' '(' expression ')' ifBlock (elseBlock)?
     ;   
 
-blockOrStmt 
+ifBlock
     : '{' statement* '}'
-    | statement
+    | statement 
     ;
 
-elseStmt
+elseBlock
     : 'else' '{' statement* '}'
+    | 'else' statement
     ;
 
 forStmt
     : 'for' '(' variableDecl expression ';' forAssignExpr ')' '{' forBody '}'
     ;
 
+forAssignExpr
+    : ID '=' expression
+    ;
+
 forBody
     : statement*
     ;
 
-forAssignExpr
-    : ID '=' expression
-    ;
 
 whileStmt
     : 'while' '(' expression ')' '{' statement* '}'
@@ -228,11 +231,11 @@ doStmt
     : 'do' ID '(' (expression (',' expression)*)? ')' ';' 
     ;
 
-variableDecl
-    : type ID ('=' expression)? ';'             # VarDecl
-    | ID ID '=' messageInit ';'                 # MessageVarDecl
-    ;
 
+variableDecl
+    : type ID ('=' expression)? ';'   # VarDecl      
+    | ID ID '=' messageInit ';'       # MessageVarDecl    
+    ;
 
 
 assignment
@@ -250,7 +253,7 @@ assignValue
 
 expression
     : '(' expression ')'                    # ParenExpr
-    | '-' expression                        # NegExpr
+    | MINUS expression                      # NegExpr
     | MSG '.' ID                            # MessageAccessExpr
     | SELF '.' ID                           # SelfAccessExpr
     | BELIEF '.' ID                         # BeliefAccessExpr
@@ -267,7 +270,8 @@ expression
     | 'random' '(' expression ',' expression ')' # RandomExpr
     | 'deepcopy' '(' expression ')'         # DeepCopyExpr
     | NOT expression                        # NotExpr 
-    | '&' expression                        # AddressOfExpr
+    | AMPERSAND expression                  # AddressOfExpr
+    | STAR expression                       # DerefExpr
     | expression op=('*'|'/') expression    # MulDivExpr
     | expression op=('+'|'-') expression    # AddSubExpr
     | expression op=MODULO expression       # ModuloExpr
@@ -314,8 +318,8 @@ dictLiteral
 
 
 dictEntry
-  : key=expression '=' value=expression
-  ;
+    : key=expression ':' value=expression
+    ;
 
 
 tupleLiteral
@@ -324,12 +328,15 @@ tupleLiteral
 
 
 type
-    :  bodyType                 # BasicType
-    | 'pointer<'type'>'         # PointerType
+    :  bodyType                         # BasicType
+    | 'pointer' '<' type '>'            # PointerType
+    | 'list' '<' type '>'               # ListType
+    | 'dict' '<' key=type ',' value=type '>'      # DictType
+    | 'tuple' '<' type (',' type)* '>'  # TupleType
+    | 'any'                               # AnyType
     ;
-
-
-bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'tuple' | 'list' | 'dict' | 'agentid';
+    
+bodyType : 'int' | 'float' | 'str' | 'bool' | 'void' | 'agentid';
 
 
 literal
@@ -390,6 +397,7 @@ NOT: '!';
 AND: '&&';
 OR: '||';
 XOR: '^';
+AMPERSAND: '&';
 NONE: 'None';
 IF: 'if';
 ELSE: 'else';

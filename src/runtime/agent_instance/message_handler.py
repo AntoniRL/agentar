@@ -3,12 +3,14 @@
 # MessageHandler: handles messages in the context of an agent instance
 
 import logging
+from copy import deepcopy
+
 
 from runtime.definicion_containers.variable_container import VariableContainer
 from runtime.errors import *
 from ast_tree.nodes import AddressOfExprNode
-from copy import deepcopy
 from runtime.message_instance import MessageInstance
+from core.agentar_types import MessageType
 
 class MessageHandler:
     def __init__(self, agent):
@@ -45,15 +47,28 @@ class MessageHandler:
         local_vars.declare(msg_decl_node.name, message_instance, MessageInstance, msg_decl_node._line)
 
 
-    def send_message(self, stmt,  message): 
-        pass
-        # TODO: implement SendNode
+    def send_message(self, stmt,  local_vars): 
+        msg = self.agent._evaluator.eval_expr(stmt.message, local_vars)
+        # --- Create a deep copy of the message to avoid modifying the original message. It helps to prevent issues with shared references.
+        content = msg._content
+        msg._content = VariableContainer()
+        msg = deepcopy(msg)
+        msg._content = content
+        # ---
+        # TODO: msg._sending_time = ...
+        msg._type = MessageType(stmt.msg_type)
+        msg._sender = self.agent._id
+        if stmt.to == "PARENT":
+            msg._receiver = self.agent._parent
+        else:
+            msg._receiver = self.agent._evaluator.eval_expr(stmt.to, local_vars)
+        self.agent._runtime.send_message(msg)
 
 
     def process_messages(self, message):
         logging.info(f"{self.agent._id.path}:: Received message from {message._sender.path}")
         if self.agent._receive.exists(message._name):
-            receive_method = self.agent._receive.get(message._name, message._line)
+            receive_method = self.agent._receive.get(message._name, line=None)
             for when_method in receive_method:
                 self.agent._action_executor.when_block(when_method, "Receive", message)
         else:

@@ -7,8 +7,8 @@ from runtime.definicion_containers.ASTNode_container import ASTNodeContainer
 
 class AgentarAgent:
     def __init__(self):
-        self._fields = VariableContainer("Fields")
-        self._beliefs = VariableContainer("Beliefs")
+        self._fields = VariableContainer(agent=None, scope="Fields")
+        self._beliefs = VariableContainer(agent=None, scope="Beliefs")
         self._sense = []
         self._sub_goals = ASTNodeContainer("Goal")
         self._merge_goals_condition = None

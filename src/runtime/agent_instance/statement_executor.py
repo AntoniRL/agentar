@@ -10,7 +10,7 @@ from copy import deepcopy
 from ast_tree.nodes import *
 from core.agent_id import AgentId
 from runtime.errors import *
-from core.agentar_types import resolve_type
+# from core.agentar_types import resolve_type
 from runtime.definicion_containers.variable_container import VariableContainer
 
 
@@ -21,7 +21,7 @@ class StatementExecutor:
     def execute_stmt(self, stmt, local_vars, message=None):
         match stmt:
             case VariableDeclNode(var_type=var_type, name=var_name, value=value_expr, _line=line):
-                self.variable_declaration(local_vars, var_name, value_expr, var_type, line)
+                local_vars.declare(var_name, value_expr, var_type, line)
 
 
             case PrintNode() | LoggingNode():
@@ -33,7 +33,7 @@ class StatementExecutor:
 
 
             case SpawnNode():
-                return self.spawn_agent(stmt, local_vars, message)
+                return self.spawn_agent(stmt, local_vars, message) 
 
 
             case MessageVarDeclNode():
@@ -41,15 +41,16 @@ class StatementExecutor:
             
 
             case SendNode():
-                # TODO: implement SendNode
                 self.agent._message_handler.send_message(stmt, local_vars)
             
 
             case SendToChildrenNode():
+                # TODO
                 pass
 
 
             case SendToSiblingsNode():
+                # TODO
                 pass
 
 
@@ -80,7 +81,7 @@ class StatementExecutor:
             case DoNode():
                 action_node = self.agent._actions.get(stmt.name, stmt._line)
                 parameters = [self.agent._evaluator.eval_expr(param, local_vars, message, stmt._line) for param in stmt.variables]
-                return self.agent._action_executor.execute_action(action_node, parameters, stmt._line)
+                return self.agent._action_executor.execute_action(action_node, deepcopy(parameters), stmt._line)
 
 
             case ReturnNode():
@@ -120,8 +121,13 @@ class StatementExecutor:
                 pass
 
 
+            case ListAddNode():
+                pass 
+
+
             case DictDelNode():
-                pass
+                pass 
+                # Both Dict and List 'del' operator in one case
 
 
 
@@ -130,7 +136,7 @@ class StatementExecutor:
 # ------------------------------------------
 
     def variable_declaration(self, local_vars, var_name, value_expr, var_type, line):
-        local_vars.declare(var_name, value_expr, var_type, line)
+        pass
 
 
     def spawn_agent(self, spawn_node, local_vars, message):
@@ -146,7 +152,6 @@ class StatementExecutor:
         else:
             fields = {}
         return self.agent._runtime.spawn_agent(parentInstance=self.agent, agent_type=spawn_node.agent_type, fields=fields, line=spawn_node._line)
-
 
 
     def print_stmt(self, stmt, local_vars, message, line): 
@@ -165,9 +170,7 @@ class StatementExecutor:
             logging.info(f"{self.agent._id.path}:: (LOGGING) " + " ".join(str(v) for v in to_print))
 
 
-    
-
-    # ---- Handle assignment 
+# --- Handle assignment 
     def handle_assignment(self, stmt, local_vars, message=None):
         if isinstance(stmt.value, (SpawnNode, DoNode, GoalCheckNode, GetTimeNode)):
             value = self.execute_stmt(stmt.value, local_vars, message)
@@ -226,7 +229,7 @@ class StatementExecutor:
 
     def _validate_index_assignment(self, container, index, value, line):
         if not hasattr(container, '__getitem__') or not hasattr(container, '__setitem__'):
-            raise AgentarRuntimeError(f"Object of type {type(container).__name__} does not support item assignment", line)
+            raise AgentarRuntimeError(f"Object of type '{type(container).__name__}' does not support item assignment", line)
         if isinstance(container, tuple):
             raise AgentarRuntimeError(f"Tuple object does not support item assignment", line)
         if isinstance(container, list):

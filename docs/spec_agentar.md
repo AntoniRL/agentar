@@ -46,25 +46,10 @@ agent <agent_name> {
         <type> <name> = <value>;     // np. int counter = 0;
     }
 
-    initialize {
-        // Kod uruchamiany przy starcie agenta (opcjonalne; tylko jedna instancja)
-        // np. print("Hello!");
-    }
-
-    destroy {
-        // Kod uruchamiany przy śmierci agenta (opcjonalne; tylko jedna instancja)
-        // np. print("Bye!");
-    }
-
     beliefs {
         // Przekonania agenta o świecie (opcjonalne; tylko jedna instancja)
         // np. bool b1 = false;
         // np. int b2;
-    }
-
-    sense {
-        // Agent cyklicznie sprawdza świat zgodnie z zapisanymi akcjami (w zależnośći od speocyfiki świata) i atualizuje pola beliefs (opcjonalnie; tylko jedna instancja)
-        // np. read_file()....
     }
 
     goals {
@@ -73,11 +58,26 @@ agent <agent_name> {
         // np. g2: b.b2 < 10;
     } marge (g1 && g2) //możliwość połączenia celów w dowolny sposób. Jeżeli brak to AND między celami cząstkowymi.
 
+    initialize {
+        // Kod uruchamiany przy starcie agenta (opcjonalne; tylko jedna instancja)
+        // np. print("Hello!");
+    }
+
+    sense {
+        // Agent cyklicznie sprawdza świat zgodnie z zapisanymi akcjami (w zależnośći od speocyfiki świata) i atualizuje pola beliefs (opcjonalnie; tylko jedna instancja)
+        // np. read_file()....
+    }
+
     rules {
         // Zasady postępowania agenta (opcjonalne; tylko jedna instancja)
         when <condition> then {
             <statements>;
         }
+    }
+
+    destroy {
+        // Kod uruchamiany przy śmierci agenta (opcjonalne; tylko jedna instancja)
+        // np. print("Bye!");
     }
 
     receive <msg_name> {
@@ -193,7 +193,7 @@ if (msg.text=="text") print("tak"); // dla jednej instrukcji
 | `int`    | Liczba całkowita                  |
 | `float`  | Liczba zmiennoprzecinkowa         |
 | `bool`   | Wartość logiczna `true` / `false` |
-| `string` | Tekst                             |
+| `str`    | Tekst                             |
 | `list`   | Lista wartości                    |
 | `dict`   | Słownik (klucz → wartość)         |
 | `agentID`| np. `.1.1`         |
@@ -203,10 +203,10 @@ if (msg.text=="text") print("tak"); // dla jednej instrukcji
 
 ### Obsługa list i słowników i krotek
 
-W AGENTAR listy, słowniki i krotki są podstawowymi strukturami danych. Wersja języka prototypowego obsługuje je prostą składnią.
+W AGENTAR listy, słowniki i krotki są podstawowymi strukturami danych. Wersja języka prototypowego obsługuje ich prostą składnią.
 
 Deklaracja listy:
-`list myList = [1, 2, 3];`
+`list<int> myList = [1, 2, 3];` 
 
 Odwołanie do elementu:
 `first = myList[0];  // wartość: 1`
@@ -225,17 +225,28 @@ Wybrór kawałka listy:
 
 
 Krotka:
-`tuple myTuple = (1,2,3)`
+`tuple<int> myTuple = (1,2,3)`
+`tuple<int, string> = (3, "trzy")`
+`tuple<> = (3, "trzy", 3.3)`
+
 
 Odwołanie do krotki:
 `myTuple[1]`
 
+Krotki (tuple) są niemodyfikolwalne 
+
 
 Deklaracja mapy:
 ```
-dict user = {
-    name = "Alice",
-    age = 30
+dict<str, str> user = {
+    "name": "Alice",
+    "age": "5"
+};
+```
+```
+dict<str, > user = {
+    "name": "Alice",
+    "age": 5
 };
 ```
 
@@ -264,9 +275,8 @@ Dostęp do wartości w razie braku zwraca `None`:
 
 Uwagi projektowe:
 - Listy są indeksowane od 0.
-- Dodanie elementu [] = x to syntactic sugar dla append(x).
-- Nie można nadawać wartości początkowych w polu fields dla list i dict... 
 - Krotki są niemutowalne. Co oznacza że nie mozna dodać obiektu do krotki ani go zmienić.
+- Brak typu w deklaracji oznacza typ dowolny (NIEZALECANE)
 
 
 

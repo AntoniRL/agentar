@@ -21,8 +21,6 @@ class AgentInstance:
     def __init__(self, agent_ast: AgentarAgent, system, id: AgentId = None, fields = None):
         for key, value in agent_ast.__dict__.items():  # Copy all attributes from the agent_AST to the instance
             setattr(self, key, value)
-        # self._agent = agent_ast
-        # self._isMother = self._agent._isMother
         self._id = id        
         self._parent = id.parent() if not self._isMother else None
         self._children = []                  # List of agent children [AgentId]
@@ -236,7 +234,6 @@ class AgentInstance:
                 msg._receiver = self._parent
             else:
                 msg._receiver = self.eval_expr(stmt.to, local_var, local_var_type)
-            # TODO: msg.send_time = ...
             self._runtime.send_message(msg)
 
 

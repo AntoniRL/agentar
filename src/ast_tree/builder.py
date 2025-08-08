@@ -9,7 +9,7 @@ class AgentarToASTBuilder(AgentarVisitor):
     def node_meta(self, ctx):
         return {
             "_line": ctx.start.line,
-            "_column": ctx.start.column,
+            "_column": ctx.start.column
             #"_oryginal_text": ctx.getText() # Keep the original text if needed
         }
 
@@ -21,10 +21,6 @@ class AgentarToASTBuilder(AgentarVisitor):
         elif len(mothers) < 1:
             raise ValueError("Mother declaration is required in the program.")
         return ast.ProgramNode(declarations=decls, **self.node_meta(ctx))
-
-
-    def visitStatement(self, ctx:AgentarParser.StatementContext):
-        return self.visit(ctx.getChild(0))
 
 
     def visitMotherDecl(self, ctx:AgentarParser.MotherDeclContext):
@@ -49,6 +45,11 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.FieldSectionNode(declarations=decls, **self.node_meta(ctx))
 
 
+    def visitBeliefsSection(self, ctx:AgentarParser.BeliefsSectionContext):
+        decls = [self.visit(decl) for decl in ctx.variableDecl()]
+        return ast.BeliefSectionNode(declarations=decls, **self.node_meta(ctx))
+
+
     def visitInitialSection(self, ctx:AgentarParser.InitialSectionContext):
         stats = [self.visit(stat) for stat in ctx.statement()]
         return ast.InitSectionNode(statements=stats, **self.node_meta(ctx))
@@ -57,11 +58,6 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitDestroySection(self, ctx:AgentarParser.DestroySectionContext):
         stats = [self.visit(stat) for stat in ctx.statement()]
         return ast.DestroySectionNode(statements=stats, **self.node_meta(ctx))
-
-
-    def visitBeliefsSection(self, ctx:AgentarParser.BeliefsSectionContext):
-        decls = [self.visit(decl) for decl in ctx.variableDecl()]
-        return ast.BeliefSectionNode(declarations=decls, **self.node_meta(ctx))
 
 
     def visitSenseSection(self, ctx:AgentarParser.SenseSectionContext):
@@ -132,6 +128,18 @@ class AgentarToASTBuilder(AgentarVisitor):
         name = ctx.ID().getText()
         fields = [self.visit(field) for field in ctx.variableDecl()]
         return ast.MessageDeclNode(name=name, fields=fields, **self.node_meta(ctx))
+    
+
+    def visitStatement(self, ctx:AgentarParser.StatementContext):
+        return self.visit(ctx.getChild(0))
+
+
+    def visitPrintStmt(self, ctx:AgentarParser.PrintStmtContext):
+        return ast.PrintNode(values=[self.visit(expr) for expr in ctx.expression()], **self.node_meta(ctx))
+
+
+    def visitLoggingStmt(self, ctx:AgentarParser.LoggingStmtContext):
+        return ast.LoggingNode(values=[self.visit(expr) for expr in ctx.expression()], **self.node_meta(ctx))
 
 
     def visitSendStmt(self, ctx:AgentarParser.SendStmtContext):
@@ -184,7 +192,7 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.KillNode(agent_id=agent_id, **self.node_meta(ctx))
     
 
-    def visitKillchildrenStmt(self, ctx:AgentarParser.KillchildrenStmtContext):
+    def visitKillChildrenStmt(self, ctx:AgentarParser.KillChildrenStmtContext):
         if ctx.expression() is None:
             agent_type = None
         else:
@@ -223,30 +231,21 @@ class AgentarToASTBuilder(AgentarVisitor):
         base = self.visit(ctx.expression(0))
         value = self.visit(ctx.expression(1))
         return ast.ListAddNode(base=base, value=value, **self.node_meta(ctx))
-
-
-    def visitPrintStmt(self, ctx:AgentarParser.PrintStmtContext):
-        return ast.PrintNode(values=[self.visit(expr) for expr in ctx.expression()], **self.node_meta(ctx))
-
-
-    def visitLoggingStmt(self, ctx:AgentarParser.LoggingStmtContext):
-        return ast.LoggingNode(values=[self.visit(expr) for expr in ctx.expression()], **self.node_meta(ctx))
-
+    
 
     def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
         conditions = self.visit(ctx.expression()) if ctx.expression() else []
-        statements = self.visit(ctx.blockOrStmt()) if ctx.blockOrStmt() else []
-        elseStmt = self.visit(ctx.elseStmt()) if ctx.elseStmt() else None
+        statements = self.visit(ctx.ifBlock()) if ctx.ifBlock() else []
+        elseStmt = self.visit(ctx.elseBlock()) if ctx.elseBlock() else None
         return ast.IfStmtNode(conditions=conditions, statements=statements, elseStmt=elseStmt, **self.node_meta(ctx))
 
 
-    def visitBlockOrStmt(self, ctx:AgentarParser.BlockOrStmtContext):
+    def visitIfBlock(self, ctx:AgentarParser.IfBlockContext):
         return [self.visit(stat) for stat in ctx.statement()]
 
 
-    def visitElseStmt(self, ctx:AgentarParser.ElseStmtContext):
-        statements = [self.visit(stat) for stat in ctx.statement()]
-        return ast.ElseStmtNode(statements=statements, **self.node_meta(ctx))
+    def visitElseBlock(self, ctx:AgentarParser.ElseBlockContext):
+        return [self.visit(stat) for stat in ctx.statement()]
 
 
     def visitForStmt(self, ctx:AgentarParser.ForStmtContext):
@@ -291,9 +290,8 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.DoNode(name=name, variables=variables, **self.node_meta(ctx))
     
 
+    # TODO:  deal with parameters in declaration. What if there is the address of expression?
     def visitVarDecl(self, ctx:AgentarParser.VarDeclContext):
-        if ctx.type_() is None:
-            raise ValueError("Variable type is required for declaration.")
         var_type = self.visit(ctx.type_())
         name = ctx.ID().getText()
         value = self.visit(ctx.expression()) if ctx.expression() else None
@@ -483,6 +481,11 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
+        pass 
+    # TODO: implement address of expression
+
+
+    def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
         variable = self.visit(ctx.expression())
         return ast.AddressOfExprNode(variable=variable, **self.node_meta(ctx))
     
@@ -584,8 +587,28 @@ class AgentarToASTBuilder(AgentarVisitor):
     
 
     def visitPointerType(self, ctx:AgentarParser.PointerTypeContext):
-            inner = self.visit(ctx.type_())
-            return ast.PointerTypeNode(inner=inner, **self.node_meta(ctx))
+        inner_type = self.visit(ctx.type_())
+        return ast.PointerTypeNode(inner_type=inner_type, **self.node_meta(ctx))
+
+
+    def visitListType(self, ctx:AgentarParser.ListTypeContext):
+        inner_type = self.visit(ctx.type_())
+        return ast.ListTypeNode(inner_type=inner_type, **self.node_meta(ctx))
+
+
+    def visitDictType(self, ctx:AgentarParser.DictTypeContext):
+        key_type = self.visit(ctx.key)
+        value_type = self.visit(ctx.value)
+        return ast.DictTypeNode(key_type=key_type, value_type=value_type, **self.node_meta(ctx))
+
+
+    def visitTupleType(self, ctx:AgentarParser.TupleTypeContext):
+        elements_type = [self.visit(type_ctx) for type_ctx in ctx.type_()]
+        return ast.TupleTypeNode(elements_type=elements_type, **self.node_meta(ctx))
+    
+
+    def visitAnyType(self, ctx:AgentarParser.AnyTypeContext):
+        return ast.AnyTypeNode(**self.node_meta(ctx))
 
 
     def visitIntLiteral(self, ctx:AgentarParser.IntLiteralContext):

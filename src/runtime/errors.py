@@ -79,12 +79,14 @@ class ASTNodeNotFoundError(AgentarRuntimeError):
     def __init__(self, node_name, container_type, line=None):
         message = f"{container_type} with name '{node_name}' not found."
         super().__init__(message, line)
-
+        
 
 class WrongTypeError(AgentarRuntimeError):
     """Raised when a value is of the wrong type."""
-    def __init__(self, var_name, expected_type, actual_type, line=None):
+    def __init__(self, var_name, expected_type, actual_type, line=None, extra_message=None):
         message = f"'{var_name}' expected type '{expected_type}', but got '{actual_type}'."
+        if extra_message:
+            message += f" {extra_message}"
         super().__init__(message, line)
 
 
