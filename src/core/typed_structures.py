@@ -18,7 +18,6 @@ class TypedMeta(type):
         return f"<class '{cls.__name__}'>"
 
 
-
 # ------------------------------------------------------------------------------------------------------------
 
 class TypedList(metaclass=TypedMeta):

@@ -22,7 +22,7 @@ class Pointer:
             else:
                 self._target[0] = new_target
 
-    def __deepcopy__(self, memodict={}):
+    def __deepcopy__(self, memodict={}): # TODO: is it necessary?
         return self
 
     def __repr__(self):

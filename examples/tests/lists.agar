@@ -3,10 +3,9 @@ agent mother {
         //int x = 2;
     }
     initialize {
-        int x = 1;
         //print(x);
         list<list<list<int>>> l = [[[1,2], [1,2]], [[0]]];
-        print(l);
+        print(l[0:2]);
         //dict<string, list<int>> d = {"mm": [2,3]};
         //tuple<list<int>, int, string> t = ([1,2], 2, "hh");
         //l[0] = 100;

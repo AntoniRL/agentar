@@ -104,31 +104,26 @@ class ExpressionEvaluator:
             case IndexAccessNode(base=base, index=index, _line=line):
                 base_value = self.eval_expr(base, local_vars, message)
                 index_value = self.eval_expr(index, local_vars, message)
-                if type(base_value) in (list, tuple, Pointer, Pointer):
+                if type(base_value) in (TypedList, TypedTuple):
                     if isinstance(index_value, int):
                         if index_value < -len(base_value) or index_value >= len(base_value):
                             raise IndexOutOfRangeError(index_value, len(base_value), line)
                         else:
                             return base_value[index_value]
                     else:
-                        raise WrongTypeError("index", "int", type(index_value).__name__, line)
-                elif type(base_value) in (dict, Pointer):
-                    if isinstance(index_value, str):
-                        if index_value in base_value:
-                            return base_value[index_value]
-                        else:
-                            raise KeyNotFoundError(index_value, line)
-                    else:
-                        raise WrongTypeError("index", "str", type(index_value).__name__, line)
+                        raise WrongTypeError("index", int, type(index_value), line)
+                elif type(base_value) in (TypedDict):
+                    if isinstance(index_value, str, InitSectionNode):
+                        pass # TODO: implement dict acces
                 else:
-                    raise WrongTypeError("base", "list, tuple, dict or pointer", type(base_value).__name__, line)
+                    raise WrongTypeError("base", "TypedList, TypedDict, TypedTuple or Pointer", type(base_value), line)
                     
 
             case SliceAccessNode(base=base, start=start, end=end, _line=line):
                 base_value = self.eval_expr(base, local_vars, message)
                 start_value = self.eval_expr(start, local_vars, message) if start is not None else 0
                 end_value = self.eval_expr(end, local_vars, message) if end is not None else None
-                if type(base_value) in (list, tuple, Pointer, Pointer):
+                if type(base_value) in (TypedList, TypedTuple):
                     if end_value is None: end_value = len(base_value)
                     if isinstance(start_value, int) and isinstance(end_value, int):
                         if start_value <= abs(len(base_value)) and end_value <= abs(len(base_value)):
@@ -136,9 +131,9 @@ class ExpressionEvaluator:
                         else:
                             raise IndexOutOfRangeError(f"slice [{start_value}:{end_value}]", len(base_value), line)
                     else:
-                        raise WrongTypeError("slice indices", "int", f"{type(start_value).__name__} and {type(end_value).__name__}", line)
+                        raise WrongTypeError("slice indices", "int", f"{type(start_value)} and {type(end_value)}", line)
                 else:
-                    raise WrongTypeError("base", "list or tuple", type(base_value).__name__, line)
+                    raise WrongTypeError("base", "list or tuple", type(base_value), line)
             
 
             case SelfAccessNode(path=path, _line=line):
