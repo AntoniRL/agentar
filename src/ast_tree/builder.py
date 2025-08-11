@@ -360,6 +360,11 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitAbsExpr(self, ctx:AgentarParser.AbsExprContext):
         base = self.visit(ctx.expression())
         return ast.AbsExprNode(base=base, **self.node_meta(ctx))
+    
+
+    def visitDerefExpr(self, ctx:AgentarParser.DerefExprContext):
+        pointer = self.visit(ctx.expression())
+        return ast.DerefExprNode(pointer=pointer, **self.node_meta(ctx))
 
 
     def visitGeqExpr(self, ctx:AgentarParser.GeqExprContext):
@@ -415,9 +420,9 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitIndexExpr(self, ctx:AgentarParser.IndexExprContext):
-        base = self.visit(ctx.expression(0))   # np. x
+        name = self.visit(ctx.expression(0))   # np. x
         index = self.visit(ctx.expression(1))  # np. 3
-        return ast.IndexAccessNode(base=base, index=index, **self.node_meta(ctx))
+        return ast.IndexAccessNode(name=name, index=index, **self.node_meta(ctx))
     
 
     def visitSliceToExpr(self, ctx:AgentarParser.SliceToExprContext):
@@ -435,10 +440,10 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitSliceRangeExpr(self, ctx:AgentarParser.SliceRangeExprContext):
-        base = self.visit(ctx.expression(0))
+        name = self.visit(ctx.expression(0))
         start = self.visit(ctx.expression(1))
         end = self.visit(ctx.expression(2))
-        return ast.SliceAccessNode(base=base, start=start, end=end, **self.node_meta(ctx))
+        return ast.SliceAccessNode(name=name, start=start, end=end, **self.node_meta(ctx))
 
 
     def visitAgentIdExpr(self, ctx:AgentarParser.AgentIdExprContext):

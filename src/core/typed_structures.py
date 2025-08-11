@@ -67,6 +67,22 @@ class TypedList(metaclass=TypedMeta):
         for ptr in self.items:
             yield ptr.get()
 
+    def __deepcopy__(self, memodict={}):
+        if memodict is None:
+            memodict = {}
+        if id(self) in memodict:
+            return memodict[id(self)]
+        
+        copied = TypedList(self.inner_type)
+        
+        memodict[id(self)] = copied
+        
+        for ptr in self.items:
+            copied_value = deepcopy(ptr.get(), memodict)
+            copied.items.append(Pointer(copied_value))
+        
+        return copied
+
     def __repr__(self):
         return str([ptr.get() for ptr in self.items])
     
@@ -139,12 +155,17 @@ class TypedList(metaclass=TypedMeta):
         else:
             raise TypeError(f"Incompatible inner_type: {self.inner_type} != {value.inner_type}")
 
-        copied_items = [Pointer(deepcopy(item)) for item in value]
+        copied_items = []
+        for ptr in value.items:
+            copied_value = deepcopy(ptr.get())
+            copied_items.append(Pointer(copied_value))
 
         if index is None:
             self.items = copied_items
         else:
             indices = list(range(*index.indices(len(self.items))))
+            if len(indices) != len(copied_items):
+                raise ValueError(f"Slice length mismatch: {len(indices)} positions to assign, but {len(copied_items)} values provided.")
             for i, ptr in zip(indices, copied_items):
                 self.items[i] = ptr
     

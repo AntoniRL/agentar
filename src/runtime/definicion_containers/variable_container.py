@@ -3,6 +3,7 @@
 # variable scope is the scope of variables in the agent instance
 
 from typing import Optional, Dict
+from copy import deepcopy
 
 from ast_tree.nodes import *
 from core.agentar_types import resolve_type
@@ -58,7 +59,7 @@ class VariableContainer:
 
 
     def exists(self, name: str) -> bool:
-        return name in self._variables or (self._parent is not None and self._parent.exists(name))
+        return name in self._variables or (self._parent_container is not None and self._parent_container.exists(name))
 
 
     def get_pointer(self, name: str, line: int) -> Pointer:
@@ -69,22 +70,35 @@ class VariableContainer:
         return self._find(name, line).value.get()  # Get the value from the Pointer
     
 
-    def set(self, name: str, value, line):
-        # TODO: Implement variable setting
-        if isinstance(value, ASTNode):
-            value = ExpressionEvaluator(None).eval_expr(value)
+    def set(self, target: str, value, line):
+        # TODO: Check it and make sure it works correctly  
+        if isinstance(target, tuple):
+            name, sub = target
+            variable = self._find(name, line)
+            container = variable.value.get()
 
-        var_pointer = self.get_pointer(name, line)
-        var_info = var_pointer.get() # Get the VariableInfo object
+            if isinstance(container, TypedList):
+                container._check_type(value)
+                if isinstance(sub, slice):
+                    container.assign(value, sub)
+                else:
+                    container[sub] = value
+            else:
+                container[sub] = value
+            return
 
-        expected_type, _ = resolve_type(var_info.var_type)
+        variable = self._find(target, line)
+        expected_type, _ = resolve_type(variable.var_type)
 
-        print(f"name: {name}, expected_type: {expected_type}, value: {value}, type(value): {type(value)}") # TODO: Remove this debug print
+        if not isinstance(value, expected_type):
+            raise WrongTypeError(target, expected_type, type(value), line)
 
-        if type(value) != expected_type:
-            raise WrongTypeError(name, expected_type, type(value), line)
-        
-        var_pointer.set_value(value)
+        current = variable.value.get()
+
+        if hasattr(current, "assign") and isinstance(value, type(current)):
+            current.assign(value)
+        else:
+            variable.value.set(value)
 
 
     def get_info(self, name: str, line: int) -> VariableInfo:
@@ -113,8 +127,8 @@ class VariableContainer:
     def _find_or_none(self, name: str) -> Optional[Pointer]:
         if name in self._variables:
             return self._variables[name]  # Return the VariableInfo object
-        elif self._parent is not None:
-            return self._parent._find_or_none(name)
+        elif self._parent_container is not None:
+            return self._parent_container._find_or_none(name)
         else:
             return None
 

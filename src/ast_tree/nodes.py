@@ -209,13 +209,13 @@ class NotNode(ASTNode):
 
 @dataclass
 class IndexAccessNode(ASTNode):
-    base: ASTNode
+    name: ASTNode
     index: ASTNode
 
 
 @dataclass
 class SliceAccessNode(ASTNode):
-    base: ASTNode
+    name: ASTNode
     start: Optional[ASTNode] = None
     end: Optional[ASTNode] = None
 
@@ -433,3 +433,8 @@ class NegExprNode(ASTNode):
 @dataclass
 class DeepCopyNode(ASTNode):
     variable: ASTNode
+
+
+@dataclass
+class DerefExprNode(ASTNode):
+    pointer: ASTNode

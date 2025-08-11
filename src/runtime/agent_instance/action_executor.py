@@ -3,10 +3,12 @@
 # ActionExecutor: executes actions in the context of an agent instance
 
 import logging
+from copy import deepcopy
 
 from runtime.definicion_containers.variable_container import VariableContainer
 from ast_tree.nodes import WhenBlockNode
 from runtime.errors import *
+from core.pointer import Pointer
 
 class ActionExecutor:
     def __init__(self, agent):
@@ -74,14 +76,24 @@ class ActionExecutor:
 
     def execute_action(self, action_node, parameters, line_of_call_action=None):
         local_vars = VariableContainer("Action")
-        for i, stmt in enumerate(action_node.parameters):
-            self.agent._executor.execute_stmt(stmt, local_vars, None)
-            if (local_vars.get(stmt.name, action_node._line) == None) and (i >= len(parameters)):
-                raise NoValueInActionCall(stmt.name, line_of_call_action, action_node._line)
+        # Initialize parameters
+        for i, param_decl in enumerate(action_node.parameters):
+            self.agent._executor.execute_stmt(param_decl, local_vars, None)
+
+            if local_vars.get(param_decl.name, action_node._line) == None and i >= len(parameters):
+                raise NoValueInActionCall(param_decl.name, line_of_call_action, action_node._line)
+
             if parameters is not None and i < len(parameters):
-                local_vars.set(stmt.name, parameters[i], action_node._line)
+                arg = parameters[i]
+
+                if isinstance(arg, Pointer):
+                    local_vars.set(param_decl.name, arg, action_node._line)
+                else:
+                    arg = deepcopy(arg)
+                    local_vars.set(param_decl.name, arg, action_node._line)
 
         return_type = self.agent._evaluator.eval_expr(action_node.return_type, local_vars, None, action_node._line)
+
         for stmt in action_node.body:
             return_object = self.agent._executor.execute_stmt(stmt, local_vars, None)
             if self.agent._return_flag:

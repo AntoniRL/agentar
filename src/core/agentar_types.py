@@ -46,7 +46,7 @@ AGENTAR_TYPE_MAP = {
 def resolve_type(var_type):
     if isinstance(var_type, ASTNode):
         if isinstance(var_type, PointerTypeNode):
-            inner_type, _ = resolve_type(var_type.inner)
+            inner_type, _ = resolve_type(var_type.inner_type)
             return Pointer, Pointer(inner_type)
         
         elif isinstance(var_type, ListTypeNode):

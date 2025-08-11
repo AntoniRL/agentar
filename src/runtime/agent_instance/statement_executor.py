@@ -81,7 +81,7 @@ class StatementExecutor:
             case DoNode():
                 action_node = self.agent._actions.get(stmt.name, stmt._line)
                 parameters = [self.agent._evaluator.eval_expr(param, local_vars, message, stmt._line) for param in stmt.variables]
-                return self.agent._action_executor.execute_action(action_node, deepcopy(parameters), stmt._line)
+                return self.agent._action_executor.execute_action(action_node, parameters, stmt._line)
 
 
             case ReturnNode():
@@ -185,18 +185,28 @@ class StatementExecutor:
             case VarRefNode(name=name):
                 local_vars.set(name, value, line)
 
-            case IndexAccessNode(base=base, index=index):
-                container = self._resolve_container(base, local_vars, message, line)
+            case IndexAccessNode(name=name, index=index):
                 index_value = self.agent._evaluator.eval_expr(index, local_vars, message, line)
-                self._validate_index_assignment(container, index_value, value, line)
-                container[index_value] = value
+                if isinstance(name, SelfAccessNode):
+                    target_name = name.path[1]
+                    self.agent._fields.set((target_name, index_value), value, line)
+                elif isinstance(name, BelAccessNode):
+                    target_name = name.path[1]
+                    self.agent._beliefs.set((target_name, index_value), value, line)
+                else:
+                    local_vars.set((name.name, index_value), value, line)
 
-            case SliceAccessNode(base=base, start=start, end=end):
-                container = self._resolve_container(base, local_vars, message, line)
+            case SliceAccessNode(name=name, start=start, end=end):
                 start_value = self.agent._evaluator.eval_expr(start, local_vars, message, line) if start else 0
                 end_value = self.agent._evaluator.eval_expr(end, local_vars, message, line) if end else None
-                self._validate_slice_assignment(container, start_value, value, line)
-                container[start_value:end_value] = value
+                if isinstance(name, SelfAccessNode):
+                    target_name = name.path[1]
+                    self.agent._fields.set((target_name, slice(start_value, end_value)), value, line)
+                elif isinstance(name, BelAccessNode):
+                    target_name = name.path[1]
+                    self.agent._beliefs.set((target_name, slice(start_value, end_value)), value, line)
+                else:
+                    local_vars.set((name.name, slice(start_value, end_value)), value, line)
 
             case SelfAccessNode(path=path):
                 target_name = path[1]
@@ -206,83 +216,10 @@ class StatementExecutor:
                 target_name = path[1]
                 self.agent._beliefs.set(target_name, value, line)
 
+            case DerefExprNode(pointer=pointer, _line=line):
+                new_target_node = self.agent._evaluator.eval_expr(target_node, local_vars, message, line)
+                # TODO: 
+
             case _:
                 raise AgentarRuntimeError(f"Unsupported assignment target: {target_node}", line)
             
-
-    def _resolve_container(self, base_node, local_vars, message, line):
-        match base_node:
-            case VarRefNode(name=name):
-                return local_vars.get(name, line)
-            case IndexAccessNode(base=base, index=index):
-                parent_container = self._resolve_container(base, local_vars, message, line)
-                index_value = self.agent._evaluator.eval_expr(index, local_vars, message, line)
-                self._validate_index_access(parent_container, index_value, line)
-                return parent_container[index_value]
-            case SelfAccessNode(path=path):
-                return self.agent._fields.get(path[1], line)
-            case BelAccessNode(path=path):
-                return self.agent._beliefs.get(path[1], line)
-            case _:
-                return self.agent._evaluator.eval_expr(base_node, local_vars, message, line)
-            
-
-    def _validate_index_assignment(self, container, index, value, line):
-        if not hasattr(container, '__getitem__') or not hasattr(container, '__setitem__'):
-            raise AgentarRuntimeError(f"Object of type '{type(container).__name__}' does not support item assignment", line)
-        if isinstance(container, tuple):
-            raise AgentarRuntimeError(f"Tuple object does not support item assignment", line)
-        if isinstance(container, list):
-            if not isinstance(index, int):
-                raise AgentarRuntimeError(f"List indices must be integers, not {type(index).__name__}", line)
-            if index >= len(container) or index < -len(container):
-                raise AgentarRuntimeError(f"List index {index} out of range for list of length {len(container)}", line)
-        elif isinstance(container, dict):
-            try:
-                hash(index)
-            except TypeError:
-                raise AgentarRuntimeError(f"Unhashable type: '{type(index).__name__}' cannot be used as dictionary key", line)
-        elif isinstance(container, str):
-            raise AgentarRuntimeError(f"String object does not support item assignment", line)
-        elif not hasattr(container, '__setitem__'):
-            raise AgentarRuntimeError(f"Object of type {type(container).__name__} does not support item assignment", line)
-        
-
-    def _validate_index_access(self, container, index, line):        
-        if not hasattr(container, '__getitem__'):
-            raise AgentarRuntimeError(f"Object of type {type(container).__name__} is not subscriptable", line)
-        if isinstance(container, (list, tuple)):
-            if not isinstance(index, int):
-                raise AgentarRuntimeError(f"List/tuple indices must be integers, not {type(index).__name__}", line)
-            if index >= len(container) or index < -len(container):
-                raise AgentarRuntimeError(f"Index {index} out of range for {type(container).__name__} of length {len(container)}", line)
-        elif isinstance(container, dict):
-            if index not in container:
-                raise AgentarRuntimeError(f"Key '{index}' not found in dictionary", line)
-        elif isinstance(container, str):
-            if not isinstance(index, int):
-                raise WrongTypeError(f"String indices must be integers, not {type(index).__name__}", line)
-            if index >= len(container) or index < -len(container):
-                raise AgentarRuntimeError(f"String index {index} out of range for string of length {len(container)}", line)
-            
-
-    def _validate_slice_assignment(self, container, start, end, value, line):        
-        if not hasattr(container, '__getitem__') or not hasattr(container, '__setitem__'):
-            raise WrongTypeError(f"Object of type {type(container).__name__} does not support slice assignment", line)
-        if isinstance(container, tuple):
-            raise WrongTypeError(f"Tuple object does not support slice assignment", line)
-        if isinstance(container, str):
-            raise WrongTypeError(f"String object does not support slice assignment", line)
-        if isinstance(container, dict):
-            raise WrongTypeError(f"Dictionary object does not support slice assignment", line)
-        if isinstance(container, list):
-            if isinstance(value, str):
-                pass
-            elif not hasattr(value, '__iter__'):
-                raise WrongTypeError(f"Can only assign an iterable to a slice", line)
-            try:
-                current_slice = container[start:end]
-                if hasattr(value, '__len__') and len(current_slice) != len(value):
-                    pass
-            except Exception:
-                pass
