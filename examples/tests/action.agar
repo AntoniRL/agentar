@@ -5,19 +5,23 @@ agent mother {
     }
     initialize {
         list<int> l = [0,1];
-        //do run(l);
-        do run2(&self.l);
-        //print("Out:: ", l);
+        do run(l);
+        print("NO REF", l);
+        int x = 5;
+        do run2(&l, &x);
+        print("REF:: ", l);
     } 
     action run(list<int> l): void {
         print(l);
         l[0] = 100;
         print(l);
     }
-    action run2(pointer<list<int>> l): void {
-        print(l);
-        print(*l);
+    action run2(pointer<list<int>> l, pointer<int> x): void {
+        //print(l);
+        //print(*l);
+        //print(*l[0]);
         *l[0] = 100;
         print(*l);
+        //print(x);
     }
 }

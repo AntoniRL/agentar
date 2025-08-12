@@ -66,16 +66,22 @@ class VariableContainer:
         return self._find(name, line).value
 
 
-    def get(self, name: str, line: int):
-        return self._find(name, line).value.get()  # Get the value from the Pointer
+    def get(self, name: str, line: int, deref=False):
+        if deref: 
+            return self._find(name, line).value.get().get()  # Get the value from the Pointer.Pointer
+        else:
+            return self._find(name, line).value.get()  # Get the value from the Pointer
     
 
-    def set(self, target: str, value, line):
-        # TODO: Check it and make sure it works correctly  
+    def set(self, target: str, value, line, deref=False):
         if isinstance(target, tuple):
             name, sub = target
             variable = self._find(name, line)
-            container = variable.value.get()
+
+            if deref:
+                container = variable.value.get().get()
+            else:
+                container = variable.value.get()
 
             if isinstance(container, TypedList):
                 container._check_type(value)
@@ -93,7 +99,10 @@ class VariableContainer:
         if not isinstance(value, expected_type):
             raise WrongTypeError(target, expected_type, type(value), line)
 
-        current = variable.value.get()
+        if deref:
+            current = variable.value.get().get()
+        else:
+            current = variable.value.get()
 
         if hasattr(current, "assign") and isinstance(value, type(current)):
             current.assign(value)

@@ -19,7 +19,7 @@ class ExpressionEvaluator:
     def __init__(self, agent):
         self.agent = agent
 
-    def eval_expr(self, expr, local_vars=None, message=None, line=None):
+    def eval_expr(self, expr, local_vars=None, message=None, line=None, deref=False):
         match expr:
 
             case LiteralNode(value=value):
@@ -67,8 +67,7 @@ class ExpressionEvaluator:
                 if name == "_":
                     return "_"
                 else:
-                    return local_vars.get(name, line)
-                
+                    return local_vars.get(name, line, deref)
 
             case BaseTypeNode():
                 return resolve_type(expr)[0] # TODO: Check if it works correctly with all types
@@ -102,8 +101,8 @@ class ExpressionEvaluator:
                 return newList
 
             case IndexAccessNode(name=name, index=index, _line=line):
-                base_value = self.eval_expr(name, local_vars, message)
-                index_value = self.eval_expr(index, local_vars, message)
+                base_value = self.eval_expr(name, local_vars, message, line, deref)
+                index_value = self.eval_expr(index, local_vars, message, line, deref)
                 if type(base_value) in (TypedList, TypedTuple):
                     if isinstance(index_value, int):
                         if index_value < -len(base_value) or index_value >= len(base_value):
@@ -205,52 +204,8 @@ class ExpressionEvaluator:
                 
 
             case DerefExprNode(pointer=pointer, _line=line):
-                if isinstance(pointer, VarRefNode):
-                    # e.g. *ptr
-                    pointer_obj = local_vars.get(pointer.name, line)
-                    if not isinstance(pointer_obj, Pointer):
-                        raise WrongTypeError(pointer.name, "Pointer", type(pointer_obj).__name__, line)
-                    return pointer_obj.get()
-                    
-                elif isinstance(pointer, IndexAccessNode):
-                    # e.g. *arr[i] 
-                    base_value = self.eval_expr(pointer.name, local_vars, message, line)
-                    index_value = self.eval_expr(pointer.index, local_vars, message, line)
-                    
-                    if isinstance(base_value, TypedList):
-                        if 0 <= index_value < len(base_value):
-                            element = base_value.pointer(index_value)
-                            if isinstance(element, Pointer):
-                                return element.get()
-                            else:
-                                return element
-                        else:
-                            raise IndexOutOfRangeError(index_value, len(base_value), line)
-                    else:
-                        raise WrongTypeError("base", "TypedList", type(base_value).__name__, line)
-                        
-                elif isinstance(pointer, SelfAccessNode):
-                    # e.g. *self.field
-                    field_name = pointer.path[1]
-                    field_value = self.agent._fields.get(field_name, line)
-                    if not isinstance(field_value, Pointer):
-                        raise WrongTypeError(f"self.{field_name}", "Pointer", type(field_value).__name__, line)
-                    return field_value.get()
-            
-                elif isinstance(pointer, BelAccessNode):
-                    # e.g. *beliefs['key']
-                    belief_value = self.agent._beliefs.get(pointer.path[1], line)
-                    if not isinstance(belief_value, Pointer):
-                        raise WrongTypeError(f"beliefs['{pointer.path[1]}']", "Pointer", type(belief_value).__name__, line)
-                    return belief_value.get()
-
-                else:
-                    # try to dereference
-                    pointer_value = self.eval_expr(pointer, local_vars, message, line)
-                    if isinstance(pointer_value, Pointer):
-                        return pointer_value.get()
-                    else:
-                        raise WrongTypeError("expression", "Pointer", type(pointer_value).__name__, line)
+                return self.eval_expr(pointer, local_vars, message, line, deref=True)
+                
             
 
             case AddressOfExprNode(variable=variable, _line=line):

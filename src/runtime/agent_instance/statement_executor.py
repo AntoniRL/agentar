@@ -18,7 +18,7 @@ class StatementExecutor:
     def __init__(self, agent):
         self.agent = agent
 
-    def execute_stmt(self, stmt, local_vars, message=None):
+    def execute_stmt(self, stmt, local_vars, message=None, deref=False):
         match stmt:
             case VariableDeclNode(var_type=var_type, name=var_name, value=value_expr, _line=line):
                 local_vars.declare(var_name, value_expr, var_type, line)
@@ -180,21 +180,21 @@ class StatementExecutor:
         self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
 
 
-    def assign_to_target(self, target_node, value, local_vars, message, line):
+    def assign_to_target(self, target_node, value, local_vars, message, line, deref=False):
         match target_node:
             case VarRefNode(name=name):
-                local_vars.set(name, value, line)
+                local_vars.set(name, value, line, deref)
 
             case IndexAccessNode(name=name, index=index):
-                index_value = self.agent._evaluator.eval_expr(index, local_vars, message, line)
+                index_value = self.agent._evaluator.eval_expr(index, local_vars, message, line, deref)
                 if isinstance(name, SelfAccessNode):
                     target_name = name.path[1]
-                    self.agent._fields.set((target_name, index_value), value, line)
+                    self.agent._fields.set((target_name, index_value), value, line, deref)
                 elif isinstance(name, BelAccessNode):
                     target_name = name.path[1]
-                    self.agent._beliefs.set((target_name, index_value), value, line)
+                    self.agent._beliefs.set((target_name, index_value), value, line, deref)
                 else:
-                    local_vars.set((name.name, index_value), value, line)
+                    local_vars.set((name.name, index_value), value, line, deref)
 
             case SliceAccessNode(name=name, start=start, end=end):
                 start_value = self.agent._evaluator.eval_expr(start, local_vars, message, line) if start else 0
@@ -217,8 +217,7 @@ class StatementExecutor:
                 self.agent._beliefs.set(target_name, value, line)
 
             case DerefExprNode(pointer=pointer, _line=line):
-                new_target_node = self.agent._evaluator.eval_expr(target_node, local_vars, message, line)
-                # TODO: 
+                self.assign_to_target(pointer, value, local_vars, message, line, deref=True)   
 
             case _:
                 raise AgentarRuntimeError(f"Unsupported assignment target: {target_node}", line)
