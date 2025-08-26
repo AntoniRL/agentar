@@ -207,7 +207,7 @@ forStmt
     ;
 
 forAssignExpr
-    : ID '=' expression
+    : expression '=' expression
     ;
 
 forBody

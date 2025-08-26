@@ -56,11 +56,11 @@ def resolve_type(var_type):
         elif isinstance(var_type, DictTypeNode):
             key_type, _ = resolve_type(var_type.key_type)
             value_type, _ = resolve_type(var_type.value_type)
-            return dict, TypedDict(key_type, value_type)
+            return TypedDict, TypedDict(key_type, value_type)
     
         elif isinstance(var_type, TupleTypeNode):
             elements_type = [resolve_type(element)[0] for element in var_type.elements_type]
-            return tuple, TypedTuple(elements_type)
+            return TypedTuple, TypedTuple(elements_type)
         
         elif isinstance(var_type, AnyTypeNode):
             return AnyTypeNode, None
@@ -73,7 +73,7 @@ def resolve_type(var_type):
                 return float, None
             elif name == "bool":
                 return bool, None
-            elif name == "string":
+            elif name == "str":
                 return str, None
             elif name == "agentid":
                 return AgentId, AgentId()
@@ -88,11 +88,11 @@ def resolve_type(var_type):
             return var_type, None
         elif isinstance(var_type, (int, float, str, bool)):
             return var_type, None
-        elif var_type == list:
-            raise NotImplementedError("TypedList is not implemented yet")
-        elif var_type == dict:
-            raise NotImplementedError("TypedDict is not implemented yet")
-        elif var_type == tuple:
-            raise NotImplementedError("TypedTuple is not implemented yet")
+        elif var_type == TypedList:
+            return var_type, TypedList()
+        elif var_type == TypedDict:
+            return var_type, TypedDict()
+        elif var_type == TypedTuple:
+            return var_type, TypedTuple()
         else:
             raise TypeError(f"Unknown type: {var_type}")

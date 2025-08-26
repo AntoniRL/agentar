@@ -227,7 +227,7 @@ Wybrór kawałka listy:
 Krotka:
 `tuple<int> myTuple = (1,2,3)`
 `tuple<int, string> = (3, "trzy")`
-`tuple<> = (3, "trzy", 3.3)`
+`tuple<any> = (3, "trzy", 3.3)`
 
 
 Odwołanie do krotki:
@@ -244,7 +244,7 @@ dict<str, str> user = {
 };
 ```
 ```
-dict<str, > user = {
+dict<str, any> user = {
     "name": "Alice",
     "age": 5
 };
@@ -276,7 +276,7 @@ Dostęp do wartości w razie braku zwraca `None`:
 Uwagi projektowe:
 - Listy są indeksowane od 0.
 - Krotki są niemutowalne. Co oznacza że nie mozna dodać obiektu do krotki ani go zmienić.
-- Brak typu w deklaracji oznacza typ dowolny (NIEZALECANE)
+- możliwość deklaracji z typem 'any' -> dowolny typ (NIEZALECANE)
 
 
 

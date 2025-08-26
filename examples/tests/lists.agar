@@ -10,11 +10,9 @@ agent mother {
         list<int> l = [0,0,0];
         self.l[1] = [1];
         print(self.l);
-        //dict<string, list<int>> d = {"mm": [2,3]};
         //tuple<list<int>, int, string> t = ([1,2], 2, "hh");
         //l[0] = 100;
         //print(l);
-        //print(d);
         //print(t);
         kill();
     }

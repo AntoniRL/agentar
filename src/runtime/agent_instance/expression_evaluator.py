@@ -47,7 +47,7 @@ class ExpressionEvaluator:
             
 
             case NegExprNode(base=base, _line=line):
-                value = self.eval_expr(base, local_vars, message)
+                value = self.eval_expr(base, local_vars, message, line, deref)
                 if isinstance(value, (int, float)):
                     return -value
                 else:
@@ -59,7 +59,7 @@ class ExpressionEvaluator:
             
 
             case DeepCopyNode(expr=expr):
-                value = self.eval_expr(expr, local_vars, message)
+                value = self.eval_expr(expr, local_vars, message, line, deref)
                 return deepcopy(value)
             
 
@@ -74,7 +74,7 @@ class ExpressionEvaluator:
             
 
             case LenNode(base=base, _line=line):
-                value = self.eval_expr(base, local_vars, message)
+                value = self.eval_expr(base, local_vars, message, line, deref)
                 if isinstance(value, (list, str, tuple, dict)):
                     return len(value)
                 else:
@@ -82,7 +82,7 @@ class ExpressionEvaluator:
                 
 
             case AbsExprNode(base=base, _line=line):
-                value = self.eval_expr(base, local_vars, message)
+                value = self.eval_expr(base, local_vars, message, line, deref)
                 if isinstance(value, (int, float)):
                     return abs(value)
                 else:
@@ -90,14 +90,14 @@ class ExpressionEvaluator:
                 
 
             case TypeExprNode(base=base, _line=line):
-                value = self.eval_expr(base, local_vars, message)
+                value = self.eval_expr(base, local_vars, message, line, deref)
                 return type(value)
             
 
             case ListLiteralNode(elements=elements, _line=line):
                 newList = TypedList(AnyTypeNode)
                 for item in elements:
-                    newList.append(self.eval_expr(item, local_vars, message))
+                    newList.append(self.eval_expr(item, local_vars, message, line, deref))
                 return newList
 
             case IndexAccessNode(name=name, index=index, _line=line):
@@ -112,16 +112,15 @@ class ExpressionEvaluator:
                     else:
                         raise WrongTypeError("index", int, type(index_value), line)
                 elif type(base_value) == TypedDict:
-                    if isinstance(index_value, (str, InitSectionNode)):
-                        pass # TODO: implement dict access
+                    return base_value[index_value]
                 else:
                     raise WrongTypeError("base", "TypedList, TypedDict, TypedTuple or Pointer", type(base_value), line)
                     
 
             case SliceAccessNode(base=base, start=start, end=end, _line=line):
-                base_value = self.eval_expr(base, local_vars, message)
-                start_value = self.eval_expr(start, local_vars, message) if start is not None else 0
-                end_value = self.eval_expr(end, local_vars, message) if end is not None else None
+                base_value = self.eval_expr(base, local_vars, message, line, deref)
+                start_value = self.eval_expr(start, local_vars, message, line, deref) if start is not None else 0
+                end_value = self.eval_expr(end, local_vars, message, line, deref) if end is not None else None
                 if type(base_value) in (TypedList, TypedTuple):
                     if end_value is None: end_value = len(base_value)
                     if isinstance(start_value, int) and isinstance(end_value, int):
@@ -140,7 +139,7 @@ class ExpressionEvaluator:
                 if hasattr(self.agent, name):
                     return getattr(self.agent, name)
                 elif self.agent._fields.exists(name):
-                    return self.agent._fields.get(name, line)
+                    return self.agent._fields.get(name, line, deref)
                 else:
                     raise VariableNotFoundError(f"self.{name}", line)
                 
@@ -150,7 +149,7 @@ class ExpressionEvaluator:
                 if hasattr(message, name):
                     return getattr(message, name)
                 elif message._content.exists(name):
-                    return message._content.get(name, line)
+                    return message._content.get(name, line, deref)
                 else:
                     raise VariableNotFoundError(f"msg.{name}", line)
                 
@@ -162,39 +161,28 @@ class ExpressionEvaluator:
             case BelAccessNode(path=path, _line=line):
                 name = path[1]
                 if self.agent._beliefs.exists(name):
-                    return self.agent._beliefs.get(name, line)
+                    return self.agent._beliefs.get(name, line, deref)
                 else:
                     raise VariableNotFoundError(f"bel.{name}", line)
                 
 
             case TupleLiteralNode(elements=elements, _line=line):
-                return tuple(self.eval_expr(item, local_vars, message) for item in elements)
+                items = tuple(self.eval_expr(item, local_vars, message, line, deref) for item in elements)
+                return TypedTuple(AnyTypeNode, items)
             
 
-            case DictLiteralNode(keys=keys, values=values, _line=line):
-                return {self.eval_expr(key, local_vars, message): self.eval_expr(value, local_vars, message) for key, value in zip(keys, values)}
-            
-
-            case DictKeysNode(base=base, _line=line):
-                base_value = self.eval_expr(base, local_vars, message)
-                if isinstance(base_value, dict):
-                    return list(base_value.keys())
-                else:
-                    raise WrongTypeError(base_value, "dict", type(base_value).__name__, line)
-                
-            
             case DictValuesNode(base=base, _line=line):
-                base_value = self.eval_expr(base, local_vars, message)
-                if isinstance(base_value, dict):
-                    return list(base_value.values())
+                base_value = self.eval_expr(base, local_vars, message, line, deref)
+                if isinstance(base_value, TypedDict):
+                    return base_value.values()
                 else:
                     raise WrongTypeError(base_value, "dict", type(base_value).__name__, line)
                 
 
             case DictGetNode(base=base, key=key, _line=line):
-                base_value = self.eval_expr(base, local_vars, message)
-                key_value = self.eval_expr(key, local_vars, message)
-                if isinstance(base_value, dict):
+                base_value = self.eval_expr(base, local_vars, message, line, deref)
+                key_value = self.eval_expr(key, local_vars, message, line, deref)
+                if isinstance(base_value, TypedDict):
                     if key_value in base_value:
                         return base_value[key_value]
                     else:
@@ -214,8 +202,8 @@ class ExpressionEvaluator:
 
 
             case RandomExprNode(start=start, end=end, _line=line):
-                start = self.eval_expr(start, local_vars, message)
-                end = self.eval_expr(end, local_vars, message)
+                start = self.eval_expr(start, local_vars, message, line, deref)
+                end = self.eval_expr(end, local_vars, message, line, deref)
                 if isinstance(start, int) and isinstance(end, int):
                     if start > end:
                         raise ValueError(f"Start value {start} cannot be greater than end value {end}.")
@@ -226,9 +214,9 @@ class ExpressionEvaluator:
 
             case BinaryOpNode(left=left, right=right, op=op, _line=line):
                 if isinstance(left, BinaryOpNode) or not isinstance(left, (bool, int, float, str)):
-                    left = self.eval_expr(left, local_vars, message)
+                    left = self.eval_expr(left, local_vars, message, line, deref)
                 if isinstance(right, BinaryOpNode) or not isinstance(right, (bool, int, float, str)):
-                    right = self.eval_expr(right, local_vars, message)
+                    right = self.eval_expr(right, local_vars, message, line, deref)
 
                 match op:
                     case '+':

@@ -136,6 +136,13 @@ class FieldWithNoneValueError(AgentarRuntimeError):
         message = f"Field '{field_name}' doas not have a value. Declare it in the agent declaration or agent spawn() method."
         super().__init__(message, line)
 
+
+class NotAssignableError(AgentarRuntimeError):
+    """Raised when trying to assign to a non-assignable target."""
+    def __init__(self, target, target_type, line=None):
+        message = f"Cannot assign to '{target}' of type '{target_type}'."
+        super().__init__(message, line)
+
 # =============================================================================
 # 3. Error listener for ANTLR
 # =============================================================================

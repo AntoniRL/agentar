@@ -12,6 +12,7 @@ from core.agent_id import AgentId
 from runtime.errors import *
 # from core.agentar_types import resolve_type
 from runtime.definicion_containers.variable_container import VariableContainer
+from core.typed_structures import TypedList, TypedDict
 
 
 class StatementExecutor:
@@ -98,11 +99,38 @@ class StatementExecutor:
 
 
             case IfStmtNode():
-                pass
+                local_vars = local_vars.create_child_scope("if")
+                condition = self.agent._evaluator.eval_expr(stmt.conditions, local_vars, message, stmt._line)
+                if condition:
+                    for statement in stmt.statements:
+                        if self.agent._break_flag or self.agent._return_flag:
+                            break
+                        self.execute_stmt(statement, local_vars, message, stmt._line)
+                else:
+                    if stmt.elseStmt is not None:
+                        for statement in stmt.elseStmt:
+                            if self.agent._break_flag or self.agent._return_flag:
+                                break
+                            self.execute_stmt(statement, local_vars, message, stmt._line)
 
 
             case ForLoopNode():
-                pass
+                local_vars = local_vars.create_child_scope("for")
+                self.execute_stmt(stmt.initialize, local_vars, message, stmt._line)  # Initialize loop variable
+                def check_condition():
+                    return self.agent._evaluator.eval_expr(stmt.condition, local_vars, message, stmt._line)
+                def update_loop_var():
+                    self.execute_stmt(stmt.update, local_vars, message, stmt._line)
+                while check_condition() and not self.agent._break_flag and not self.agent._return_flag:
+                    for statement in stmt.body:
+                        self.execute_stmt(statement, local_vars, message, stmt._line)
+                        if self.agent._continue_flag: # If continue flag is set, skip to the next iteration
+                            self.agent._continue_flag = False
+                            update_loop_var()
+                            break
+                    update_loop_var()
+                self.agent._break_flag = False  # Reset break flag after loop execution
+                self.agent._continue_flag = False  # Reset continue flag after loop execution
 
 
             case WhileLoopNode():
@@ -121,23 +149,33 @@ class StatementExecutor:
                 pass
 
 
-            case ListAddNode():
-                pass 
+            case ListAddNode(base=base, value=value):
+                base = self.agent._evaluator.eval_expr(base, local_vars, message, stmt._line)
+                value = self.agent._evaluator.eval_expr(value, local_vars, message, stmt._line)
+                print(type(base))
+                if isinstance(base, TypedList):
+                    base.append(value)
+                else:
+                    raise WrongTypeError("base", "TypedList", type(base), stmt._line)
 
 
-            case DictDelNode():
-                pass 
+            case DictDelNode(base=base, key=key):
                 # Both Dict and List 'del' operator in one case
+                base = self.agent._evaluator.eval_expr(base, local_vars, message, stmt._line)
+                key = self.agent._evaluator.eval_expr(key, local_vars, message, stmt._line)
+                if isinstance(base, TypedDict):
+                    del base[key]
+                elif isinstance(base, TypedList):
+                    base._check_type(key)
+                    del base[key]
+                else:
+                    raise WrongTypeError("base", "TypedDict or TypedList", type(base), stmt._line)
 
 
 
 # ------------------------------------------
 #  Extra methods for handling specific statements
 # ------------------------------------------
-
-    def variable_declaration(self, local_vars, var_name, value_expr, var_type, line):
-        pass
-
 
     def spawn_agent(self, spawn_node, local_vars, message):
         if spawn_node.args:
@@ -201,20 +239,20 @@ class StatementExecutor:
                 end_value = self.agent._evaluator.eval_expr(end, local_vars, message, line) if end else None
                 if isinstance(name, SelfAccessNode):
                     target_name = name.path[1]
-                    self.agent._fields.set((target_name, slice(start_value, end_value)), value, line)
+                    self.agent._fields.set((target_name, slice(start_value, end_value)), value, line, deref)
                 elif isinstance(name, BelAccessNode):
                     target_name = name.path[1]
-                    self.agent._beliefs.set((target_name, slice(start_value, end_value)), value, line)
+                    self.agent._beliefs.set((target_name, slice(start_value, end_value)), value, line, deref)
                 else:
-                    local_vars.set((name.name, slice(start_value, end_value)), value, line)
+                    local_vars.set((name.name, slice(start_value, end_value)), value, line, deref)
 
             case SelfAccessNode(path=path):
                 target_name = path[1]
-                self.agent._fields.set(target_name, value, line)
+                self.agent._fields.set(target_name, value, line, deref)
 
             case BelAccessNode(path=path):
                 target_name = path[1]
-                self.agent._beliefs.set(target_name, value, line)
+                self.agent._beliefs.set(target_name, value, line, deref)
 
             case DerefExprNode(pointer=pointer, _line=line):
                 self.assign_to_target(pointer, value, local_vars, message, line, deref=True)   

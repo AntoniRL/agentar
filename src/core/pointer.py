@@ -16,21 +16,21 @@ class TypedMeta(type):
 
 class Pointer(metaclass=TypedMeta):
     def __init__(self, target = None):
-        self._target: list = target # Using a list to allow mutable reference
+        self._target: list = [target]  # Using a list to allow mutable reference
         self._address = hex(id(self._target)) # Get the memory address of the target object
         self._lock = threading.RLock()
 
     def get(self):
         with self._lock:
-            return self._target
+            return self._target[0]
 
     def set(self, new_target):
         with self._lock:
-            current = self._target
+            current = self._target[0]
             if hasattr(current, "assign") and isinstance(new_target, type(current)):
-                self._target.assign(new_target)
+                self._target[0].assign(new_target)
             else:
-                self._target = new_target
+                self._target[0] = new_target
 
     def __deepcopy__(self, memodict=None): # TODO: is it necessary?
         if memodict is None:
@@ -40,7 +40,7 @@ class Pointer(metaclass=TypedMeta):
             if id(self) in memodict:
                 return memodict[id(self)]
             
-            copied_target = deepcopy(self._target, memodict)
+            copied_target = deepcopy(self._target[0], memodict)
             new_pointer = type(self)(copied_target)
 
             # Add to memodict
@@ -49,7 +49,7 @@ class Pointer(metaclass=TypedMeta):
 
     def __repr__(self):
         with self._lock:
-            return f"Pointer(target={repr(self._target)}, addr={self._address})"
+            return f"Pointer(target={repr(self._target[0])}, addr={self._address})"
 
     def __str__(self):
         return str(self._address)

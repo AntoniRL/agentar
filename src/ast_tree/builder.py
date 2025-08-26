@@ -263,8 +263,8 @@ class AgentarToASTBuilder(AgentarVisitor):
 
 
     def visitForAssignExpr(self, ctx:AgentarParser.ForAssignExprContext):
-        target = ctx.ID().getText()
-        value = self.visit(ctx.expression())
+        target = self.visit(ctx.expression(0))
+        value = self.visit(ctx.expression(1))
         return ast.AssignmentNode(target=target, value=value, **self.node_meta(ctx))
 
 

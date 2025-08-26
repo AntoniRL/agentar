@@ -1,0 +1,14 @@
+agent mother {
+    initialize{
+        int x = 2;
+        if (x>=1 && x < 3) {
+            print("yes");
+        }
+        int i = 5;
+        i = 4;
+        for (int i=0;i<4;i=i+1){
+            print(i);
+        }
+        kill();
+    }
+}

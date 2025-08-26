@@ -7,7 +7,7 @@ from copy import deepcopy
 
 from ast_tree.nodes import *
 from core.agentar_types import resolve_type
-from runtime.errors import VariableAlreadyDeclaredError, VariableNotFoundError, WrongTypeError
+from runtime.errors import VariableAlreadyDeclaredError, VariableNotFoundError, WrongTypeError, NotAssignableError
 from core.pointer import Pointer
 from core.variable_info import VariableInfo
 from runtime.agent_instance.expression_evaluator import ExpressionEvaluator
@@ -38,7 +38,7 @@ class VariableContainer:
 
         if name in self._variables:
             raise VariableAlreadyDeclaredError(name, declaration_line, self._variables[name].declaration_line)
-
+        
         reference_type, default_value = resolve_type(var_type)
 
         if value is not None:
@@ -49,11 +49,11 @@ class VariableContainer:
 
             if not isinstance(value, reference_type):
                 raise WrongTypeError(name, reference_type, type(value), declaration_line)
-            
+
             default_value = Pointer(default_value)
             default_value.set(value)  # Set the value in the Pointer
         else:
-            default_value = Pointer()
+            default_value = Pointer(default_value)  # Initialize with default value
 
         self._variables[name] = VariableInfo(name, default_value, var_type, self._scope, declaration_line) 
 
@@ -89,24 +89,33 @@ class VariableContainer:
                     container.assign(value, sub)
                 else:
                     container[sub] = value
+            elif isinstance(container, TypedTuple):
+                raise NotAssignableError(name, TypedTuple, line)
             else:
                 container[sub] = value
             return
 
         variable = self._find(target, line)
-        expected_type, _ = resolve_type(variable.var_type)
-
-        if not isinstance(value, expected_type):
-            raise WrongTypeError(target, expected_type, type(value), line)
 
         if deref:
-            current = variable.value.get().get()
-        else:
-            current = variable.value.get()
+            # with reference
+            inner = variable.value.get()
+            if not isinstance(inner, Pointer):
+                raise WrongTypeError(target, Pointer, type(inner), line)
 
-        if hasattr(current, "assign") and isinstance(value, type(current)):
-            current.assign(value)
+            current_value = inner.get()
+            expected_type = type(current_value)
+            if not isinstance(value, expected_type):
+                raise WrongTypeError(target, expected_type, type(value), line)
+
+            inner.set(value)
         else:
+            # without reference
+            current_value = variable.value.get()
+            expected_type, _ = resolve_type(variable.var_type)
+            if not isinstance(value, expected_type):
+                raise WrongTypeError(target, expected_type, type(value), line)
+
             variable.value.set(value)
 
 
@@ -156,3 +165,4 @@ class VariableContainer:
 
     def __repr__(self):
         return f"({list(self._variables.keys())})"
+    
