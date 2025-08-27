@@ -809,15 +809,6 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AgentarParser#DeepCopyExpr.
-    def enterDeepCopyExpr(self, ctx:AgentarParser.DeepCopyExprContext):
-        pass
-
-    # Exit a parse tree produced by AgentarParser#DeepCopyExpr.
-    def exitDeepCopyExpr(self, ctx:AgentarParser.DeepCopyExprContext):
-        pass
-
-
     # Enter a parse tree produced by AgentarParser#EqExpr.
     def enterEqExpr(self, ctx:AgentarParser.EqExprContext):
         pass
@@ -860,6 +851,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#AddSubExpr.
     def exitAddSubExpr(self, ctx:AgentarParser.AddSubExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#ParentAccessExpr.
+    def enterParentAccessExpr(self, ctx:AgentarParser.ParentAccessExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#ParentAccessExpr.
+    def exitParentAccessExpr(self, ctx:AgentarParser.ParentAccessExprContext):
         pass
 
 

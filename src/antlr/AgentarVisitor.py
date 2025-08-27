@@ -454,11 +454,6 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AgentarParser#DeepCopyExpr.
-    def visitDeepCopyExpr(self, ctx:AgentarParser.DeepCopyExprContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by AgentarParser#EqExpr.
     def visitEqExpr(self, ctx:AgentarParser.EqExprContext):
         return self.visitChildren(ctx)
@@ -481,6 +476,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#AddSubExpr.
     def visitAddSubExpr(self, ctx:AgentarParser.AddSubExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#ParentAccessExpr.
+    def visitParentAccessExpr(self, ctx:AgentarParser.ParentAccessExprContext):
         return self.visitChildren(ctx)
 
 

@@ -1,0 +1,247 @@
+[16:24:24] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:24:32] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:28:02] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:28:21] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:28:38] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:28:43] ERROR Thread-2 agentar.agent..1.1: ERROR:: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:28:57] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:29:32] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:30:00] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:30:57] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:32:17] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:32:40] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float
+[16:32:52] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type int, got float
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 228, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 268, in assign_to_target
+    self.assign_to_target(pointer, value, local_vars, message, line, deref=True)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 240, in assign_to_target
+    self.agent._fields.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 89, in set
+    container._check_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type int, got float

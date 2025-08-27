@@ -220,52 +220,53 @@ class AgentInstance:
         #     self.handle_assignment(stmt, local_var, local_var_type, message)
 
         # SendNode handles sending messages
-        elif isinstance(stmt, SendNode):
-            msg = self.eval_expr(stmt.message, local_var, local_var_type)
-            # Create a deep copy of the message to avoid modifying the original, without conntent to make working with pointers easier
-            content = msg._content
-            msg._content = {}
-            msg = deepcopy(msg)  # Create a deep copy of the message to avoid modifying the original
-            msg._content = content  # Restore the content after deepcopy
-            msg._sending_time = self._runtime.agentTime.getTime()  # Set the send time to the current agent time
-            msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
-            msg._sender = self._id
-            if stmt.to == "PARENT":
-                msg._receiver = self._parent
-            else:
-                msg._receiver = self.eval_expr(stmt.to, local_var, local_var_type)
-            self._runtime.send_message(msg)
+        # elif isinstance(stmt, SendNode):
+        #     msg = self.eval_expr(stmt.message, local_var, local_var_type)
+        #     # Create a deep copy of the message to avoid modifying the original, without conntent to make working with pointers easier
+        #     content = msg._content
+        #     msg._content = {}
+        #     msg = deepcopy(msg)  # Create a deep copy of the message to avoid modifying the original
+        #     msg._content = content  # Restore the content after deepcopy
+        #     msg._sending_time = self._runtime.agentTime.getTime()  # Set the send time to the current agent time
+        #     msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
+        #     msg._sender = self._id
+        #     if stmt.to == "PARENT":
+        #         msg._receiver = self._parent
+        #     else:
+        #         msg._receiver = self.eval_expr(stmt.to, local_var, local_var_type)
+        #     self._runtime.send_message(msg)
 
 
-        # SendToChildrenNode handles sending messages to children
-        elif isinstance(stmt, SendToChildrenNode):
-            msg = self.eval_expr(stmt.message, local_var, local_var_type)
-            # Create a deep copy of the message to avoid modifying the original, without conntent to make working with pointers easier
-            content = msg._content
-            msg._content = {}
-            msg = deepcopy(msg)  # Create a deep copy of the message to avoid modifying the original
-            msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
-            msg._sender = self._id
-            msg._sending_time = self._runtime.agentTime.getTime() # set the send time to the current agent time
-            agent_type = stmt.agent_type.name
-            agent_type = agent_type if agent_type in self._runtime.agents_decl else "_"
-            # Prepare the message to be sent to children
-            msg_to_send = []
-            with self._runtime._lock:
-                for child in self._children:
-                    if agent_type != "_" and agent_type == self._runtime.agents[child.path]._name:
-                        new_msg = deepcopy(msg)
-                        new_msg._content = content # Restore the content after deepcopy
-                        new_msg._receiver = child
-                        msg_to_send.append(new_msg)
-                    elif agent_type == "_":
-                        new_msg = deepcopy(msg)
-                        new_msg._content = content # Restore the content after deepcopy
-                        new_msg._receiver = child
-                        msg_to_send.append(new_msg)
+        # # SendToChildrenNode handles sending messages to children
+        # elif isinstance(stmt, SendToChildrenNode):
+        #     msg = self.eval_expr(stmt.message, local_var, local_var_type)
+        #     # Create a deep copy of the message to avoid modifying the original, without conntent to make working with pointers easier
+        #     content = msg._content
+        #     msg._content = {}
+        #     msg = deepcopy(msg)  # Create a deep copy of the message to avoid modifying the original
 
-            for msg in msg_to_send:
-                self._runtime.send_message(msg)
+        #     msg._type = MessageType(stmt.msg_type) if stmt.msg_type else MessageType.INFORM
+        #     msg._sender = self._id
+        #     msg._sending_time = self._runtime.agentTime.getTime() # set the send time to the current agent time
+        #     agent_type = stmt.agent_type.name
+        #     agent_type = agent_type if agent_type in self._runtime.agents_decl else "_"
+        #     # Prepare the message to be sent to children
+        #     msg_to_send = []
+        #     with self._runtime._lock:
+        #         for child in self._children:
+        #             if agent_type != "_" and agent_type == self._runtime.agents[child.path]._name:
+        #                 new_msg = deepcopy(msg)
+        #                 new_msg._content = content # Restore the content after deepcopy
+        #                 new_msg._receiver = child
+        #                 msg_to_send.append(new_msg)
+        #             elif agent_type == "_":
+        #                 new_msg = deepcopy(msg)
+        #                 new_msg._content = content # Restore the content after deepcopy
+        #                 new_msg._receiver = child
+        #                 msg_to_send.append(new_msg)
+
+        #     for msg in msg_to_send:
+        #         self._runtime.send_message(msg)
 
 
         # send message to siblings
@@ -370,59 +371,59 @@ class AgentInstance:
 
 
         # IfStmtNode handles conditional statements
-        elif isinstance(stmt, IfStmtNode):
-            condition = self.eval_expr(stmt.conditions, local_var, local_var_type)
-            if condition:
-                for statement in stmt.statements:
-                    if self._break_flag or self._return_flag:
-                        break
-                    self.execute_stmt(statement, local_var, local_var_type)
-            else:
-                if stmt.elseStmt is not None:
-                    for statement in stmt.elseStmt.statements:
-                        if self._break_flag or self._return_flag:
-                            break
-                        self.execute_stmt(statement, local_var, local_var_type)
+        # elif isinstance(stmt, IfStmtNode):
+        #     condition = self.eval_expr(stmt.conditions, local_var, local_var_type)
+        #     if condition:
+        #         for statement in stmt.statements:
+        #             if self._break_flag or self._return_flag:
+        #                 break
+        #             self.execute_stmt(statement, local_var, local_var_type)
+        #     else:
+        #         if stmt.elseStmt is not None:
+        #             for statement in stmt.elseStmt.statements:
+        #                 if self._break_flag or self._return_flag:
+        #                     break
+        #                 self.execute_stmt(statement, local_var, local_var_type)
 
         
         # ForLoopNode handles for loops
-        elif isinstance(stmt, ForLoopNode):
-            self.execute_stmt(stmt.initialize, local_var, local_var_type)
-            def check_condition():
-                return self.eval_expr(stmt.condition, local_var, local_var_type)
-            def update_loop_var():
-                self.execute_stmt(stmt.update, local_var, local_var_type)
-            while check_condition() and not self._break_flag and not self._return_flag:
-                for statement in stmt.body:
-                    self.execute_stmt(statement, local_var, local_var_type)
-                    if self._continue_flag: # If continue flag is set, skip to the next iteration
-                        self._continue_flag = False
-                        update_loop_var()
-                        break
-                update_loop_var()
-            self.break_flag = False  # Reset break flag after loop execution
-            self._continue_flag = False  # Reset continue flag after loop execution
+        # elif isinstance(stmt, ForLoopNode):
+        #     self.execute_stmt(stmt.initialize, local_var, local_var_type)
+        #     def check_condition():
+        #         return self.eval_expr(stmt.condition, local_var, local_var_type)
+        #     def update_loop_var():
+        #         self.execute_stmt(stmt.update, local_var, local_var_type)
+        #     while check_condition() and not self._break_flag and not self._return_flag:
+        #         for statement in stmt.body:
+        #             self.execute_stmt(statement, local_var, local_var_type)
+        #             if self._continue_flag: # If continue flag is set, skip to the next iteration
+        #                 self._continue_flag = False
+        #                 update_loop_var()
+        #                 break
+        #         update_loop_var()
+        #     self.break_flag = False  # Reset break flag after loop execution
+        #     self._continue_flag = False  # Reset continue flag after loop execution
 
 
-        elif isinstance(stmt, WhileLoopNode):
-            def check_condition():
-                return self.eval_expr(stmt.condition, local_var, local_var_type)
-            while check_condition() and not self._break_flag and not self._return_flag:
-                for statement in stmt.body:
-                    self.execute_stmt(statement, local_var, local_var_type)
-                    if self._continue_flag: # If continue flag is set, skip to the next iteration
-                        self._continue_flag = False
-                        break
-            self._continue_flag = False  # Reset continue flag after loop execution
-            self._break_flag = False  # Reset break flag after loop execution
+        # elif isinstance(stmt, WhileLoopNode):
+        #     def check_condition():
+        #         return self.eval_expr(stmt.condition, local_var, local_var_type)
+        #     while check_condition() and not self._break_flag and not self._return_flag:
+        #         for statement in stmt.body:
+        #             self.execute_stmt(statement, local_var, local_var_type)
+        #             if self._continue_flag: # If continue flag is set, skip to the next iteration
+        #                 self._continue_flag = False
+        #                 break
+        #     self._continue_flag = False  # Reset continue flag after loop execution
+        #     self._break_flag = False  # Reset break flag after loop execution
 
 
-        elif isinstance(stmt, BreakNode):
-            self._break_flag = True
+        # elif isinstance(stmt, BreakNode):
+        #     self._break_flag = True
 
         
-        elif isinstance(stmt, ContinueNode):
-            self._continue_flag = True
+        # elif isinstance(stmt, ContinueNode):
+        #     self._continue_flag = True
 
 
         elif isinstance(stmt, SenseNode):
@@ -434,28 +435,28 @@ class AgentInstance:
         #     self._runtime.killChildren(self._id, agent_type)  # Kill all children of the agent with the specified type
 
 
-        elif isinstance(stmt, GetTimeNode):
-            self._now = self._runtime.agentTime.getTime()
-            return self._now
+        # elif isinstance(stmt, GetTimeNode):
+        #     self._now = self._runtime.agentTime.getTime()
+        #     return self._now
 
 
-        elif isinstance(stmt, DictDelNode):
-            base = self.eval_expr(stmt.base, local_var, local_var_type, message=message)
-            key = self.eval_expr(stmt.key, local_var, local_var_type, message=message)
-            if isinstance(base, dict):
-                if key in base:
-                    del base[key]
-                else:
-                    raise KeyError(f"Key '{key}' not found in dictionary.")
-            elif isinstance(base, list):
-                if not isinstance(key, int):
-                    raise TypeError(f"Expected an integer index for list, got {type(key).__name__}")
-                if 0 <= key < len(base):
-                    del base[key]
-                else:
-                    raise IndexError(f"List index out of range: {key}")
-            else:
-                raise TypeError(f"Expected a dictionary or list, got {type(base).__name__}")
+        # elif isinstance(stmt, DictDelNode):
+        #     base = self.eval_expr(stmt.base, local_var, local_var_type, message=message)
+        #     key = self.eval_expr(stmt.key, local_var, local_var_type, message=message)
+        #     if isinstance(base, dict):
+        #         if key in base:
+        #             del base[key]
+        #         else:
+        #             raise KeyError(f"Key '{key}' not found in dictionary.")
+        #     elif isinstance(base, list):
+        #         if not isinstance(key, int):
+        #             raise TypeError(f"Expected an integer index for list, got {type(key).__name__}")
+        #         if 0 <= key < len(base):
+        #             del base[key]
+        #         else:
+        #             raise IndexError(f"List index out of range: {key}")
+        #     else:
+        #         raise TypeError(f"Expected a dictionary or list, got {type(base).__name__}")
 
 
 # ---EVAL_EXPR-----------------------------------
@@ -502,8 +503,8 @@ class AgentInstance:
         #         raise NameError(f"Variable '{expr.name}' is not declared.")
             
 
-        elif isinstance(expr, DoNode):
-            return self.execute_stmt(expr, local_var, local_var_type, message)  # Execute the action with the provided local variables
+        # elif isinstance(expr, DoNode):
+        #     return self.execute_stmt(expr, local_var, local_var_type, message)  # Execute the action with the provided local variables
 
 
         # elif isinstance(expr, BaseTypeNode):

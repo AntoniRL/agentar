@@ -46,13 +46,11 @@ class StatementExecutor:
             
 
             case SendToChildrenNode():
-                # TODO
-                pass
+                self.agent._message_handler.send_to_children(stmt, local_vars)
 
 
             case SendToSiblingsNode():
-                # TODO
-                pass
+                self.agent._message_handler.send_to_siblings(stmt, local_vars)
 
 
             case KillNode():
@@ -115,15 +113,16 @@ class StatementExecutor:
 
 
             case ForLoopNode():
-                local_vars = local_vars.create_child_scope("for")
-                self.execute_stmt(stmt.initialize, local_vars, message, stmt._line)  # Initialize loop variable
+                local_vars_for = local_vars.create_child_scope("for")
+                self.execute_stmt(stmt.initialize, local_vars_for, message, stmt._line)  # Initialize loop variable
                 def check_condition():
-                    return self.agent._evaluator.eval_expr(stmt.condition, local_vars, message, stmt._line)
+                    return self.agent._evaluator.eval_expr(stmt.condition, local_vars_for, message, stmt._line)
                 def update_loop_var():
-                    self.execute_stmt(stmt.update, local_vars, message, stmt._line)
+                    self.execute_stmt(stmt.update, local_vars_for, message, stmt._line)
                 while check_condition() and not self.agent._break_flag and not self.agent._return_flag:
+                    local_vars_iter = local_vars_for.create_child_scope("for iteration")
                     for statement in stmt.body:
-                        self.execute_stmt(statement, local_vars, message, stmt._line)
+                        self.execute_stmt(statement, local_vars_iter, message, stmt._line)
                         if self.agent._continue_flag: # If continue flag is set, skip to the next iteration
                             self.agent._continue_flag = False
                             update_loop_var()
@@ -134,18 +133,29 @@ class StatementExecutor:
 
 
             case WhileLoopNode():
-                pass
+                def check_condition():
+                    return self.agent._evaluator.eval_expr(stmt.condition, local_vars, message, stmt._line)
+                while check_condition() and not self.agent._break_flag and not self.agent._return_flag:
+                    local_vars_iter = local_vars.create_child_scope("while iteration")
+                    for statement in stmt.body:
+                        self.execute_stmt(statement, local_vars_iter, message, stmt._line)
+                        if self.agent._continue_flag: # If continue flag is set, skip to the next iteration
+                            self.agent._continue_flag = False
+                            break
+                self.agent._continue_flag = False  # Reset continue flag after loop execution
+                self.agent._break_flag = False  # Reset break flag after loop execution
 
 
             case BreakNode():
-                pass
+                self.agent._break_flag = True
 
 
             case ContinueNode():
-                pass
+                self.agent._continue_flag = True
 
 
             case SenseNode():
+                # TODO
                 pass
 
 

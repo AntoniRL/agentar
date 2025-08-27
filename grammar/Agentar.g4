@@ -268,12 +268,12 @@ expression
     | 'type' '(' expression ')'             # TypeExpr
     | 'abs' '(' expression ')'              # AbsExpr  
     | 'random' '(' expression ',' expression ')' # RandomExpr
-    | 'deepcopy' '(' expression ')'         # DeepCopyExpr
-    | NOT expression                        # NotExpr 
-    | AMPERSAND expression                  # AddressOfExpr
-    | STAR expression                       # DerefExpr
-    | expression op=('*'|'/') expression    # MulDivExpr
-    | expression op=('+'|'-') expression    # AddSubExpr
+    | 'parent::' expression                   # ParentAccessExpr
+    | NOT expression                          # NotExpr 
+    | AMPERSAND expression                    # AddressOfExpr
+    | STAR expression                         # DerefExpr
+    | expression op=('*'|'/') expression      # MulDivExpr
+    | expression op=('+'|'-') expression      # AddSubExpr
     | expression op=MODULO expression       # ModuloExpr
     | expression op=EQ expression           # EqExpr
     | expression op=NEQ expression          # NeqExpr

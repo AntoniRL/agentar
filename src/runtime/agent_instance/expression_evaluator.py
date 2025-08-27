@@ -58,9 +58,9 @@ class ExpressionEvaluator:
                 return None
             
 
-            case DeepCopyNode(expr=expr):
-                value = self.eval_expr(expr, local_vars, message, line, deref)
-                return deepcopy(value)
+            case ParentShadowNode(base=base, _line=line):
+                value = self.eval_expr(base, local_vars._parent_container, message, line, deref)
+                return value
             
 
             case VarRefNode(name=name, _line=line):
@@ -155,7 +155,7 @@ class ExpressionEvaluator:
                 
 
             case MessageInitNode():
-                return self.agent._message_handler.handle_message_init(expr)
+                return self.agent._message_handler.handle_message_init(expr, local_vars)
                 
             
             case BelAccessNode(path=path, _line=line):

@@ -485,9 +485,9 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.BinaryOpNode(op=op, left=left, right=right, **self.node_meta(ctx))
 
 
-    def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
-        pass 
-    # TODO: implement address of expression
+    # def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
+    #     pass 
+    # # TODO: implement address of expression
 
 
     def visitAddressOfExpr(self, ctx:AgentarParser.AddressOfExprContext):
@@ -495,8 +495,8 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.AddressOfExprNode(variable=variable, **self.node_meta(ctx))
     
 
-    def visitDeepCopyExpr(self, ctx:AgentarParser.DeepCopyExprContext):
-        return ast.DeepCopyNode(variable=self.visit(ctx.expression()), **self.node_meta(ctx))
+    # def visitDeepCopyExpr(self, ctx:AgentarParser.DeepCopyExprContext):
+    #     return ast.DeepCopyNode(variable=self.visit(ctx.expression()), **self.node_meta(ctx))
 
 
     def visitEqExpr(self, ctx:AgentarParser.EqExprContext):
@@ -542,6 +542,11 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitParenExpr(self, ctx:AgentarParser.ParenExprContext):
         return self.visit(ctx.expression())
 
+
+    def visitParentAccessExpr(self, ctx:AgentarParser.ParentAccessExprContext):
+        base = self.visit(ctx.expression())
+        return ast.ParentShadowNode(base=base, **self.node_meta(ctx))
+    
 
     def visitMessageInitExpr(self, ctx:AgentarParser.MessageInitExprContext):
         return self.visit(ctx.messageInit())

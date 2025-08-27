@@ -438,3 +438,8 @@ class DeepCopyNode(ASTNode):
 @dataclass
 class DerefExprNode(ASTNode):
     pointer: ASTNode
+
+
+@dataclass
+class ParentShadowNode(ASTNode):
+    base: ASTNode

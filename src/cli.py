@@ -44,18 +44,17 @@ def ast_tree(file_path):
     print_ast(file_path)
 
 def logging_setup(raport_flag=False, to_file=False):
-    if raport_flag:
-        logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
-                        datefmt='%H:%M:%S')
-    elif to_file:
-        
-        logging.basicConfig(filename='agentar.log',  # write to a file
+    if to_file:
+        logging.basicConfig(filename='logs/agentar.log',  # write to a file
                             filemode='w',            # 'a' = append, 'w' = overwrite
                             level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
                             datefmt='%H:%M:%S')
     else:
-        logging.basicConfig(level=logging.ERROR, format='[%(asctime)s] %(levelname)s: %(message)s',
-                            datefmt='%H:%M:%S')
+        logging.basicConfig(
+        level=logging.INFO if raport_flag else logging.WARNING,
+        format='[%(asctime)s] %(levelname)s: %(message)s',
+        datefmt='%H:%M:%S'
+    )
 
 
 def main():

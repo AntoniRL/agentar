@@ -296,7 +296,7 @@ message <msg_name>  {
 ---
 
 Przed wysłaniem wiadomości należy zdefiniować jej instancję:
-`<msg_name> <instance_name> = <msg_name>(task: "content", ...)`
+`<msg_name> <instance_name> = <msg_name>{task: "content", ...}`
 
 | Funkcja                          | Opis                                  |
 | -------------------------------- | ------------------------------------- |

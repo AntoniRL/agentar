@@ -5,6 +5,7 @@
 import threading
 import time
 import logging
+from runtime.logging_setup import *
 
 class AgentRunner(threading.Thread):
     """
@@ -20,13 +21,22 @@ class AgentRunner(threading.Thread):
         self.running.set()
 
     def run(self):
-        self.instance.initializeAgent()
+        log = logging.LoggerAdapter(get_agent_logger(self.agent_id.path), {"agent_id": self.agent_id.path})
+        try:
+            self.instance.initializeAgent()
 
-        while self.running.is_set() and not self.system.terminated.is_set():
-            self.instance.step()
-            time.sleep(self.tick_interval)
-        
-        self.instance.destroyAgent()
+            while self.running.is_set() and not self.system.terminated.is_set():
+                self.instance.step()
+                time.sleep(self.tick_interval)
+            
+            self.instance.destroyAgent()
+
+        except Exception as e:
+            logging.error(f"❌ ERROR:: Exception in agent {self.agent_id.path}")
+            print(f"❌ ERROR:: Exception in agent {self.agent_id.path}")
+            log.error(f"Exception in agent {self.agent_id.path}: {e}", exc_info=True)
+            # Stop system
+            self.system.terminated.set()
 
     def stopAgent(self):
         self.running.clear()

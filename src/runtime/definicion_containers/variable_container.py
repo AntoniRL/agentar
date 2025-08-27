@@ -42,10 +42,12 @@ class VariableContainer:
         reference_type, default_value = resolve_type(var_type)
 
         if value is not None:
-            if self._agent is None:
-                value = ExpressionEvaluator(None).eval_expr(value, self)  # Evaluate the expression to get the value (for VariableContainer Fields and Beliefs) (self == variable_container of place where the declaration is called)
-            else:
-                value = self._agent._evaluator.eval_expr(value, self)  # Evaluate the expression to get the value. (self == variable_container of place where the declaration is called)
+            if not isinstance(value, (int, float, str, bool, Pointer, TypedList, TypedDict, TypedTuple)): 
+                if self._agent is None:
+                    print(value)
+                    value = ExpressionEvaluator(None).eval_expr(value, self)  # Evaluate the expression to get the value (for VariableContainer Fields and Beliefs) (self == variable_container of place where the declaration is called)
+                else:
+                    value = self._agent._evaluator.eval_expr(value, self)  # Evaluate the expression to get the value. (self == variable_container of place where the declaration is called)
 
             if not isinstance(value, reference_type):
                 raise WrongTypeError(name, reference_type, type(value), declaration_line)
