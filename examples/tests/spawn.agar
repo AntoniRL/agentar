@@ -10,7 +10,7 @@ agent child{
     initialize{
         print("Hello I am child of", self._parent);
         //self.i[0] = 111;
-        *self.l[0] = 111.0;
+        *self.l[0] = 111;
         print(self.i);
         print(*self.l);
     }

@@ -43,6 +43,7 @@ def run_file(file_path, max_runtime):
 def ast_tree(file_path):
     print_ast(file_path)
 
+
 def logging_setup(raport_flag=False, to_file=False):
     if to_file:
         logging.basicConfig(filename='logs/agentar.log',  # write to a file

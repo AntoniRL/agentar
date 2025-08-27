@@ -5,7 +5,7 @@
 import threading
 import time
 import logging
-from runtime.logging_setup import *
+from runtime.logging_setup import get_agent_logger
 
 class AgentRunner(threading.Thread):
     """
@@ -33,7 +33,6 @@ class AgentRunner(threading.Thread):
 
         except Exception as e:
             logging.error(f"❌ ERROR:: Exception in agent {self.agent_id.path}")
-            print(f"❌ ERROR:: Exception in agent {self.agent_id.path}")
             log.error(f"Exception in agent {self.agent_id.path}: {e}", exc_info=True)
             # Stop system
             self.system.terminated.set()

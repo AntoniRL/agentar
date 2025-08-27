@@ -44,7 +44,7 @@ def get_agent_logger(agent_id: str) -> logging.Logger:
 
     logger.setLevel(logging.DEBUG)
     logger.addHandler(fh)
-    logger.addHandler(ch) # to show in consola
+    logger.addHandler(ch)        # to show in console
     logger.propagate = False     # do not duplicate to the root logger
     logger._configured = True
     return logger
