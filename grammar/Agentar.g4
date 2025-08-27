@@ -66,7 +66,7 @@ receiveSection
     ;
 
 whenBlock
-    : 'when' '(' expression* ')' 'then' '{' statement* '}'
+    : 'when' '(' expression ')' 'then' '{' statement* '}'
     ;
 
 actionSection

@@ -1,14 +1,12 @@
 agent mother {
     fields{
-        int x = 2;
-        list<int> l = [0,0,0];
-
+        list<int> l = [0,2,3,4];
     }
     initialize {
         //print(x);
         //list<list<list<int>>> l = [[[1,2], [1,2]], [[0]]];
         list<int> l = [0,0,0];
-        self.l[1] = [1];
+        self.l[1] = 1;
         print(self.l);
         //tuple<list<int>, int, string> t = ([1,2], 2, "hh");
         //l[0] = 100;

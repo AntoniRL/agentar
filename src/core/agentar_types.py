@@ -88,6 +88,8 @@ def resolve_type(var_type):
             return var_type, None
         elif isinstance(var_type, (int, float, str, bool)):
             return var_type, None
+        elif var_type in (int, float, str, bool):
+            return var_type, None
         elif var_type == TypedList:
             return var_type, TypedList()
         elif var_type == TypedDict:

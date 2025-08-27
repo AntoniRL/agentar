@@ -72,11 +72,6 @@ class StatementExecutor:
                 return self.agent._action_executor.goal_check(stmt, local_vars)
 
 
-            case GetTimeNode():
-                # TODO: implement GetTimeNode. Fists think about how to handle time in the agentar runtime
-                pass
-
-
             case DoNode():
                 action_node = self.agent._actions.get(stmt.name, stmt._line)
                 parameters = [self.agent._evaluator.eval_expr(param, local_vars, message, stmt._line) for param in stmt.variables]
@@ -155,8 +150,7 @@ class StatementExecutor:
 
 
             case SenseNode():
-                # TODO
-                pass
+                self.agent._action_executor.sense_world()
 
 
             case ListAddNode(base=base, value=value):

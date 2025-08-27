@@ -2,7 +2,8 @@
 
 AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierarchicznej komunikacji i koncepcji autonomicznych jednostek wykonujących zadania.
 
-## Kluczowe założenia
+
+## 1. Kluczowe założenia
 
 * Każdy agent ma unikalne, automatycznie nadawane `id` w formacie kropkowym: `.1`, `.1.2`, `.1.2.1`, itd.
 * Ułątwiona komunikacja do: **rodzica**, **dzieci** i **braci**.
@@ -10,12 +11,11 @@ AGENTAR to lekki, strukturalny język programowania agentowego, oparty na hierar
 * System oparty na komunikatach (wiadomościach) i reaktywnych regułach.
 * Dostęp do pól agenta poprzez `self.name`
 * Agent matka `mother` (Tworzony jako pierwszy, zarządza działaniem systemu)
-* Agent czas `time` `id=.0` (Zarządza czasem- towrzony podczas inicjalizacji systemu, kiedy agent poprosi udostępnia aktualny czas `get_time()`)
 * Koniec działania systemu kiedy agent matka wywoła `kill()` LUB minie czas symulacji (parametr podczas uruchomienia)
 
----
 
-## Cykl życia agenta
+
+## 2. Cykl życia agenta
 
 1. `initialize` — konfiguracja i inicjalizacja (np. tworzenie dzieci)
 2. Pętla działania:
@@ -31,7 +31,9 @@ Agent umiera, gdy:
 - jego rodzic go zlikwiduje
 - przy kończeniu działania rodzica wszysy jego potomkowie zostają zabici
 
-## Struktura agenta
+
+
+## 3. Struktura agenta
 
 Wszystkie pola są obcjonalne. UWAGA: ważna kolejność występowania!!!
 
@@ -54,9 +56,9 @@ agent <agent_name> {
 
     goals {
         // Cele agenta (opcjonalne; tylko jedna instancja)
-        // np. g1: b.b1 == true || b.b2 < 4;
-        // np. g2: b.b2 < 10;
-    } marge (g1 && g2) //możliwość połączenia celów w dowolny sposób. Jeżeli brak to AND między celami cząstkowymi.
+        // np. g1: bel.b1 == true || b.b2 < 4;
+        // np. g2: bel.b2 < 10;
+    } merge (g1 || g2) //możliwość połączenia celów w dowolny sposób. Jeżeli brak to AND między celami cząstkowymi.
 
     initialize {
         // Kod uruchamiany przy starcie agenta (opcjonalne; tylko jedna instancja)
@@ -70,7 +72,7 @@ agent <agent_name> {
 
     rules {
         // Zasady postępowania agenta (opcjonalne; tylko jedna instancja)
-        when <condition> then {
+        when (<condition>) then {
             <statements>;
         }
     }
@@ -82,7 +84,7 @@ agent <agent_name> {
 
     receive <msg_name> {
         // Instrukcje po otrzumaniu wiadomości typu <msg_name> (opcjonalnie; możliwe wiele instancji)
-        when <condition> then {
+        when (<condition>) then {
             <statements>;
         }
     }
@@ -94,9 +96,9 @@ agent <agent_name> {
 }
 ```
 
-# Opis składni
+# 4. Opis składni
 
-### Sekcje agenta
+## 4.1. Sekcje agenta
 
 | Słowo kluczowe          | Opis                                         |
 | ----------------------- | -------------------------------------------- |
@@ -113,10 +115,11 @@ agent <agent_name> {
 | `message`               | Definicja typu wiadomości  |
 
 
-### Wbudowane pola agenta
+## 4.2. Wbudowane pola agenta
 
 Dostęp do przekonań (`beliefs`) poprzed odwołanie `bel.<nazwa_pola>`
-Wbudowane pola agenta zaczynają się od `_` np. `self._<nazwa pola>`
+Wbudowane pola agenta zaczynają się od `_` np. `self._<nazwa pola>` 
+UWAGA: Pola wudowane tylko do odczytu!!!
 
 | Pole                      | Opis                                         |
 | ------------------------- | -------------------------------------------- |
@@ -125,41 +128,41 @@ Wbudowane pola agenta zaczynają się od `_` np. `self._<nazwa pola>`
 | `self._children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
 | `self._name`               | nazwa rodzaju agenta (jedna ze zdefiniowanych przez programistę) |
 | `self._isGoalAchieved`     | flaga sprawdzająca czy sel został osiągnięty  aktualizowana co krop agenta |
-| `self._now`                | czas działania systemu według agenta (może się różnić z rzeczywistym gdy brak aktualizacji) aktualizacja tylko poprzez `getTime()` |
 
 Zastrzeżone nazwy: `self._agent`, `self._isMother`, `self._next_child`, `self._inbox`, `self._runtime`, `self._return_flag`, `self._break_flag`, `self._fields`, `self._fields_type`, `self._beliefs`, `self._beliefs_type`, `self._sense`, `self._goals`, `self._rules`, `self._receive`, `self._actions`, `self._initialize`, `self._destroy`
 
 TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie takiej potrzeby. 
 
 
-## Operacje
+## 4.3. Operacje
 
 | Operacje | Opis | Kontekst |
 |----------------|------|----------|
 | `when`         | Warunek wyzwolenia | `rules`, `receive` |
 | `then`         | Część wykonawcza reguły | `rules`, `receive` |
-| `send(...)`    | Wysyłanie wiadomości | dowolnie |
+| `send(...)`    | Wysyłanie wiadomości (Patrz sekcja wysułąnia wiadomości *Rozdział 6.* ) | dowolnie |
+| `send2parent(...)`    | Wysyłanie wiadomości (Patrz sekcja wysułąnia wiadomości *Rozdział 6.* ) | dowolnie |
+| `send2siblings(...)`    | Wysyłanie wiadomości (Patrz sekcja wysułąnia wiadomości *Rozdział 6.* ) | dowolnie |
 | `do <action_name>(x,...)`      | Wywoałanie akcji (zwraca wartość dla innych typów akcji niż `void`) | dowolnie |
 | ???`adopt_goal(...)` | Przyjęcie nowego celu | `action`, `receive` |
 | ???`drop_goal(...)`  | Porzucenie celu | `action`, `receive` |
 | ???`adopt_belief`    | Pezyjęcie nowe przekonanie                         |
 | ???`drop_belief`     | Porzucenie przekonanie                                |
-| `get_time()`      | Aktualizacja `self.now`. Kiedy przypisania zwraca aktualny czas | `initialize`, `action` |
 | `goal_check(<goal_name>)` | Sprawdzenie celu cząstkowego |
 | `print(...)`   | Debugowanie | dowolnie |
 | `kill()`       | Zakończenie działania agenta | dowolnie |
-| `kill(child_id)` | Usunięcie dzieci | dowolnie |
-| `kill_children()` | Kończy działanie wszystkich dzieci |
+| `kill(child_id)` | Usunięcie dziecka o podanym ID | dowolnie |
+| `kill_children(_)` | Kończy działanie wszystkich dzieci|
 | `kill_children(childen_type_name)` | Kończy działanie wszystkich dzieci o podanym typie|
 | `kill_siblings()` | Kończy działanie wszystkich braci |
 | `kill_siblings(sibling_type_name)` | Kończy działanie wszystkich braci o podanym typie|
-| `spawn(agent_name, [fields_of_agent])`   | Tworzenie dzieci | `initialize`, `action` |
+| `spawn(agent_name, {field_name: value, ...})`   | Tworzenie dzieci. Zwraca id stworzonego dziecka | `initialize`, `action` |
 | `sleep(ms)`    | Pauza w wykonaniu | `action`, `receive` |
 | `sense()`      | Możaliwość wywołania z dowolnego miejsca w ciele agenta. Wykonuje polecenia z `sense{}` |
 | `random(start, end)` | Zwraca losową wartość całkowitą z przedziału [start, end] |
 
 
-### Kontrola przepływów
+## 4.4. Kontrola przepływów
 
 | Słowo kluczowe | Opis | Kontekst |
 |----------------|------|----------|
@@ -178,7 +181,7 @@ for (int i; i<10; i=i+1){
 while (self.counter<5){
     self.counter = self.counter + 1;
 }
-if msg.text=="text"{
+if (msg.text=="text"){
     print("tak");
 } else { 
     print("nie");
@@ -186,7 +189,7 @@ if msg.text=="text"{
 if (msg.text=="text") print("tak"); // dla jednej instrukcji
 ```
 
-### Typy danych
+## 4.5. Typy danych
 
 | Typ      | Opis                              |
 |----------|-----------------------------------|
@@ -201,9 +204,11 @@ if (msg.text=="text") print("tak"); // dla jednej instrukcji
 | `&var_name` | przekazanie referencji do obiektu |
 
 
-### Obsługa list i słowników i krotek
+## 4.6. Obsługa list i słowników i krotek
 
 W AGENTAR listy, słowniki i krotki są podstawowymi strukturami danych. Wersja języka prototypowego obsługuje ich prostą składnią.
+
+#### Lista
 
 Deklaracja listy:
 `list<int> myList = [1, 2, 3];` 
@@ -224,19 +229,21 @@ Wybrór kawałka listy:
 `myList[2:-1]`
 
 
-Krotka:
-`tuple<int> myTuple = (1,2,3)`
-`tuple<int, string> = (3, "trzy")`
-`tuple<any> = (3, "trzy", 3.3)`
+#### Krotka:
+`tuple<int> myTuple = (1,2,3)` jeszcze nie działa
 
+`tuple<int, string> = (3, "trzy")`
+
+`tuple<any> = (3, "trzy", 3.3)`
 
 Odwołanie do krotki:
 `myTuple[1]`
 
 Krotki (tuple) są niemodyfikolwalne 
 
+#### Słowniki
 
-Deklaracja mapy:
+Deklaracja słownika:
 ```
 dict<str, str> user = {
     "name": "Alice",
@@ -273,19 +280,19 @@ Dostęp do wartości w razie braku zwraca `None`:
 `user.get(1)`
 
 
-Uwagi projektowe:
+#### Uwagi projektowe:
 - Listy są indeksowane od 0.
 - Krotki są niemutowalne. Co oznacza że nie mozna dodać obiektu do krotki ani go zmienić.
 - możliwość deklaracji z typem 'any' -> dowolny typ (NIEZALECANE)
 
 
 
-# Komunikacja
+# 5 Komunikacja
 - Każdy agent działa niesekwencyjnie i ma własną kolejkę wiadomości.
 - Wiadomości są kolejkowane FIFO (first-in, first-out).
 - W ciągu jednej pętli agenta agent przetwarza jedną wiadomość z kolejki
 
-### Struktura wiadomości
+## 5.1. Struktura wiadomości
 Każda wiadomość w systemie może zostać zdefiniowana.
 ```
 message <msg_name>  {
@@ -296,14 +303,16 @@ message <msg_name>  {
 ---
 
 Przed wysłaniem wiadomości należy zdefiniować jej instancję:
-`<msg_name> <instance_name> = <msg_name>{task: "content", ...}`
+```
+<msg_name> <instance_name> = <msg_name>{task: "content", ...}
+```
 
 | Funkcja                          | Opis                                  |
 | -------------------------------- | ------------------------------------- |
-| `send(to_id, content, msg_type='inform')` | Wysyła wiadomość do wskazanego agenta (ID). Wiadomość jest dodawana na koniec kolejki odbiorcy i zostanie przetworzona asynchronicznie w jego kolejnej pętli.|
-| `send2parent(content, msg_type='inform')`            | Skrót do komunikacji z rodzicem       |
-| `send2children(_/<agent_type>, content, msg_type='inform')`     | Wysyła wiadomość do wszystkich dzieci (`_`) lub tylko konkretnego typu|
-| `send2siblings(_/<agent_type>, content, msg_type='inform')`          | Wysyła wiadomość do wszystkich braci (`_`) lub tylko konkretnego typu |
+| `send(to_id, content, msgType_inform)` | Wysyła wiadomość do wskazanego agenta (ID). Wiadomość jest dodawana na koniec kolejki odbiorcy i zostanie przetworzona asynchronicznie w jego kolejnej pętli.|
+| `send2parent(content,  msgType_inform)`            | Skrót do komunikacji z rodzicem       |
+| `send2children(_/<agent_type>, content,  msgType_inform)`     | Wysyła wiadomość do wszystkich dzieci (`_`) lub tylko konkretnego typu|
+| `send2siblings(_/<agent_type>, content,  msgType_inform)`          | Wysyła wiadomość do wszystkich braci (`_`) lub tylko konkretnego typu |
 
 `msg` jako struktura zawierająca pola:
 ```
@@ -324,7 +333,7 @@ Przykład:
 ```
 receive ping {
     when (
-        msg._type == request &&
+        msg._type == msgType_request &&
         msg._sender == "mother" &&
         msg.text == "hello"
     ) then {
@@ -333,7 +342,7 @@ receive ping {
 }
 ```
 
-### Rodzaje wiadomości
+## 5.2. Rodzaje wiadomości
 
 Rodzaj wiadomości umożliwiają programiście rozszerzyć warunki komunikacji.
 
@@ -348,7 +357,7 @@ Rodzaj wiadomości umożliwiają programiście rozszerzyć warunki komunikacji.
 ---
 
 
-## Struktura ID agenta
+## 6. Struktura ID agenta
 
 * Automatycznie nadawane przez interpreter
 * Format: `.1`, `.1.1`, `.1.2.1`, itp.
@@ -356,15 +365,15 @@ Rodzaj wiadomości umożliwiają programiście rozszerzyć warunki komunikacji.
 * Agenci **nie mogą recyklingować ID** po zabiciu dzieci
 
 
-## Świat i środowisko
+## 7. Świat i środowisko
 * Śwat w tej wersji języka jest symulowany poprzez pola w agencie marce (np. `self.WORLD in mother`)
 * Inni agenci mogą przechwywać wskaźniki do tych pól i w sekcji `sense{}` czytać lub pisać do świata. Jest to widoczne dla każdego agenta
-* Takie podejście daje możliwość działąnia agentów w jednym  środowisku 
+* Takie podejście daje możliwość działania agentów w jednym  środowisku 
 
 ---
 
 
 
-# Przykłady
+# 8. Przykłady
 
 Przykłądy znajdują się w folderze `examples/`

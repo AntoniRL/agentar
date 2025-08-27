@@ -1,0 +1,30 @@
+agent mother{
+    fields{
+        int i = 5;
+    }
+    beliefs{
+        float f = 5.0;
+    }
+    goals{
+        g1: bel.f == 5.0;
+        g2: self.i < 6;
+    } merge (g1 || g2)
+    initialize{
+        do say_hello("WORLD");
+    }
+    sense{
+        print("A am sensing...");
+    }
+    rules{
+        when (self.i>3) then {
+            self.i = self.i-1;
+            print(self.i);
+        }
+    }
+    destroy{
+        print("BYE!!!");
+    }
+    action say_hello(str s): void {
+        print("HELLO", s);
+    }
+}

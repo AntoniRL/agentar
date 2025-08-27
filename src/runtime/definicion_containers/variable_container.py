@@ -7,7 +7,7 @@ from copy import deepcopy
 
 from ast_tree.nodes import *
 from core.agentar_types import resolve_type
-from runtime.errors import VariableAlreadyDeclaredError, VariableNotFoundError, WrongTypeError, NotAssignableError
+from runtime.errors import VariableAlreadyDeclaredError, VariableNotFoundError, WrongTypeError, NotAssignableError, AgentarRuntimeError
 from core.pointer import Pointer
 from core.variable_info import VariableInfo
 from runtime.agent_instance.expression_evaluator import ExpressionEvaluator
@@ -35,29 +35,31 @@ class VariableContainer:
 
     def declare(self, name: str, value: Optional[ASTNode], var_type, declaration_line: Optional[int] = None):
         """Declare a variable in the current scope."""
+        try:
+            if name in self._variables:
+                raise VariableAlreadyDeclaredError(name, declaration_line, self._variables[name].declaration_line)
+            
+            reference_type, default_value = resolve_type(var_type)
 
-        if name in self._variables:
-            raise VariableAlreadyDeclaredError(name, declaration_line, self._variables[name].declaration_line)
-        
-        reference_type, default_value = resolve_type(var_type)
+            if value is not None:
+                if not isinstance(value, (int, float, str, bool, Pointer, TypedList, TypedDict, TypedTuple)): 
+                    if self._agent is None:
+                        value = ExpressionEvaluator(None).eval_expr(value, self)  # Evaluate the expression to get the value (for VariableContainer Fields and Beliefs) (self == variable_container of place where the declaration is called)
+                    else:
+                        value = self._agent._evaluator.eval_expr(value, self)  # Evaluate the expression to get the value. (self == variable_container of place where the declaration is called)
 
-        if value is not None:
-            if not isinstance(value, (int, float, str, bool, Pointer, TypedList, TypedDict, TypedTuple)): 
-                if self._agent is None:
-                    print(value)
-                    value = ExpressionEvaluator(None).eval_expr(value, self)  # Evaluate the expression to get the value (for VariableContainer Fields and Beliefs) (self == variable_container of place where the declaration is called)
-                else:
-                    value = self._agent._evaluator.eval_expr(value, self)  # Evaluate the expression to get the value. (self == variable_container of place where the declaration is called)
+                if not isinstance(value, reference_type):
+                    raise WrongTypeError(name, reference_type, type(value), declaration_line)
 
-            if not isinstance(value, reference_type):
-                raise WrongTypeError(name, reference_type, type(value), declaration_line)
+                default_value = Pointer(default_value)
+                default_value.set(value)  # Set the value in the Pointer
+            else:
+                default_value = Pointer(default_value)  # Initialize with default value
 
-            default_value = Pointer(default_value)
-            default_value.set(value)  # Set the value in the Pointer
-        else:
-            default_value = Pointer(default_value)  # Initialize with default value
+            self._variables[name] = VariableInfo(name, default_value, var_type, self._scope, declaration_line) 
 
-        self._variables[name] = VariableInfo(name, default_value, var_type, self._scope, declaration_line) 
+        except Exception as e:
+                raise AgentarRuntimeError(e, declaration_line) from e
 
 
     def exists(self, name: str) -> bool:
@@ -76,49 +78,53 @@ class VariableContainer:
     
 
     def set(self, target: str, value, line, deref=False):
-        if isinstance(target, tuple):
-            name, sub = target
-            variable = self._find(name, line)
+        try:
+            if isinstance(target, tuple):
+                name, sub = target
+                variable = self._find(name, line)
 
-            if deref:
-                container = variable.value.get().get()
-            else:
-                container = variable.value.get()
+                if deref:
+                    container = variable.value.get().get()
+                else:
+                    container = variable.value.get()
 
-            if isinstance(container, TypedList):
-                container._check_type(value)
-                if isinstance(sub, slice):
-                    container.assign(value, sub)
+                if isinstance(container, TypedList):
+                    container._check_type(value)
+                    if isinstance(sub, slice):
+                        container.assign(value, sub)
+                    else:
+                        container[sub] = value
+                elif isinstance(container, TypedTuple):
+                    raise NotAssignableError(name, TypedTuple, line)
                 else:
                     container[sub] = value
-            elif isinstance(container, TypedTuple):
-                raise NotAssignableError(name, TypedTuple, line)
+                return
+
+            variable = self._find(target, line)
+
+            if deref:
+                # with reference
+                inner = variable.value.get()
+                if not isinstance(inner, Pointer):
+                    raise WrongTypeError(target, Pointer, type(inner), line)
+
+                current_value = inner.get()
+                expected_type = type(current_value)
+                if not isinstance(value, expected_type):
+                    raise WrongTypeError(target, expected_type, type(value), line)
+
+                inner.set(value)
             else:
-                container[sub] = value
-            return
+                # without reference
+                current_value = variable.value.get()
+                expected_type, _ = resolve_type(variable.var_type)
+                if not isinstance(value, expected_type):
+                    raise WrongTypeError(target, expected_type, type(value), line)
 
-        variable = self._find(target, line)
+                variable.value.set(value)
 
-        if deref:
-            # with reference
-            inner = variable.value.get()
-            if not isinstance(inner, Pointer):
-                raise WrongTypeError(target, Pointer, type(inner), line)
-
-            current_value = inner.get()
-            expected_type = type(current_value)
-            if not isinstance(value, expected_type):
-                raise WrongTypeError(target, expected_type, type(value), line)
-
-            inner.set(value)
-        else:
-            # without reference
-            current_value = variable.value.get()
-            expected_type, _ = resolve_type(variable.var_type)
-            if not isinstance(value, expected_type):
-                raise WrongTypeError(target, expected_type, type(value), line)
-
-            variable.value.set(value)
+        except Exception as e:
+            raise AgentarRuntimeError(e, line) from e
 
 
     def get_info(self, name: str, line: int) -> VariableInfo:

@@ -27,11 +27,11 @@ class ActionExecutor:
                 self.when_block(rule, "Rules", message=None)
 
 
-    def when_block(self, when_node, local_vars, message):
+    def when_block(self, when_node, name_of_local_vars, message):
         if message is not None:
             for var_info in message._content.values():
                 local_vars.declare(var_info.name, var_info.value.get(), var_info.var_type, when_node._line)
-        local_vars = local_vars.create_child_scope("when_block")
+        local_vars = VariableContainer(name_of_local_vars)
         if when_node.conditions == []:
             for stmt in when_node.statements:
                 self.agent._executor.execute_stmt(stmt, local_vars, message)
