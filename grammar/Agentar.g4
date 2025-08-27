@@ -6,32 +6,6 @@ program
     : (motherDecl | agentDecl | messageDecl)* EOF
     ;
 
-statement
-    : printStmt
-    | loggingStmt
-    | ifStmt
-    | forStmt
-    | whileStmt
-    | breakStmt
-    | continueStmt
-    | variableDecl
-    | assignment
-    | sendStmt
-    | sendParentStmt
-    | sendChildrenStmt
-    | sendSiblingStmt
-    | spawnStmt
-    | killStmt
-    | killchildrenStmt
-    | doStmt
-    | sleepStmt
-    | returnStmt
-    | senseStmt
-    | goalCheckStmt
-    | getTimeStmt
-    | dictDelStmt
-    ;
-
 // === Mother declaration
 motherDecl
     : 'agent' 'mother' '{' agentBody '}'
@@ -45,12 +19,12 @@ agentDecl
 
 agentBody
     : fieldSection? 
-    initialSection?
-    destroySection?
     beliefsSection?
-    senseSection?
     goalsSection?
+    initialSection?
+    senseSection?
     rulesSection?
+    destroySection?
     receiveSection*
     actionSection*
     ;
@@ -59,16 +33,12 @@ fieldSection
     : 'fields' '{' variableDecl* '}'
     ;
 
-initialSection
-    : 'initialize' '{' statement* '}'
-    ;
-
-destroySection
-    : 'destroy' '{' statement* '}'
-    ;
-
 beliefsSection
     : 'beliefs' '{' variableDecl* '}'
+    ;
+
+initialSection
+    : 'initialize' '{' statement* '}'
     ;
 
 senseSection
@@ -87,13 +57,16 @@ rulesSection
     : 'rules' '{' whenBlock* '}'
     ;
 
+destroySection
+    : 'destroy' '{' statement* '}'
+    ;
+
 receiveSection
     : 'receive' ID '{' whenBlock* '}'
     ;
 
 whenBlock
     : 'when' '(' expression ')' 'then' '{' statement* '}'
-    | 'when' '(' ')' 'then' '{' statement* '}'
     ;
 
 actionSection
@@ -105,7 +78,8 @@ parameterList
     ;
 
 parameter
-    : type ID
+    : type ID ('=' expression)?
+    | type star=STAR ID ('=' expression)?
     ;
 // === End agent declaration
 
@@ -115,79 +89,35 @@ messageDecl
     ;
 // === end of message declaration
 
+
 // === Statements
-sendStmt
-    : 'send' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'  
+statement
+    : printStmt
+    | loggingStmt
+    | ifStmt
+    | forStmt
+    | whileStmt
+    | breakStmt
+    | continueStmt
+    | variableDecl
+    | assignment
+    | listAddStmt
+    | sendStmt
+    | sendParentStmt
+    | sendChildrenStmt
+    | sendSiblingStmt
+    | spawnStmt
+    | killStmt
+    | killChildrenStmt
+    | doStmt
+    | sleepStmt
+    | returnStmt
+    | senseStmt
+    | goalCheckStmt
+    | getTimeStmt
+    | dictDelStmt
     ;
 
-
-sendParentStmt
-    : 'send2parent' '(' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
-    ;
-
-
-sendChildrenStmt
-    : 'send2children' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
-    ;
-
-
-sendSiblingStmt
-    : 'send2siblings' '(' expression ',' expression (',' ('msg_type=' msgTypeValue | msgTypeValue))? ')' ';'
-    ;
-
-
-spawnStmt
-    : 'spawn' '(' ID (',' '['expression (',' expression)*']')? ')' ';'
-    ;
-
-killStmt  
-    : 'kill' '(' expression? ')' ';'
-    ;
-
-
-killchildrenStmt
-    : 'kill_children' '(' expression? ')' ';'
-    ;
-
-
-sleepStmt  
-    : 'sleep' '('expression')' ';'
-    ;
-
-returnStmt
-    : 'return' expression? ';'
-    ;
-
-
-senseStmt
-    : 'sense' '('')' ';'
-    ;
-
-
-goalCheckStmt
-    : 'goal_check' '(' ID ')' ';'
-    ;
-
-
-getTimeStmt
-    : 'getTime' '('')' ';'
-    ;    
-
-
-dictDelStmt
-    : 'del' expression '[' expression ']' ';'
-    ;
-
-// === End_of_statements
-
-
-messageInit
-    : ID '(' (messageFieldAssign (',' messageFieldAssign)*)? ')'
-    ;
-
-messageFieldAssign
-    : ID '=' expression
-    ;
 
 printStmt
     : 'print' '(' expression (',' expression)* ')' ';'
@@ -197,33 +127,93 @@ loggingStmt
     : 'logging' '(' expression (',' expression)* ')' ';'
     ;
 
+sendStmt
+    : 'send' '(' expression ',' expression (','  msgTypeValue)? ')' ';'  
+    ;
+
+sendParentStmt
+    : 'send2parent' '(' expression (',' msgTypeValue)? ')' ';'
+    ;
+
+sendChildrenStmt
+    : 'send2children' '(' expression ',' expression (',' msgTypeValue)? ')' ';'
+    ;
+
+sendSiblingStmt
+    : 'send2siblings' '(' expression ',' expression (',' msgTypeValue)? ')' ';'
+    ;
+
+spawnStmt
+    : 'spawn' '(' ID (',' '{'spawnFieldAssign (',' spawnFieldAssign)*'}')? ')' ';'
+    ;
+
+spawnFieldAssign
+    : ID ':' expression
+    ;
+
+killStmt  
+    : 'kill' '(' expression? ')' ';'
+    ;
+
+killChildrenStmt
+    : 'killChildren' '(' expression? ')' ';'
+    ;
+
+sleepStmt  
+    : 'sleep' '(' expression ')' ';'
+    ;
+
+returnStmt
+    : 'return' expression? ';'
+    ;
+
+senseStmt
+    : 'sense' '('')' ';'
+    ;
+
+goalCheckStmt
+    : 'goal_check' '(' ID ')' ';'
+    ;
+
+getTimeStmt
+    : 'getTime' '('')' ';'
+    ;    
+
+dictDelStmt
+    : 'del' expression '[' expression ']' ';'
+    ;
+
+listAddStmt
+    : expression '.add(' expression ')' ';'
+    ;
+
+
 ifStmt
-    : 'if' '(' expression ')' blockOrStmt (elseStmt)?
+    : 'if' '(' expression ')' ifBlock (elseBlock)?
     ;   
 
-
-blockOrStmt 
+ifBlock
     : '{' statement* '}'
-    | statement
+    | statement 
     ;
 
-
-elseStmt
+elseBlock
     : 'else' '{' statement* '}'
+    | 'else' statement
     ;
-
 
 forStmt
     : 'for' '(' variableDecl expression ';' forAssignExpr ')' '{' forBody '}'
+    ;
+
+forAssignExpr
+    : expression '=' expression
     ;
 
 forBody
     : statement*
     ;
 
-forAssignExpr
-    : ID '=' expression
-    ;
 
 whileStmt
     : 'while' '(' expression ')' '{' statement* '}'
@@ -236,43 +226,34 @@ breakStmt
 continueStmt
     : 'continue' ';'
     ;
-    
 
 doStmt
-    : 'do(' ID (',' '['expression (',' expression)*']')? ')' ';' 
+    : 'do' ID '(' (expression (',' expression)*)? ')' ';' 
     ;
 
 
 variableDecl
-    : type ID ('=' expression)? ';'                       # VarDecl
+    : type ID ('=' expression)? ';'   # VarDecl      
+    | ID ID '=' messageInit ';'       # MessageVarDecl    
     ;
+
 
 assignment
-    : expression '=' getTimeStmt                          # GetTimeAssign
-    | ID '=' expression ';'                               # SimpleAssign
-    | ID '['']' '=' expression ';'                        # ListAddAssign
-    | ID '[' expression ']' '=' expression ';'            # IndexAssign
-    | ID '=' spawnStmt                                    # SpawnAssign
-    | ID '=' doStmt                                       # DoAssign
-    | ID '=' goalCheckStmt                                # GoalCheckAssign
-    | expression '=' doStmt                               # DoSelfAssign
-    | expression'['']' '=' expression ';'                 # SelfListAddAssign
-    | expression'[' expression ']' '=' expression ';'     # SelfIndexAssign
-    | expression '=' expression ';'                       # SelfAssign
-    | expression '=' goalCheckStmt                        # SelfGoalCheckAssign
+    : expression '=' assignValue
     ;
 
-type
-    :  bodyType                 # BacisType
-    | 'pointer<'type'>'         # PointerType
+assignValue
+    : expression ';'             # SimpleAssignValue
+    | getTimeStmt                # GetTimeAssignValue 
+    | spawnStmt                  # SpawnAssignValue
+    | doStmt                     # DoAssignValue
+    | goalCheckStmt              # GoalCheckAssignValue
     ;
-
-bodyType: 'int' | 'float' | 'string' | 'bool' | 'void' | 'tuple' | 'list' | 'dict' | 'agentid';
 
 
 expression
     : '(' expression ')'                    # ParenExpr
-    | '-' expression                        # NegExpr
+    | MINUS expression                      # NegExpr
     | MSG '.' ID                            # MessageAccessExpr
     | SELF '.' ID                           # SelfAccessExpr
     | BELIEF '.' ID                         # BeliefAccessExpr
@@ -287,11 +268,12 @@ expression
     | 'type' '(' expression ')'             # TypeExpr
     | 'abs' '(' expression ')'              # AbsExpr  
     | 'random' '(' expression ',' expression ')' # RandomExpr
-    | 'deepcopy' '(' expression ')'         # DeepCopyExpr
-    | NOT expression                        # NotExpr 
-    | '&' expression                        # AddressOfExpr
-    | expression op=('*'|'/') expression    # MulDivExpr
-    | expression op=('+'|'-') expression    # AddSubExpr
+    | 'parent::' expression                   # ParentAccessExpr
+    | NOT expression                          # NotExpr 
+    | AMPERSAND expression                    # AddressOfExpr
+    | STAR expression                         # DerefExpr
+    | expression op=('*'|'/') expression      # MulDivExpr
+    | expression op=('+'|'-') expression      # AddSubExpr
     | expression op=MODULO expression       # ModuloExpr
     | expression op=EQ expression           # EqExpr
     | expression op=NEQ expression          # NeqExpr
@@ -311,12 +293,17 @@ expression
     | listLiteral                           # ListExpr
     | dictLiteral                           # DictExpr
     | literal                               # LiteralExpr
-    | doExpr                                # DoExpression
     ;
 
 
-doExpr
-    : 'do(' ID (',' '['expression (',' expression)*']')?  ')'
+
+messageInit
+    : ID '{' (messageFieldAssign (',' messageFieldAssign)*)? '}'
+    ;
+
+
+messageFieldAssign
+    : ID ':' expression
     ;
 
 
@@ -324,17 +311,32 @@ listLiteral
     : '[' (expression (',' expression)*)? ']'
     ;
 
+
 dictLiteral
     : '{' dictEntry (',' dictEntry)* '}'
     ;
 
+
 dictEntry
-  : key=expression '=' value=expression
-  ;
+    : key=expression ':' value=expression
+    ;
+
 
 tupleLiteral
     : '(' expression ',' expression (',' expression)* ')'
     ;
+
+
+type
+    :  bodyType                         # BasicType
+    | 'pointer' '<' type '>'            # PointerType
+    | 'list' '<' type '>'               # ListType
+    | 'dict' '<' key=type ',' value=type '>'      # DictType
+    | 'tuple' '<' type (',' type)* '>'  # TupleType
+    | 'any'                               # AnyType
+    ;
+    
+bodyType : 'int' | 'float' | 'str' | 'bool' | 'void' | 'agentid';
 
 
 literal
@@ -362,11 +364,11 @@ MESSAGE: 'message';
 MSG: 'msg';
 SELF: 'self';
 BELIEF: 'bel';
-MSGTYPE_INFORM:  'inform';
-MSGTYPE_ASK:     'ask';
-MSGTYPE_REQUEST: 'request';
-MSGTYPE_CONFIRM: 'confirm';
-MSGTYPE_DENY:    'deny';
+MSGTYPE_INFORM:  'msgType_inform';
+MSGTYPE_ASK:     'msgType_ask';
+MSGTYPE_REQUEST: 'msgType_request';
+MSGTYPE_CONFIRM: 'msgType_confirm';
+MSGTYPE_DENY:    'msgType_deny';
 
 
 // Symbols
@@ -395,6 +397,7 @@ NOT: '!';
 AND: '&&';
 OR: '||';
 XOR: '^';
+AMPERSAND: '&';
 NONE: 'None';
 IF: 'if';
 ELSE: 'else';

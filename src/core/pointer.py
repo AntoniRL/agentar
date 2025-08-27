@@ -1,170 +1,55 @@
-# src/core/pointer.py
-# -*- coding: utf-8 -*-
-# Pointer class: thread-safe reference wrapper for mutable objects
+# -*- coding: utf-8 -*- 
+# core/pointer.py
+# Pointer: represents a reference to a value in the Agentar system
 
 import threading
 from copy import deepcopy
 
+class TypedMeta(type):
+    """Meta class for typed structures to enforce type checking on initialization and item assignment."""
+    def __repr__(cls):
+        return f"<class {cls.__name__}>"
 
-def get_pointer_type(value):
-    """
-    Returns the type of pointer based on the value type.
-    """
-    if isinstance(value, int):
-        return IntPointer
-    elif isinstance(value, float):
-        return FloatPointer
-    elif isinstance(value, bool):
-        return BoolPointer
-    elif isinstance(value, str):
-        return StringPointer
-    elif isinstance(value, list):
-        return ListPointer
-    elif isinstance(value, dict):
-        return DictPointer
-    else:
-        raise TypeError(f"Unsupported type for pointer: {type(value)}")
+    def __str__(cls):
+        return f"<class '{cls.__name__}'>"
 
 
-class BasePointer:
-    def __init__(self, ref = None):
-        self._ref = ref
+class Pointer(metaclass=TypedMeta):
+    def __init__(self, target = None):
+        self._target: list = [target]  # Using a list to allow mutable reference
+        self._address = hex(id(self._target)) # Get the memory address of the target object
         self._lock = threading.RLock()
 
     def get(self):
         with self._lock:
-            return self._ref
+            return self._target[0]
 
-    def set(self, value):
+    def set(self, new_target):
         with self._lock:
-            self._ref = value
+            current = self._target[0]
+            if hasattr(current, "assign") and isinstance(new_target, type(current)):
+                self._target[0].assign(new_target)
+            else:
+                self._target[0] = new_target
+
+    def __deepcopy__(self, memodict=None): # TODO: is it necessary?
+        if memodict is None:
+            memodict = {}
+        with self._lock:
+            # Check if the object is already in memodict
+            if id(self) in memodict:
+                return memodict[id(self)]
+            
+            copied_target = deepcopy(self._target[0], memodict)
+            new_pointer = type(self)(copied_target)
+
+            # Add to memodict
+            memodict[id(self)] = new_pointer
+            return new_pointer
 
     def __repr__(self):
         with self._lock:
-            return f"Pointer({repr(self._ref)})"
+            return f"Pointer(target={repr(self._target[0])}, addr={self._address})"
 
     def __str__(self):
-        return str(self.get())
-    
-
-
-class IntPointer(BasePointer):
-    def __add__(self, other): return self.get() + other
-    def __radd__(self, other): return other + self.get()
-    def __sub__(self, other): return self.get() - other
-    def __rsub__(self, other): return other - self.get()
-    def __mul__(self, other): return self.get() * other
-    def __rmul__(self, other): return other * self.get()
-    def __truediv__(self, other): return self.get() / other
-    def __rtruediv__(self, other): return other / self.get()
-    def __mod__(self, other): return self.get() % other
-    def __rmod__(self, other): return other % self.get()
-
-    def __eq__(self, other): return self.get() == other
-    def __lt__(self, other): return self.get() < other
-    def __le__(self, other): return self.get() <= other
-    def __gt__(self, other): return self.get() > other
-    def __ge__(self, other): return self.get() >= other
-
-
-
-class FloatPointer(BasePointer):
-    def __add__(self, other): return self.get() + other
-    def __radd__(self, other): return other + self.get()
-    def __sub__(self, other): return self.get() - other
-    def __rsub__(self, other): return other - self.get()
-    def __mul__(self, other): return self.get() * other
-    def __rmul__(self, other): return other * self.get()
-    def __truediv__(self, other): return self.get() / other
-    def __rtruediv__(self, other): return other / self.get()
-
-    def __eq__(self, other): return self.get() == other
-    def __lt__(self, other): return self.get() < other
-    def __le__(self, other): return self.get() <= other
-    def __gt__(self, other): return self.get() > other
-    def __ge__(self, other): return self.get() >= other
-
-
-
-class BoolPointer(BasePointer):
-    def __bool__(self): return bool(self.get())
-    def __eq__(self, other): return self.get() == other   
-    def __lt__(self, other): return self.get() < other
-    def __le__(self, other): return self.get() <= other
-    def __gt__(self, other): return self.get() > other
-    def __ge__(self, other): return self.get() >= other
-
-
-
-class StringPointer(BasePointer):
-    def __add__(self, other): return self.get() + str(other)
-    def __eq__(self, other): return self.get() == other
-    def __contains__(self, item): return item in self.get()
-    def __len__(self): return len(self.get())
-
-
-
-class ListPointer(BasePointer):
-    def __getitem__(self, key):
-        with self._lock:
-            return self._ref[key]
-
-    def __setitem__(self, key, value):
-        with self._lock:
-            self._ref[key] = value
-
-    def append(self, value):
-        with self._lock:
-            self._ref.append(value)
-
-    def pop(self, index=-1):
-        with self._lock:
-            return self._ref.pop(index)
-
-    def __len__(self):
-        with self._lock:
-            return len(self._ref)
-
-    def __iter__(self):
-        with self._lock:
-            return iter(deepcopy(self._ref))
-
-    def __contains__(self, item):
-        with self._lock:
-            return item in self._ref
-        
-
-
-class DictPointer(BasePointer):
-    def __getitem__(self, key):
-        with self._lock:
-            return self._ref[key]
-
-    def __setitem__(self, key, value):
-        with self._lock:
-            self._ref[key] = value
-
-    def get(self, key, default=None):
-        with self._lock:
-            return self._ref.get(key, default)
-
-    def keys(self):
-        with self._lock:
-            return list(self._ref.keys())
-
-    def values(self):
-        with self._lock:
-            return list(self._ref.values())
-
-    def items(self):
-        with self._lock:
-            return list(self._ref.items())
-
-    def __len__(self):
-        with self._lock:
-            return len(self._ref)
-
-    def __iter__(self):
-        with self._lock:
-            return iter(deepcopy(self._ref))
-
+        return str(self._address)

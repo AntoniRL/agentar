@@ -5,30 +5,25 @@
 import sys
 from core.agent import AgentarAgent
 from core.message import AgentarMessage
-from core.agentid import AgentId
+from core.pointer import *
+from runtime.definicion_containers.agent_container import AgentContainer
+from runtime.definicion_containers.message_container import MessageContainer
+from runtime.errors import ThrowingErrorListener
+
 from ast_tree.nodes import *
 from ast_tree.builder import AgentarToASTBuilder
-from antlr4 import *
 from antlr.AgentarLexer import AgentarLexer
 from antlr.AgentarParser import AgentarParser
-from dataclasses import is_dataclass
-from dataclasses import dataclass, fields
-from core.agentarTypes import AGENTAR_TYPE_MAP, resolve_type
-from antlr4.error.ErrorListener import ErrorListener
-from core.pointer import *
-
-class ThrowingErrorListener(ErrorListener):
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise SyntaxError(f"Line {line}:{column} {msg}")
+from antlr4 import *
 
 
 class AgentarInterpreter:
     def __init__(self):
-        self.mother_decl = AgentarAgent()  # Mother agent declaration
+        self.mother_decl = AgentarAgent()           # Mother agent declaration
         self.agent = AgentarAgent()  
         self.message = AgentarMessage()
-        self.agents_decl = {}       # Dict of agents declarations
-        self.messages_decl = {}     # Dict of messages declarations
+        self.agents_decl = AgentContainer()           # Structure of agents declarations
+        self.messages_decl = MessageContainer()       # Structure of messages declarations
 
     def runAgentar(self, file_path):
         try:
@@ -49,7 +44,7 @@ class AgentarInterpreter:
         builder = AgentarToASTBuilder()
         ast_root = builder.visit(tree)
 
-        self.visitAST(ast_root)
+        self.visitAST(ast_root) # Process the AST and fill the declarations
 
         return self.mother_decl, self.agents_decl, self.messages_decl
 
@@ -61,18 +56,21 @@ class AgentarInterpreter:
                 self.mother_decl = self.agent
                 self.mother_decl._isMother = True
                 self.mother_decl._name = "MOTHER"
+                self.mother_decl._line_declaration = decl._line
                 self.agent = AgentarAgent()  # Reset for next agent
+
             elif isinstance(decl, AgentNode):
                 self.declareAgent(decl)
                 self.agent._name = decl.name
-                self.agents_decl[decl.name] = self.agent
-                self.agent = AgentarAgent()  # Reset for next agent
+                self.agent._line_declaration = decl._line
+                self.agents_decl.declare(decl.name, self.agent)  # Add to the agent container
+                self.agent = AgentarAgent()     # Reset for next agent
+                
             elif isinstance(decl, MessageDeclNode):
                 self.declareMessage(decl)
-                self.messages_decl[decl.name] = self.message
-                self.message = AgentarMessage()  # Reset for next message
-            else:
-                raise ValueError(f"Unknown declaration type: {type(decl)}")
+                self.message._line_declaration = decl._line
+                self.messages_decl.declare(decl.name, self.message)  # Add to the message container
+                self.message = AgentarMessage()     # Reset for next message
             
 
     def declareAgent(self, node):
@@ -101,19 +99,7 @@ class AgentarInterpreter:
 
     def FieldDeclare(self, node):
         for field in node.declarations:
-            # chek if field has value or not then make sure it is correct class
-            if field.value is None or isinstance(field.value, ListLiteralNode, DictLiteralNode):
-                type_name, default_value = resolve_type(field.var_type)     
-
-                self.agent._fields[field.name] = default_value
-                self.agent._fields_type[field.name] = type_name  # np. int, str, bool
-            
-            elif isinstance(field.value, LiteralNode):
-                type_name, _ = resolve_type(field.var_type)
-                self.agent._fields[field.name] = field.value.value  # np. 42, "hello", True
-                self.agent._fields_type[field.name] = type_name  # np. int, str, bool
-            else:
-                raise ValueError(f"Unsupported field value type: {type(field.value)}")
+            self.agent._fields.declare(field.name, field.value, field.var_type, field._line)
 
 
     def InitDeclare(self, node):
@@ -127,18 +113,8 @@ class AgentarInterpreter:
 
 
     def BeliefDeclare(self, node):
-        for belief in node.declarations:
-            # chek if field has value or not then make sure it is correct class
-            if belief.value is None:
-                type_name , default_value = resolve_type(belief.var_type)             
-                self.agent._beliefs[belief.name] = default_value
-                self.agent._beliefs_type[belief.name] = type_name  # np. int, str, bool
-            elif isinstance(belief.value, LiteralNode):
-                type_name , _ = resolve_type(belief.var_type) 
-                self.agent._beliefs[belief.name] = belief.value.value  # np. 42, "hello", True
-                self.agent._beliefs_type[belief.name] = type_name  # np. int, str, bool
-            else:
-                raise ValueError(f"Unsupported field value type: {type(belief.value)}")
+        for belief in node.declarations:         
+            self.agent._beliefs.declare(belief.name, belief.value, belief.var_type, belief._line)
 
 
     def SenseDeclare(self, node):
@@ -148,7 +124,7 @@ class AgentarInterpreter:
 
     def GoalDeclare(self, node):
         for goal in node.goals:
-            self.agent._sub_goals[goal.name] = goal.condition
+            self.agent._sub_goals.declare(goal.name, goal.condition)
         self.agent._merge_goals_condition = node.merge_condition if node.merge_condition else None
 
 
@@ -161,18 +137,16 @@ class AgentarInterpreter:
         list_of_blocks = []
         for blok in node.blocks:
              list_of_blocks.append(blok)
-        self.agent._receive[node.name] = list_of_blocks        
+        self.agent._receive.declare(node.name, list_of_blocks)
+        
         
     def ActionDeclare(self, node):
-        self.agent._actions[node.name] = node
+        self.agent._actions.declare(node.name, node)
 
     
     def declareMessage(self, node):
         self.message._name = node.name
-        for field in node.fields:
-            type_name , default_value = resolve_type(field.var_type)             
-
-            self.message._content[field.name] = default_value
-            self.message._content_type[field.name] = type_name
+        for field in node.fields:       
+            self.message._content.declare(field.name, None, field.var_type, field._line)
 
         

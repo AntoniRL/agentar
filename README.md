@@ -35,7 +35,9 @@ Python
 - uruchomienie interpretera
 ```bash
 agentar run examples/hello.agar
+agentar help 
 ```
+
 
 - Java generuj parser (testowanie, łatwiejsza analiza drzewa parsowego) 
 Wymaga dodatkowej instalacji:

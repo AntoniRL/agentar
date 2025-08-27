@@ -1,0 +1,7 @@
+agent mother {
+    initialize {
+        print("Hello Agentar");
+    } 
+}
+
+/* EXPECT: Hello Agentar */

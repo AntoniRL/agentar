@@ -4,10 +4,19 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional, Union
 
+
+# Custom metaclass to provide a custom __repr__ for all ASTNode subclasses
+class CustomReprMeta(type):
+    def __repr__(cls):
+        return f"<class '{cls.__name__}'>"
+    
+
 # === Base AST class ===
 @dataclass
-class ASTNode:
-    pass
+class ASTNode(metaclass=CustomReprMeta):
+    _line: Optional[int]   # Line number in the source code
+    _column: Optional[int]   # Column number in the source code
+    #_oryginal_text: Optional[str]   # Original text from the source code
 
 # === Program and declarations ===
 @dataclass
@@ -116,7 +125,6 @@ class LoggingNode(ASTNode):
 class AssignmentNode(ASTNode):
     target: Union[ASTNode]
     value: ASTNode
-    index: Optional[ASTNode] = None
 
 
 @dataclass
@@ -201,14 +209,22 @@ class NotNode(ASTNode):
 
 @dataclass
 class IndexAccessNode(ASTNode):
-    base: ASTNode
+    name: ASTNode
     index: ASTNode
+
 
 @dataclass
 class SliceAccessNode(ASTNode):
-    base: ASTNode
+    name: ASTNode
     start: Optional[ASTNode] = None
     end: Optional[ASTNode] = None
+
+
+@dataclass 
+class MessageVarDeclNode(ASTNode):
+    name: str
+    message_type: str
+    message: ASTNode
 
 
 @dataclass
@@ -266,6 +282,11 @@ class DictDelNode(ASTNode):
     base: ASTNode
     key: ASTNode
 
+
+@dataclass
+class ListAddNode(ASTNode):
+    base: ASTNode
+    value: ASTNode
 
 @dataclass
 class TupleLiteralNode(ASTNode):
@@ -342,14 +363,40 @@ class LenNode(ASTNode):
 class TypeExprNode(ASTNode):
     base: ASTNode
 
-
 @dataclass
 class BaseTypeNode(ASTNode):
-    name: str  # np. 'int', 'list', 'bool', ...
+    name: str  # 'int', 'float', 'str', 'bool', 'void', 'agentid'
+
 
 @dataclass
 class PointerTypeNode(ASTNode):
-    inner: ASTNode  # inny TypeNode, np. BaseTypeNode lub kolejny PointerTypeNode
+    inner_type: ASTNode  
+
+
+@dataclass
+class ListTypeNode(ASTNode):
+    inner_type: ASTNode
+    _type: type = list
+
+
+@dataclass
+class DictTypeNode(ASTNode):
+    key_type: ASTNode
+    value_type: ASTNode
+    _type: type = dict
+
+
+@dataclass
+class TupleTypeNode(ASTNode):
+    elements_type: List[ASTNode]
+    _type: type = tuple
+
+
+@dataclass
+class AnyTypeNode(ASTNode):
+    pass
+
+
 
 
 @dataclass
@@ -386,3 +433,13 @@ class NegExprNode(ASTNode):
 @dataclass
 class DeepCopyNode(ASTNode):
     variable: ASTNode
+
+
+@dataclass
+class DerefExprNode(ASTNode):
+    pointer: ASTNode
+
+
+@dataclass
+class ParentShadowNode(ASTNode):
+    base: ASTNode

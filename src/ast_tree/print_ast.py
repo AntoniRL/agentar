@@ -29,6 +29,8 @@ def _build_tree(rich_tree, node):
     elif is_dataclass(node):
         branch = rich_tree.add(f"[bold]{node.__class__.__name__}[/]")
         for field in node.__dataclass_fields__:
+            if field in {"_line", "_column", "_oryginal_text"}:
+                continue
             value = getattr(node, field)
             if isinstance(value, (ASTNode, list)):
                 sub = branch.add(f"[cyan]{field}[/]")

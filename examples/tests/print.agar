@@ -1,0 +1,11 @@
+// Print and logging test
+
+agent mother {
+    initialize {
+        print("Working!");
+        logging("Logging!");
+    }
+}
+
+/*EXPECTED: Working!*/
+/*With flag -r: (LOGGING) Logging!*/

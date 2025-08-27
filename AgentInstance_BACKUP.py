@@ -2,11 +2,11 @@
 # runtime/AgentInstance.py
 # Agent instance: represents a single agent in the Agentar system
 
-from runtime.MessageInstance import MessageInstance
+from src.runtime.message_instance import MessageInstance
 from core.agent import AgentarAgent
 from core.message import MessageType, get_message_type
-from core.agentid import AgentId
-from core.agentarTypes import AGENTAR_TYPE_MAP, resolve_type, check_if_var_is_pointer
+from src.core.agent_id import AgentId
+from src.core.agentar_types import AGENTAR_TYPE_MAP, resolve_type, check_if_var_is_pointer
 from ast_tree.nodes import *
 from core.pointer import *
 from queue import Queue

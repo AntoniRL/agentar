@@ -32,7 +32,7 @@
 │   ├── runtime
 |   |   ├── AgentarSystem.py            # System runner: starts/stops mother and other agents
 |   |   ├── AgentRunner.py              # AgentRunner: thread class running AgentInstance
-│   │   ├── AgentInstance.py           # AgentInstance: inbox, step(), process logic
+│   │   ├── AgentInstance.py            # AgentInstance: inbox, step(), process logic
 │   |   └── Agentar_builtins.py         # Built-in Agentar functions (e.g. spawn, print)
 |   |
 |   └── cli.py                          # Command-line entry

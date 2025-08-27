@@ -1,0 +1,29 @@
+agent mother {
+    fields{
+        list<int> l = [0,0,0];
+
+    }
+    initialize {
+        /*
+        dict<str, int> d = {"one": 1, "two": 2};
+        print(d);
+        print(d.keys());
+        print(d.values());
+        d["one"] = 2;
+        print(d["one"]);
+        d["three"] = 3;
+        del d["one"];
+        print(d.get("two"));
+        list<int> l;
+        print("list", l);
+        l.add(1);
+        self.l.add(2);
+        print(self.l);
+        print(l);
+        */
+        tuple<int, int> t = (1, 2);
+        t[0] = 2;
+        print(t[-1]);
+        kill();
+    }
+}

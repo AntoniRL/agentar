@@ -1,0 +1,35 @@
+agent mother {
+    fields{
+        //int x = 4;
+        list<int> l = [0,1];
+    }
+    initialize {
+        list<int> l = [0,1];
+        int x = 5;
+        do run(l, x);
+        print("NO REF", l);
+        print("x=", x);
+        do run2(&l, &x);
+        print("hhh", x);
+        print("REF:: ", l);
+    } 
+    action run(list<int> l, int x): void {
+        print(l);
+        l[0] = 100;
+        x = x+1;
+        print("inner",x);
+        print(l);
+    }
+    action run2(pointer<list<int>> l, pointer<int> x): void {
+        //print(l);
+        //print(*l);
+        //print(*l[0]);
+        *l[0] = 100;
+        print(*l);
+        print(*x);
+        *x = 6;
+        print(x);
+        print(*x);
+        //print(x);
+    }
+}

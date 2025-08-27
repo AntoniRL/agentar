@@ -3,9 +3,9 @@
 # Command Line Interface (CLI) for running Agentar scripts (.agar files)
 
 import sys
-from interpreter.AgentarInterpreter import AgentarInterpreter
+from interpreter.agentar_interpreter import AgentarInterpreter
 from ast_tree.print_ast import main as print_ast
-from runtime.AgentarSystem import AgentarSystem
+from runtime.agentar_system import AgentarSystem
 import time
 import logging
 
@@ -21,6 +21,7 @@ def show_help():
     print("    -f / -file    Log output to agentar.log")
     print("    -t <seconds>  Set maximum runtime for the script (default is 5 seconds) or 'inf' for infinite runtime")
     print("  tree         Print the AST of a .agar file")
+    print("tree <paht_to_file> | tee ast.txt        Print the AST of a .agar file to the console and save it to ast.txt")
     print("\nExamples:")
     print("  agentar run examples/hello.agar -r -t 10")
 
@@ -42,19 +43,19 @@ def run_file(file_path, max_runtime):
 def ast_tree(file_path):
     print_ast(file_path)
 
+
 def logging_setup(raport_flag=False, to_file=False):
-    if raport_flag:
-        logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
-                        datefmt='%H:%M:%S')
-    elif to_file:
-        
-        logging.basicConfig(filename='agentar.log',  # write to a file
+    if to_file:
+        logging.basicConfig(filename='logs/agentar.log',  # write to a file
                             filemode='w',            # 'a' = append, 'w' = overwrite
                             level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
                             datefmt='%H:%M:%S')
     else:
-        logging.basicConfig(level=logging.ERROR, format='[%(asctime)s] %(levelname)s: %(message)s',
-                            datefmt='%H:%M:%S')
+        logging.basicConfig(
+        level=logging.INFO if raport_flag else logging.WARNING,
+        format='[%(asctime)s] %(levelname)s: %(message)s',
+        datefmt='%H:%M:%S'
+    )
 
 
 def main():

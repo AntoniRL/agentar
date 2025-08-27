@@ -1,0 +1,10 @@
+agent mother {
+    initialize {
+        int x = 1;
+        float y = 4.5;
+        string str = "Hello";
+        agentid agentid_ = .1.1;
+        print(x, y, str, agentid_);
+        kill();
+    } 
+}
