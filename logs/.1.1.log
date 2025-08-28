@@ -176,3 +176,35 @@ Traceback (most recent call last):
     return self._find(name, line).value.get().get()  # Get the value from the Pointer.Pointer
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AttributeError: 'int' object has no attribute 'get'
+[00:53:13] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: 'int' object has no attribute 'get'
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 29, in run
+    self.instance.step()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 67, in step
+    self._action_executor.sense_world()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/action_executor.py", line 21, in sense_world
+    self.agent._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 220, in handle_assignment
+    value = self.agent._evaluator.eval_expr(stmt.value, local_vars, message, stmt._line)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 197, in eval_expr
+    return self.eval_expr(pointer, local_vars, message, line, deref=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 104, in eval_expr
+    base_value = self.eval_expr(name, local_vars, message, line, deref)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 104, in eval_expr
+    base_value = self.eval_expr(name, local_vars, message, line, deref)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 105, in eval_expr
+    index_value = self.eval_expr(index, local_vars, message, line, deref)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 166, in eval_expr
+    return self.agent._beliefs.get(name, line, deref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 75, in get
+    return self._find(name, line).value.get().get()  # Get the value from the Pointer.Pointer
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'get'

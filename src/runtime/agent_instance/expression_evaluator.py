@@ -102,7 +102,7 @@ class ExpressionEvaluator:
 
             case IndexAccessNode(name=name, index=index, _line=line):
                 base_value = self.eval_expr(name, local_vars, message, line, deref)
-                index_value = self.eval_expr(index, local_vars, message, line, deref)
+                index_value = self.eval_expr(index, local_vars, message, line)
                 if type(base_value) in (TypedList, TypedTuple):
                     if isinstance(index_value, int):
                         if index_value < -len(base_value) or index_value >= len(base_value):
@@ -121,8 +121,8 @@ class ExpressionEvaluator:
 
             case SliceAccessNode(base=base, start=start, end=end, _line=line):
                 base_value = self.eval_expr(base, local_vars, message, line, deref)
-                start_value = self.eval_expr(start, local_vars, message, line, deref) if start is not None else 0
-                end_value = self.eval_expr(end, local_vars, message, line, deref) if end is not None else None
+                start_value = self.eval_expr(start, local_vars, message, line) if start is not None else 0
+                end_value = self.eval_expr(end, local_vars, message, line) if end is not None else None
                 if type(base_value) in (TypedList, TypedTuple):
                     if end_value is None: end_value = len(base_value)
                     if isinstance(start_value, int) and isinstance(end_value, int):
