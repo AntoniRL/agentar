@@ -1,11 +1,8 @@
-[16:32:52] INFO: Starting Agentar system...
-[16:32:52] INFO: .1:: Initializing agent
-[16:32:52] INFO: .1:: Sleeping for 0.5 seconds
-[16:32:52] INFO: .1.1:: Initializing agent
-[16:32:52] INFO: .1.1:: (PRINTING) Hello I am child of .1
-[16:32:52] ERROR: ❌ ERROR:: Exception in agent .1.1
-[16:32:53] INFO: Thread for agent .1.1 stopped.
-[16:32:53] INFO: .1:: (PRINTING) [0, 1, 0]
-[16:32:53] INFO: Mother agent requested system shutdown.
-[16:32:53] INFO: Thread for agent .1 stopped.
-[16:32:53] INFO: Agentar system stopped.
+[15:21:05] INFO: Starting Agentar system...
+[15:21:05] INFO: .1:: Initializing agent
+[15:21:05] INFO: .1:: (PRINTING) [[(1, 0, 0, 0, 0), (0, 0, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 0, 1, 0)], [(0, 1, 0, 0, 0), (1, 0, 1, 0, 1), (0, 0, 0, 1, 0), (0, 0, 1, 0, 0)], [(1, 0, 0, 0, 0), (0, 0, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 0, 0, 0)], [(0, 0, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 0, 1, 0), (0, 0, 0, 1, 0)]]
+[15:21:05] INFO: .1:: (PRINTING) 5
+[15:21:05] INFO: .1:: (PRINTING) hello
+[15:21:10] WARNING: Timeout reached. Stopping system.
+[15:21:11] INFO: Thread for agent .1 stopped.
+[15:21:11] INFO: Agentar system stopped.

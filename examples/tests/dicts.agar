@@ -21,9 +21,11 @@ agent mother {
         print(self.l);
         print(l);
         */
-        tuple<int, int> t = (1, 2);
-        t[0] = 2;
-        print(t[-1]);
+        dict<tuple<int,int>,int> d;
+        d[(1,1)] = 1;
+        print(d);
+        d[(1,1)] = 1;
+        print(d);
         kill();
     }
 }

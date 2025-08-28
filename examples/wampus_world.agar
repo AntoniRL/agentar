@@ -1,4 +1,59 @@
+agent finder{
+    fields{
+        pointer<list<list<list<int>>>> WORLD;
+        tuple<int, int> start_pos = (0,3);
+        bool arrow = True;
+        bool wampus_alive = True;
+        bool has_gold = False;
+        list<tuple<int,int>> plan;
+    }
+    beliefs{
+        // position
+        int x;
+        int y; 
 
+        //dict<tuple<int,int>, int> visited;
+        dict<tuple<int,int>, int> safe;
 
-agent mother {
+        dict<tuple<int,int>, int> stanch;
+        dict<tuple<int,int>, int> wampus;
+        dict<tuple<int,int>, int> breeze;
+        dict<tuple<int,int>, int> pit;
+
+        list<tuple<int,int>> frontier;
+
+        dict<tuple<int,int>, tuple<int,int>> parent; // BFS tree
+        bool hard_screem = False;
+    }
+    goals{
+
+    }
+    initialize{
+        bel.x = self.start_pos[0];
+        bel.y = self.start_pos[1];
+        print(bel.x, bel.y);
+    }
+    sense{
+        tuple<int,int> pos = (bel.x, bel.y);
+        bel.stanch[pos] = *self.WORLD[3][0][0];
+        print(bel.stanch);
+    }
+    rules{
+    }
+    destroy{
+    }
+}
+
+agent mother{
+    fields{
+        // (stanch, wampus, breeze, pit, gold)
+        list<list<list<int>>> WORLD = [[[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]],
+                                       [[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]],
+                                       [[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]],
+                                       [[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]]];
+    }
+    initialize{
+        logging(self.WORLD);
+        spawn(finder, {WORLD: &self.WORLD});
+    }
 }

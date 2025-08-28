@@ -1,0 +1,178 @@
+[21:58:18] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: ERROR at line 13: Variable 'WOLRD' not found.
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 29, in execute_stmt
+    self.print_stmt(stmt, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 201, in print_stmt
+    to_print = [self.agent._evaluator.eval_expr(value, local_vars, message, line) for value in value]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 197, in eval_expr
+    return self.eval_expr(pointer, local_vars, message, line, deref=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 70, in eval_expr
+    return local_vars.get(name, line, deref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 75, in get
+    return self._find(name, line).value.get().get()  # Get the value from the Pointer.Pointer
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 149, in _find
+    raise VariableNotFoundError(name, line)
+runtime.errors.VariableNotFoundError: ERROR at line 13: Variable 'WOLRD' not found.
+[21:58:30] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: ERROR at line 13: Variable 'self.WOLRD' not found.
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 29, in execute_stmt
+    self.print_stmt(stmt, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 201, in print_stmt
+    to_print = [self.agent._evaluator.eval_expr(value, local_vars, message, line) for value in value]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 197, in eval_expr
+    return self.eval_expr(pointer, local_vars, message, line, deref=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 146, in eval_expr
+    raise VariableNotFoundError(f"self.{name}", line)
+runtime.errors.VariableNotFoundError: ERROR at line 13: Variable 'self.WOLRD' not found.
+[22:32:48] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: ERROR at line 17: unhashable type: 'BelAccessNode'
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 84, in set
+    variable = self._find(name, line)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 147, in _find
+    var = self._find_or_none(name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 154, in _find_or_none
+    if name in self._variables:
+       ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: unhashable type: 'BelAccessNode'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 222, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 239, in assign_to_target
+    local_vars.set((name.name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 127, in set
+    raise AgentarRuntimeError(e, line) from e
+runtime.errors.AgentarRuntimeError: ERROR at line 17: unhashable type: 'BelAccessNode'
+[22:45:49] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: ERROR at line 17: Expected value type TypedDict, got NoneType
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 100, in set
+    container[sub] = value
+    ~~~~~~~~~^^^^^
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 220, in __setitem__
+    self._check_value_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 207, in _check_value_type
+    raise TypeError(f"Expected value type {self.value_type.__name__}, got {type(value).__name__}")
+TypeError: Expected value type TypedDict, got NoneType
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 222, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 237, in assign_to_target
+    self.agent._beliefs.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 127, in set
+    raise AgentarRuntimeError(e, line) from e
+runtime.errors.AgentarRuntimeError: ERROR at line 17: Expected value type TypedDict, got NoneType
+[23:20:24] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: ERROR at line 37: 'str' object has no attribute '_evaluator'
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 49, in declare
+    value = self._agent._evaluator.eval_expr(value, self)  # Evaluate the expression to get the value. (self == variable_container of place where the declaration is called)
+            ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute '_evaluator'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 29, in run
+    self.instance.step()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 67, in step
+    self._action_executor.sense_world()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/action_executor.py", line 21, in sense_world
+    self.agent._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 25, in execute_stmt
+    local_vars.declare(var_name, value_expr, var_type, line)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 62, in declare
+    raise AgentarRuntimeError(e, declaration_line) from e
+runtime.errors.AgentarRuntimeError: ERROR at line 37: 'str' object has no attribute '_evaluator'
+[23:22:54] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: ERROR at line 38: Expected value type bool, got TypedList
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 100, in set
+    container[sub] = value
+    ~~~~~~~~~^^^^^
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 220, in __setitem__
+    self._check_value_type(value)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 207, in _check_value_type
+    raise TypeError(f"Expected value type {self.value_type.__name__}, got {type(value).__name__}")
+TypeError: Expected value type bool, got TypedList
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 29, in run
+    self.instance.step()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 67, in step
+    self._action_executor.sense_world()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/action_executor.py", line 21, in sense_world
+    self.agent._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 222, in handle_assignment
+    self.assign_to_target(stmt.target, value, local_vars, message, stmt._line)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 237, in assign_to_target
+    self.agent._beliefs.set((target_name, index_value), value, line, deref)
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 127, in set
+    raise AgentarRuntimeError(e, line) from e
+runtime.errors.AgentarRuntimeError: ERROR at line 38: Expected value type bool, got TypedList
+[23:24:23] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: 'int' object has no attribute 'get'
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 29, in run
+    self.instance.step()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 67, in step
+    self._action_executor.sense_world()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/action_executor.py", line 21, in sense_world
+    self.agent._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 33, in execute_stmt
+    self.handle_assignment(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 220, in handle_assignment
+    value = self.agent._evaluator.eval_expr(stmt.value, local_vars, message, stmt._line)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 197, in eval_expr
+    return self.eval_expr(pointer, local_vars, message, line, deref=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 104, in eval_expr
+    base_value = self.eval_expr(name, local_vars, message, line, deref)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 104, in eval_expr
+    base_value = self.eval_expr(name, local_vars, message, line, deref)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 105, in eval_expr
+    index_value = self.eval_expr(index, local_vars, message, line, deref)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/expression_evaluator.py", line 166, in eval_expr
+    return self.agent._beliefs.get(name, line, deref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 75, in get
+    return self._find(name, line).value.get().get()  # Get the value from the Pointer.Pointer
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'get'

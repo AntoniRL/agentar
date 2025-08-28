@@ -64,7 +64,7 @@ class MessageHandler:
         self.agent._runtime.send_message(msg)
 
 
-    def send_2_children(self, stmt, local_vars):
+    def send_to_children(self, stmt, local_vars):
         msg = self.agent._evaluator.eval_expr(stmt.message, local_vars)
         # --- Create a deep copy of the message to avoid modifying the original message. It helps to prevent issues with shared references.
         content = msg._content

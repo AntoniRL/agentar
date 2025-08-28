@@ -113,6 +113,8 @@ class ExpressionEvaluator:
                         raise WrongTypeError("index", int, type(index_value), line)
                 elif type(base_value) == TypedDict:
                     return base_value[index_value]
+                elif isinstance(base_value, list):
+                    return base_value[index_value]
                 else:
                     raise WrongTypeError("base", "TypedList, TypedDict, TypedTuple or Pointer", type(base_value), line)
                     
@@ -197,7 +199,10 @@ class ExpressionEvaluator:
             
 
             case AddressOfExprNode(variable=variable, _line=line):
-                local_pointer = local_vars.get_pointer(variable.name, line)
+                if isinstance(variable, SelfAccessNode):
+                    local_pointer = self.agent._fields.get_pointer(variable.path[1], line)
+                else:
+                    local_pointer = local_vars.get_pointer(variable.name, line)
                 return local_pointer
 
 

@@ -218,9 +218,13 @@ class TypedDict(metaclass=TypedMeta):
     def __setitem__(self, key, value):
         self._check_key_type(key)
         self._check_value_type(value)
+        print([type(k) for k in self.items.keys()])
+        print(type(key), type(self.items), key, self.items)
         if key in self.items:
+            print("I am here :)))")
             self.items[key].set(value)
         else:
+            print("I am here :(((")
             self.items[key] = Pointer(value)
 
     def __delitem__(self, key):
@@ -322,6 +326,17 @@ class TypedTuple(metaclass=TypedMeta):
 
     def __len__(self):
         return len(self.items)
+    
+    def _value_items(self):
+        return tuple(ptr.get() for ptr in self.items)
+    
+    def __eq__(self, other):
+        if isinstance(other, TypedTuple):
+            return self._value_items() == other._value_items()
+        return NotImplemented
+    
+    def __hash__(self):
+        return hash(self._value_items())
 
     def __iter__(self):
         for ptr in self.items:
