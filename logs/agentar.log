@@ -1,8 +1,0 @@
-[15:21:05] INFO: Starting Agentar system...
-[15:21:05] INFO: .1:: Initializing agent
-[15:21:05] INFO: .1:: (PRINTING) [[(1, 0, 0, 0, 0), (0, 0, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 0, 1, 0)], [(0, 1, 0, 0, 0), (1, 0, 1, 0, 1), (0, 0, 0, 1, 0), (0, 0, 1, 0, 0)], [(1, 0, 0, 0, 0), (0, 0, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 0, 0, 0)], [(0, 0, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 0, 1, 0), (0, 0, 0, 1, 0)]]
-[15:21:05] INFO: .1:: (PRINTING) 5
-[15:21:05] INFO: .1:: (PRINTING) hello
-[15:21:10] WARNING: Timeout reached. Stopping system.
-[15:21:11] INFO: Thread for agent .1 stopped.
-[15:21:11] INFO: Agentar system stopped.
