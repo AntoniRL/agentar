@@ -1,0 +1,36 @@
+agent mother {
+    fields{
+        int x = 4;
+    }
+    initialize {
+        list<int> l = [0,1];
+        print("=== initialize:");
+        print("x=", self.x);
+        print("l=", l);
+
+        do run(l, self.x);
+        print("=== no ref:");
+        print("x=", self.x);
+        print("l=", l);
+
+        do run2(&l, &self.x);
+        print("=== ref:");
+        print("x", self.x);
+        print("l", l);
+    } 
+    action run(list<int> l, int x): void {
+        l[0] = 100;
+        x = x+1;
+        print("=== in function:");
+        print(x);
+        print(l);
+    }
+    action run2(pointer<list<int>> l, pointer<int> x): void {
+        *l[0] = 100;
+        *x = 6;
+        print("=== in function:");
+        print(x);
+        print(*x);     
+        print(*l);
+    }
+}

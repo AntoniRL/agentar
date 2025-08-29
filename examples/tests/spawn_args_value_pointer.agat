@@ -1,0 +1,36 @@
+agent child {
+    fields{
+        list<int> value_list;          // passed by value
+        pointer<list<int>> ref_list;   // passed by pointer (reference)
+    }
+    initialize{
+        print("hello, parent =", self._parent);
+        print("value_list (own copy):", self.value_list);
+        print("*ref_list (shared with parent):", *self.ref_list);
+
+        // mutate both; only the referenced one will reflect in parent
+        self.value_list[0] = 222;
+        *self.ref_list[0] = 111;
+
+        print("after mutate value_list:", self.value_list);
+        print("after mutate *ref_list:", *self.ref_list);
+        kill();
+    }
+}
+
+agent mother {
+    initialize{
+        list<int> L = [0,1,0];
+        print("before spawn, L:", L);
+
+        agentid cid;
+        cid = spawn(child, { value_list: L, ref_list: &L });
+        print("spawned child id =", cid);
+
+        sleep(0.5); // allow child to run and mutate
+        print("after child, L:", L); // expect index 0 == 111
+        // value_list changes are child's private copy, not visible here
+
+        kill();
+    }
+}

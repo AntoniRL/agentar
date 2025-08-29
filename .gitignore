@@ -21,3 +21,5 @@ __pycache__/
 *.egg-info/
 
 /grammar/antlr-*-complete.jar
+
+/logs

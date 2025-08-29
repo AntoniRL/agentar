@@ -433,17 +433,17 @@ class AgentarToASTBuilder(AgentarVisitor):
     
 
     def visitSliceToExpr(self, ctx:AgentarParser.SliceToExprContext):
-        base = self.visit(ctx.expression(0))
+        name = self.visit(ctx.expression(0))
         start = None # means slice from the beginning
         end = self.visit(ctx.expression(1))
-        return ast.SliceAccessNode(base=base, start=start, end=end, **self.node_meta(ctx))
+        return ast.SliceAccessNode(name=name, start=start, end=end, **self.node_meta(ctx))
 
 
     def visitSliceFromExpr(self, ctx:AgentarParser.SliceFromExprContext):
-        base = self.visit(ctx.expression(0))
+        name = self.visit(ctx.expression(0))
         start = self.visit(ctx.expression(1))
         end = None # means no end specified, slice to the end
-        return ast.SliceAccessNode(base=base, start=start, end=end, **self.node_meta(ctx))
+        return ast.SliceAccessNode(name=name, start=start, end=end, **self.node_meta(ctx))
 
 
     def visitSliceRangeExpr(self, ctx:AgentarParser.SliceRangeExprContext):

@@ -74,7 +74,7 @@ class ActionExecutor:
 
 
     def execute_action(self, action_node, parameters, line_of_call_action=None):
-        local_vars = VariableContainer("Action")
+        local_vars = VariableContainer(agent=self.agent, scope="Action")
         # Initialize parameters
         for i, param_decl in enumerate(action_node.parameters):
             self.agent._executor.execute_stmt(param_decl, local_vars, None)

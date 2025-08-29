@@ -1,0 +1,53 @@
+agent mother {
+    fields{
+        list<int> l = [0,2,3,4];
+    }
+
+    initialize {
+        print("--- list<int>: basics ---");
+        list<int> myList = [1, 2, 3];
+        print("Initial myList:", myList);
+        print("myList[0] =", myList[0]);
+
+        print("--- add ---");
+        myList.add(4);
+        print("after add 4:", myList);
+
+        print("--- update ---");
+        myList[1] = 10;
+        print("after update index 1 -> 10:", myList);
+
+        print("--- delete ---");
+        del myList[2];
+        print("after delete index 2:", myList);
+
+        print("--- slice ---");
+        list<int> slice1 = myList[1:-1];
+        print("slice myList[1:-1]:", slice1);
+
+        print("--- field list (self.l) ---");
+        print("self.l initial:", self.l);
+        print("self.l[0] =", self.l[0]);
+        self.l.add(5);
+        print("self.l after add 5:", self.l);
+        self.l[1] = 99;
+        print("self.l after update index 1 -> 99:", self.l);
+        del self.l[2];
+        print("self.l after delete index 2:", self.l);
+        list<int> selfSlice = self.l[1:];
+        print("self.l[1:]:", selfSlice);
+
+        print("--- nested lists ---");
+        list<list<int>> grid = [[1,2],[3,4,5]];
+        print("grid initial:", grid);
+        print("grid[0] =", grid[0]);
+        grid[0].add(99);
+        print("after grid[0].add(99):", grid);
+        grid[1][0] = 100;
+        print("after set grid[1][0] -> 100:", grid);
+        del grid[1][2];
+        print("after del grid[1][2]:", grid);
+
+        kill();
+    }
+}

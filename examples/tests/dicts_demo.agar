@@ -1,0 +1,44 @@
+agent mother {
+    initialize {
+        print("--- dict<str, int>: basics ---");
+        dict<str, int> scores = {"Alice": 10, "Bob": 7};
+        print("Initial scores:", scores);
+
+        print("keys:", scores.keys());
+        print("values:", scores.values());
+
+        print("scores['Alice'] =", scores["Alice"]);  // access by key
+
+        scores["Bob"] = 8;                            // update
+        print("After updating Bob -> 8:", scores);
+
+        scores["Carol"] = 12;                         // add
+        print("After adding Carol -> 12:", scores);
+
+        del scores["Alice"];                          // delete
+        print("After deleting Alice:", scores);
+
+        print("get('Bob'):", scores.get("Bob"));      // existing -> value
+        print("get('Dave'):", scores.get("Dave"));    // missing -> None
+
+        print(" --- dict<str, any>: mixed types ---");
+        dict<str, any> user = {"name": "Alice", "age": 5};
+        print("user:", user);
+        print("user.keys():", user.keys());
+        print("user.values():", user.values());
+        user["age"] = 6;                              // modify mixed-type dict
+        user["city"] = "Warsaw";                      // add new pair
+        print("user after updates:", user);
+        del user["city"];
+        print("user after deleting 'city':", user);
+
+        print("--- dict with tuple keys ---");
+        dict<tuple<int,int>, int> grid;
+        grid[(1,1)] = 1;
+        print("grid after first set:", grid);
+        grid[(1,1)] = 2;                              // overwrite same key
+        print("grid after overwrite:", grid);
+
+        kill();
+    }
+}

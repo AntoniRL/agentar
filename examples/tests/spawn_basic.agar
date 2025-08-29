@@ -1,0 +1,25 @@
+agent worker {
+    initialize{
+        print("started. parent =", self._parent);
+        for (int k = 0; k < 3; k = k + 1) {
+            print("heartbeat", k);
+            sleep(0.3);
+        }
+        print("done, bye!");
+        kill();
+    }
+}
+
+agent mother {
+    initialize{
+        print("spawning worker...");
+        agentid wid;
+        wid = spawn(worker);  // no fields to pass
+        print("spawned worker id =", wid);
+
+        // wait so we can see worker heartbeats
+        sleep(1.2);
+        print("done.");
+        kill();
+    }
+}
