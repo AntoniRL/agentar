@@ -85,7 +85,6 @@ agent finder{
         print(bel.wampus);
         print(bel.pit);
         print(bel.safe);
-
     }
 }
 
