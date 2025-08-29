@@ -1,7 +1,7 @@
-// Program demonstrujący czysty model wymiany wiadomości międyz agentami
+// Program for simple demonstration of ping-pong behavior
 
 message ping{
-    int x;
+    int y;
 }
 
 message pong{
@@ -10,34 +10,34 @@ message pong{
 
 agent child {
     receive ping{
-        when (msg._type == request) then {
-            msg_ = pong(x = 1);
-            send2parent(msg_, msg_type=inform);
+        when (msg._type == msgType_request) then {
+            pong msg_ = pong{x: 1};
+            send2parent(msg_, msgType_inform);
         }
     }
 }
 
 agent mother {
-    initialize {
-        agentid agentid_;
-        agentid_ = spawn(child);
-        msg_ = ping(x = 0);
-        send(agentid_, msg_, msg_type=request);
-    }
     beliefs {
         int counter = 0;
     }
+    initialize {
+        agentid agentid_;
+        agentid_ = spawn(child);
+        ping msg_ = ping{y: 0};
+        send(agentid_, msg_, msgType_request);
+    }
     rules {
         when (bel.counter == 10) then {
-            print("I have repied", bel.counter,"messages with agent",self._children[0]);
+            print("I have repaid", bel.counter,"messages with agent", self._children[0]);
             kill();
         }
     }
     receive pong {
         when () then {
             bel.counter = bel.counter + 1;
-            msg_ = ping(x = 0);
-            send2children(_, msg_, msg_type=request);
+            ping msg_ = ping{y: 0};
+            send2children(_, msg_, msgType_request);
         }
     }
 }

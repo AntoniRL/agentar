@@ -52,9 +52,9 @@ def logging_setup(raport_flag=False, to_file=False):
                             datefmt='%H:%M:%S')
     else:
         logging.basicConfig(
-        level=logging.INFO if raport_flag else logging.WARNING,
-        format='[%(asctime)s] %(levelname)s: %(message)s',
-        datefmt='%H:%M:%S'
+                            level=logging.INFO if raport_flag else logging.ERROR,
+                            format='[%(asctime)s] %(levelname)s: %(message)s',
+                            datefmt='%H:%M:%S'
     )
 
 

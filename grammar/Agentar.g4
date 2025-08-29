@@ -66,7 +66,7 @@ receiveSection
     ;
 
 whenBlock
-    : 'when' '(' expression ')' 'then' '{' statement* '}'
+    : 'when' '(' expression? ')' 'then' '{' statement* '}'
     ;
 
 actionSection
@@ -189,12 +189,16 @@ listAddStmt
 
 
 ifStmt
-    : 'if' '(' expression ')' ifBlock (elseBlock)?
+    : 'if' '(' expression ')' ifBlock (elifBlock)* (elseBlock)?
     ;   
 
 ifBlock
     : '{' statement* '}'
     | statement 
+    ;
+
+elifBlock
+    : 'elif' '(' expression ')' ifBlock
     ;
 
 elseBlock

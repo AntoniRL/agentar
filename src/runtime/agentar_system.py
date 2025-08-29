@@ -10,7 +10,6 @@ from core.agent import AgentarAgent
 from core.agent_id import AgentId
 from runtime.agent_instance.agent_instance import AgentInstance
 from runtime.agent_runner import AgentRunner
-from runtime.agent_time import AgentTime
 from runtime.errors import FieldWithNoneValueError
 
 

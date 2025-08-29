@@ -236,12 +236,19 @@ class AgentarToASTBuilder(AgentarVisitor):
     def visitIfStmt(self, ctx:AgentarParser.IfStmtContext):
         conditions = self.visit(ctx.expression()) if ctx.expression() else []
         statements = self.visit(ctx.ifBlock()) if ctx.ifBlock() else []
+        elifBlocks = [self.visit(elif_block) for elif_block in ctx.elifBlock()] if ctx.elifBlock() else []
         elseStmt = self.visit(ctx.elseBlock()) if ctx.elseBlock() else None
-        return ast.IfStmtNode(conditions=conditions, statements=statements, elseStmt=elseStmt, **self.node_meta(ctx))
+        return ast.IfStmtNode(conditions=conditions, statements=statements, elifBlocks=elifBlocks, elseStmt=elseStmt, **self.node_meta(ctx))
 
 
     def visitIfBlock(self, ctx:AgentarParser.IfBlockContext):
         return [self.visit(stat) for stat in ctx.statement()]
+    
+
+    def visitElifBlock(self, ctx:AgentarParser.ElifBlockContext):
+        condition = self.visit(ctx.expression()) if ctx.expression() else []
+        statement = self.visit(ctx.ifBlock()) if ctx.ifBlock() else []
+        return ast.ElifNode(condition=condition, statement=statement, **self.node_meta(ctx))
 
 
     def visitElseBlock(self, ctx:AgentarParser.ElseBlockContext):
@@ -426,17 +433,17 @@ class AgentarToASTBuilder(AgentarVisitor):
     
 
     def visitSliceToExpr(self, ctx:AgentarParser.SliceToExprContext):
-        base = self.visit(ctx.expression(0))
+        name = self.visit(ctx.expression(0))
         start = None # means slice from the beginning
         end = self.visit(ctx.expression(1))
-        return ast.SliceAccessNode(base=base, start=start, end=end, **self.node_meta(ctx))
+        return ast.SliceAccessNode(name=name, start=start, end=end, **self.node_meta(ctx))
 
 
     def visitSliceFromExpr(self, ctx:AgentarParser.SliceFromExprContext):
-        base = self.visit(ctx.expression(0))
+        name = self.visit(ctx.expression(0))
         start = self.visit(ctx.expression(1))
         end = None # means no end specified, slice to the end
-        return ast.SliceAccessNode(base=base, start=start, end=end, **self.node_meta(ctx))
+        return ast.SliceAccessNode(name=name, start=start, end=end, **self.node_meta(ctx))
 
 
     def visitSliceRangeExpr(self, ctx:AgentarParser.SliceRangeExprContext):

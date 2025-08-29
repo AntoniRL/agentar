@@ -1,0 +1,32 @@
+agent mother {
+    initialize{
+        print("--- IF demo: shadowing and parent:: ---");
+        int x = 2;
+        print("outer x =", x);
+
+        if (x < 3) {
+            print("entered IF (x < 3)");
+            int x = 5; // shadow outer x
+            print("inner x =", x);
+            print("parent::x (outer) =", parent::x);
+        }
+        elif (x == 3) {
+            print("entered ELIF");
+        }
+        else {
+            print("entered ELSE");
+        }
+
+        // Another if/elif/else chain to show only one branch fires
+        if (x > 10) {
+            print("branch: x > 10");
+        } elif (x == 2) {
+            print("branch: x == 2 (ELIF hit)");
+        } else {
+            print("branch: default ELSE");
+        }
+
+        print("after IF chain, outer x still =", x);
+        kill();
+    }
+}

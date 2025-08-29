@@ -100,9 +100,22 @@ class ExpressionEvaluator:
                     newList.append(self.eval_expr(item, local_vars, message, line, deref))
                 return newList
 
+
+            case DictLiteralNode(keys=keys, values=values, _line=line):
+                newDict = TypedDict(AnyTypeNode, AnyTypeNode)
+                for key, value in zip(keys, values):
+                    newDict[self.eval_expr(key, local_vars, message, line, deref)] = self.eval_expr(value, local_vars, message, line, deref)
+                return newDict
+            
+
+            case TupleLiteralNode(elements=elements, _line=line):
+                items = tuple(self.eval_expr(item, local_vars, message, line, deref) for item in elements)
+                return TypedTuple(AnyTypeNode, items)
+
+
             case IndexAccessNode(name=name, index=index, _line=line):
                 base_value = self.eval_expr(name, local_vars, message, line, deref)
-                index_value = self.eval_expr(index, local_vars, message, line, deref)
+                index_value = self.eval_expr(index, local_vars, message, line)
                 if type(base_value) in (TypedList, TypedTuple):
                     if isinstance(index_value, int):
                         if index_value < -len(base_value) or index_value >= len(base_value):
@@ -113,14 +126,16 @@ class ExpressionEvaluator:
                         raise WrongTypeError("index", int, type(index_value), line)
                 elif type(base_value) == TypedDict:
                     return base_value[index_value]
+                elif isinstance(base_value, list):
+                    return base_value[index_value]
                 else:
                     raise WrongTypeError("base", "TypedList, TypedDict, TypedTuple or Pointer", type(base_value), line)
                     
 
-            case SliceAccessNode(base=base, start=start, end=end, _line=line):
+            case SliceAccessNode(name=base, start=start, end=end, _line=line):
                 base_value = self.eval_expr(base, local_vars, message, line, deref)
-                start_value = self.eval_expr(start, local_vars, message, line, deref) if start is not None else 0
-                end_value = self.eval_expr(end, local_vars, message, line, deref) if end is not None else None
+                start_value = self.eval_expr(start, local_vars, message, line) if start is not None else 0
+                end_value = self.eval_expr(end, local_vars, message, line) if end is not None else None
                 if type(base_value) in (TypedList, TypedTuple):
                     if end_value is None: end_value = len(base_value)
                     if isinstance(start_value, int) and isinstance(end_value, int):
@@ -164,12 +179,15 @@ class ExpressionEvaluator:
                     return self.agent._beliefs.get(name, line, deref)
                 else:
                     raise VariableNotFoundError(f"bel.{name}", line)
-                
-
-            case TupleLiteralNode(elements=elements, _line=line):
-                items = tuple(self.eval_expr(item, local_vars, message, line, deref) for item in elements)
-                return TypedTuple(AnyTypeNode, items)
             
+
+            case DictKeysNode(base=base, _line=line):
+                base_value = self.eval_expr(base, local_vars, message, line, deref)
+                if isinstance(base_value, TypedDict):
+                    return base_value.keys()
+                else:
+                    raise WrongTypeError(base_value, "dict", type(base_value).__name__, line)
+
 
             case DictValuesNode(base=base, _line=line):
                 base_value = self.eval_expr(base, local_vars, message, line, deref)
@@ -197,7 +215,10 @@ class ExpressionEvaluator:
             
 
             case AddressOfExprNode(variable=variable, _line=line):
-                local_pointer = local_vars.get_pointer(variable.name, line)
+                if isinstance(variable, SelfAccessNode):
+                    local_pointer = self.agent._fields.get_pointer(variable.path[1], line)
+                else:
+                    local_pointer = local_vars.get_pointer(variable.name, line)
                 return local_pointer
 
 

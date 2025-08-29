@@ -350,6 +350,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#elifBlock.
+    def enterElifBlock(self, ctx:AgentarParser.ElifBlockContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#elifBlock.
+    def exitElifBlock(self, ctx:AgentarParser.ElifBlockContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#elseBlock.
     def enterElseBlock(self, ctx:AgentarParser.ElseBlockContext):
         pass

@@ -1,0 +1,32 @@
+agent workerN {
+    fields{
+        int n;
+    }
+    initialize{
+        print("started. parent =", self._parent);
+        for (int t = 0; t < 3; t = t + 1) {
+            print("tick ", t);
+            sleep(0.25);
+        }
+        print("done.");
+        kill();
+    }
+}
+
+agent mother {
+    initialize{
+        print("spawning three workers...");
+        agentid a; agentid b; agentid c;
+
+        a = spawn(workerN, { n: 1 });
+        b = spawn(workerN, { n: 2 });
+        c = spawn(workerN, { n: 3 });
+
+        print("spawned ids =", a, b, c);
+
+        // wait so all children can print their ticks
+        sleep(1.2);
+        print("all workers should be done now.");
+        kill();
+    }
+}

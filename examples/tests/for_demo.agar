@@ -1,0 +1,30 @@
+agent mother {
+    initialize{
+        print("--- FOR demo: shadowing and parent:: ---");
+        int i = 100; // outer 'i'
+        print("outer i before loop =", i);
+
+        for (int i = 0; i < 4; i = i + 1) {
+            print("loop iteration start, counter i =", i);
+
+            // shadow the loop counter inside the body
+            int i = 999;
+            print("inner shadow i =", i);
+            print("parent::i (loop counter) =", parent::i);
+
+            if (parent::i == 2) {
+                print("continue at counter i == 2");
+                continue;
+            }
+            if (parent::i == 3) {
+                print("break at counter i == 3");
+                break;
+            }
+
+            print("loop iteration end, counter i =", parent::i);
+        }
+
+        print("outer i after loop (unchanged) =", i);
+        kill();
+    }
+}

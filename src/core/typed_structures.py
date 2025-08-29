@@ -85,7 +85,6 @@ class TypedList(metaclass=TypedMeta):
         return copied
 
     def __repr__(self):
-        print()
         return str([ptr.get() for ptr in self.items])
     
     def __str__(self):
@@ -322,6 +321,17 @@ class TypedTuple(metaclass=TypedMeta):
 
     def __len__(self):
         return len(self.items)
+    
+    def _value_items(self):
+        return tuple(ptr.get() for ptr in self.items)
+    
+    def __eq__(self, other):
+        if isinstance(other, TypedTuple):
+            return self._value_items() == other._value_items()
+        return NotImplemented
+    
+    def __hash__(self):
+        return hash(self._value_items())
 
     def __iter__(self):
         for ptr in self.items:

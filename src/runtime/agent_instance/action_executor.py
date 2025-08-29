@@ -16,7 +16,7 @@ class ActionExecutor:
 
     def sense_world(self):
         if self.agent._sense != []:
-            local_vars = VariableContainer("Sense")
+            local_vars = VariableContainer(self.agent,"Sense")
             for stmt in self.agent._sense:
                 self.agent._executor.execute_stmt(stmt, local_vars)
 
@@ -28,10 +28,10 @@ class ActionExecutor:
 
 
     def when_block(self, when_node, name_of_local_vars, message):
+        local_vars = VariableContainer(agent = self.agent, scope = name_of_local_vars)
         if message is not None:
             for var_info in message._content.values():
                 local_vars.declare(var_info.name, var_info.value.get(), var_info.var_type, when_node._line)
-        local_vars = VariableContainer(name_of_local_vars)
         if when_node.conditions == []:
             for stmt in when_node.statements:
                 self.agent._executor.execute_stmt(stmt, local_vars, message)
@@ -74,7 +74,7 @@ class ActionExecutor:
 
 
     def execute_action(self, action_node, parameters, line_of_call_action=None):
-        local_vars = VariableContainer("Action")
+        local_vars = VariableContainer(agent=self.agent, scope="Action")
         # Initialize parameters
         for i, param_decl in enumerate(action_node.parameters):
             self.agent._executor.execute_stmt(param_decl, local_vars, None)

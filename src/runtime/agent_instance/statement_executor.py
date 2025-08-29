@@ -99,6 +99,15 @@ class StatementExecutor:
                         if self.agent._break_flag or self.agent._return_flag:
                             break
                         self.execute_stmt(statement, local_vars, message, stmt._line)
+                elif stmt.elifBlocks:
+                    for elif_block in stmt.elifBlocks:
+                        condition = self.agent._evaluator.eval_expr(elif_block.condition, local_vars, message, stmt._line)
+                        if condition:
+                            for statement in elif_block.statement:
+                                if self.agent._break_flag or self.agent._return_flag:
+                                    break
+                                self.execute_stmt(statement, local_vars, message, stmt._line)
+                            break
                 else:
                     if stmt.elseStmt is not None:
                         for statement in stmt.elseStmt:
@@ -156,7 +165,6 @@ class StatementExecutor:
             case ListAddNode(base=base, value=value):
                 base = self.agent._evaluator.eval_expr(base, local_vars, message, stmt._line)
                 value = self.agent._evaluator.eval_expr(value, local_vars, message, stmt._line)
-                print(type(base))
                 if isinstance(base, TypedList):
                     base.append(value)
                 else:
@@ -170,7 +178,6 @@ class StatementExecutor:
                 if isinstance(base, TypedDict):
                     del base[key]
                 elif isinstance(base, TypedList):
-                    base._check_type(key)
                     del base[key]
                 else:
                     raise WrongTypeError("base", "TypedDict or TypedList", type(base), stmt._line)
@@ -228,7 +235,23 @@ class StatementExecutor:
                 local_vars.set(name, value, line, deref)
 
             case IndexAccessNode(name=name, index=index):
+                # evaluate the right-most index
                 index_value = self.agent._evaluator.eval_expr(index, local_vars, message, line, deref)
+
+                # nested case: e.g. grid[1][0]  -> name is also an IndexAccessNode
+                if isinstance(name, IndexAccessNode):
+                    # Evaluate the left subexpression to get the *container* to write into.
+                    # Example: eval(grid[1]) returns the inner TypedList<int>.
+                    container = self.agent._evaluator.eval_expr(name, local_vars, message, line, deref)
+                    try:
+                        # Works for both TypedList and TypedDict (__setitem__ does type checks)
+                        container[index_value] = value
+                    except Exception as e:
+                        # unify error reporting with your runtime errors
+                        from runtime.errors import AgentarRuntimeError
+                        raise AgentarRuntimeError(e, line) from e
+                    return
+
                 if isinstance(name, SelfAccessNode):
                     target_name = name.path[1]
                     self.agent._fields.set((target_name, index_value), value, line, deref)
