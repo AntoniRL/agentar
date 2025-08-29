@@ -208,3 +208,18 @@ Traceback (most recent call last):
     return self._find(name, line).value.get().get()  # Get the value from the Pointer.Pointer
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AttributeError: 'int' object has no attribute 'get'
+[07:39:54] ERROR Thread-2 agentar.agent..1.1: Exception in agent .1.1: Expected type TypedTuple, got int
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 29, in run
+    self.instance.step()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 71, in step
+    self._action_executor.follow_rules()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/action_executor.py", line 27, in follow_rules
+    self.when_block(rule, "Rules", message=None)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/action_executor.py", line 42, in when_block
+    self.agent._executor.execute_stmt(stmt, local_vars, message)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 172, in execute_stmt
+    base._check_type(key)
+  File "/home/toni/mgr/agentar/src/core/typed_structures.py", line 40, in _check_type
+    raise TypeError(f"Expected type {self.inner_type.__name__}, got {type(item).__name__}")
+TypeError: Expected type TypedTuple, got int

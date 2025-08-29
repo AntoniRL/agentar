@@ -1,11 +1,15 @@
 agent mother {
     initialize{
         int x = 2;
-        if (x>=1 && x < 3) {
+        if (0>=1 && x < 3) {
             print("yes");
             int x = 5;
             print(parent::x);
         }
+        elif (5==4){
+            print("I am in the elif");
+        }
+        elif (4) print("hhhhhh");
         int i = 5;
         i = 4;
         /*

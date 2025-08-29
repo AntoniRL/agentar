@@ -288,3 +288,23 @@ Traceback (most recent call last):
   File "/home/toni/mgr/agentar/src/runtime/definicion_containers/variable_container.py", line 127, in set
     raise AgentarRuntimeError(e, line) from e
 runtime.errors.AgentarRuntimeError: ERROR at line 25: dict.keys() takes no arguments (1 given)
+[10:31:43] ERROR Thread-1 agentar.agent..1: Exception in agent .1: 'ElifNode' object has no attribute 'condition'
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 104, in execute_stmt
+    condition = self.agent._evaluator.eval_expr(elif_block.condition, local_vars, message, stmt._line)
+                                                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ElifNode' object has no attribute 'condition'. Did you mean: 'conditions'?
+[10:32:54] ERROR Thread-1 agentar.agent..1: Exception in agent .1: 'ElifNode' object has no attribute 'statements'
+Traceback (most recent call last):
+  File "/home/toni/mgr/agentar/src/runtime/agent_runner.py", line 26, in run
+    self.instance.initializeAgent()
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/agent_instance.py", line 60, in initializeAgent
+    self._executor.execute_stmt(stmt, local_vars)
+  File "/home/toni/mgr/agentar/src/runtime/agent_instance/statement_executor.py", line 106, in execute_stmt
+    for statement in elif_block.statements:
+                     ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ElifNode' object has no attribute 'statements'. Did you mean: 'statement'?

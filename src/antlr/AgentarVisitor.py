@@ -199,6 +199,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#elifBlock.
+    def visitElifBlock(self, ctx:AgentarParser.ElifBlockContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#elseBlock.
     def visitElseBlock(self, ctx:AgentarParser.ElseBlockContext):
         return self.visitChildren(ctx)

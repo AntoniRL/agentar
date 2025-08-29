@@ -12,13 +12,15 @@ agent finder{
         int x;
         int y; 
 
-        //dict<tuple<int,int>, int> visited;
+        dict<tuple<int,int>, int> visited;
+        list<tuple<int,int>> visited_l;
         dict<tuple<int,int>, int> safe;
 
         dict<tuple<int,int>, int> stanch;
         dict<tuple<int,int>, int> wampus;
         dict<tuple<int,int>, int> breeze;
         dict<tuple<int,int>, int> pit;
+        dict<tuple<int,int>, int> glitter;
 
         list<tuple<int,int>> frontier;
 
@@ -26,7 +28,7 @@ agent finder{
         bool hard_screem = False;
     }
     goals{
-
+        g1: self.has_gold == True;
     }
     initialize{
         bel.x = self.start_pos[0];
@@ -36,12 +38,29 @@ agent finder{
     sense{
         tuple<int,int> pos = (bel.x, bel.y);
         bel.stanch[pos] = *self.WORLD[bel.y][bel.x][0];
-        print(bel.stanch);
+        bel.wampus[pos] = *self.WORLD[bel.y][bel.x][1];
+        bel.breeze[pos] = *self.WORLD[bel.y][bel.x][2];
+        bel.pit[pos] = *self.WORLD[bel.y][bel.x][3];
+        bel.glitter[pos] = *self.WORLD[bel.y][bel.x][4];
     }
     rules{
+        when () then {
+        }
+        when (bel.visited.get((bel.x, bel.y))==None) then {
+            bel.visited[(bel.x,bel.y)] = 1;
+            del bel.visited_l[0]; //problem of AGENTAR
+            bel.visited_l.add((bel.x, bel.y));
+            do propagate_local((bel.x, bel.y));
+        }
     }
     destroy{
     }
+    action propagate_local(tuple<int,int> pos): void{
+        print("starting propagate...");
+        
+
+    }
+
 }
 
 agent mother{

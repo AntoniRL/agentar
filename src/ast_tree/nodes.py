@@ -312,7 +312,15 @@ class ReturnNode(ASTNode):
 class IfStmtNode(ASTNode):
     conditions: List[ASTNode]
     statements: List[ASTNode]
+    elifBlocks: Optional[List[ASTNode]]
     elseStmt: ASTNode
+
+
+@dataclass
+class ElifNode(ASTNode):
+    condition: List[ASTNode]
+    statement: List[ASTNode]
+
 
 
 @dataclass

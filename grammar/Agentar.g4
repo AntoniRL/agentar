@@ -189,12 +189,16 @@ listAddStmt
 
 
 ifStmt
-    : 'if' '(' expression ')' ifBlock (elseBlock)?
+    : 'if' '(' expression ')' ifBlock (elifBlock)* (elseBlock)?
     ;   
 
 ifBlock
     : '{' statement* '}'
     | statement 
+    ;
+
+elifBlock
+    : 'elif' '(' expression ')' ifBlock
     ;
 
 elseBlock

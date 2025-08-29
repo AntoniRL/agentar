@@ -99,6 +99,15 @@ class StatementExecutor:
                         if self.agent._break_flag or self.agent._return_flag:
                             break
                         self.execute_stmt(statement, local_vars, message, stmt._line)
+                elif stmt.elifBlocks:
+                    for elif_block in stmt.elifBlocks:
+                        condition = self.agent._evaluator.eval_expr(elif_block.condition, local_vars, message, stmt._line)
+                        if condition:
+                            for statement in elif_block.statement:
+                                if self.agent._break_flag or self.agent._return_flag:
+                                    break
+                                self.execute_stmt(statement, local_vars, message, stmt._line)
+                            break
                 else:
                     if stmt.elseStmt is not None:
                         for statement in stmt.elseStmt:
@@ -156,7 +165,6 @@ class StatementExecutor:
             case ListAddNode(base=base, value=value):
                 base = self.agent._evaluator.eval_expr(base, local_vars, message, stmt._line)
                 value = self.agent._evaluator.eval_expr(value, local_vars, message, stmt._line)
-                print(type(base))
                 if isinstance(base, TypedList):
                     base.append(value)
                 else:
@@ -170,7 +178,6 @@ class StatementExecutor:
                 if isinstance(base, TypedDict):
                     del base[key]
                 elif isinstance(base, TypedList):
-                    base._check_type(key)
                     del base[key]
                 else:
                     raise WrongTypeError("base", "TypedDict or TypedList", type(base), stmt._line)
