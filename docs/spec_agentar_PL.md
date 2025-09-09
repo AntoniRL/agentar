@@ -154,8 +154,6 @@ TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie 
 | `kill(child_id)` | Usunięcie dziecka o podanym ID | dowolnie |
 | `kill_children(_)` | Kończy działanie wszystkich dzieci|
 | `kill_children(childen_type_name)` | Kończy działanie wszystkich dzieci o podanym typie|
-| `kill_siblings()` | Kończy działanie wszystkich braci |
-| `kill_siblings(sibling_type_name)` | Kończy działanie wszystkich braci o podanym typie|
 | `spawn(agent_name, {field_name: value, ...})`   | Tworzenie dzieci. Zwraca id stworzonego dziecka | `initialize`, `action` |
 | `sleep(ms)`    | Pauza w wykonaniu | `action`, `receive` |
 | `sense()`      | Możaliwość wywołania z dowolnego miejsca w ciele agenta. Wykonuje polecenia z `sense{}` |

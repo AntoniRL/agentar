@@ -75,7 +75,7 @@ class ExpressionEvaluator:
 
             case LenNode(base=base, _line=line):
                 value = self.eval_expr(base, local_vars, message, line, deref)
-                if isinstance(value, (list, str, tuple, dict)):
+                if isinstance(value, (TypedList, TypedDict, TypedTuple, str)):
                     return len(value)
                 else:
                     raise WrongTypeError(base.name, "list, string, tuple or dict", type(value).__name__, line)
@@ -129,7 +129,7 @@ class ExpressionEvaluator:
                 elif isinstance(base_value, list):
                     return base_value[index_value]
                 else:
-                    raise WrongTypeError("base", "TypedList, TypedDict, TypedTuple or Pointer", type(base_value), line)
+                    raise WrongTypeError("base", "TypedList, TypedDict, TypedTuple", type(base_value), line)
                     
 
             case SliceAccessNode(name=base, start=start, end=end, _line=line):

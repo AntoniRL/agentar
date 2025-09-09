@@ -131,6 +131,14 @@ class StatementExecutor:
                             self.agent._continue_flag = False
                             update_loop_var()
                             break
+                        if self.agent._break_flag:  # If break flag is set, exit the loop
+                            break
+                        if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
+                            break
+                    if self.agent._break_flag:  # If break flag is set, exit the loop
+                        break
+                    if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
+                        break
                     update_loop_var()
                 self.agent._break_flag = False  # Reset break flag after loop execution
                 self.agent._continue_flag = False  # Reset continue flag after loop execution
@@ -146,6 +154,14 @@ class StatementExecutor:
                         if self.agent._continue_flag: # If continue flag is set, skip to the next iteration
                             self.agent._continue_flag = False
                             break
+                        if self.agent._break_flag:  # If break flag is set, exit the loop
+                            break
+                        if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
+                            break
+                    if self.agent._break_flag:  # If break flag is set, exit the loop
+                        break
+                    if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
+                        break
                 self.agent._continue_flag = False  # Reset continue flag after loop execution
                 self.agent._break_flag = False  # Reset break flag after loop execution
 
@@ -166,7 +182,7 @@ class StatementExecutor:
                 base = self.agent._evaluator.eval_expr(base, local_vars, message, stmt._line)
                 value = self.agent._evaluator.eval_expr(value, local_vars, message, stmt._line)
                 if isinstance(base, TypedList):
-                    base.append(value)
+                    base.append(deepcopy(value))
                 else:
                     raise WrongTypeError("base", "TypedList", type(base), stmt._line)
 

@@ -156,7 +156,7 @@ killStmt
     ;
 
 killChildrenStmt
-    : 'killChildren' '(' expression? ')' ';'
+    : 'kill_children' '(' expression? ')' ';'
     ;
 
 sleepStmt  
@@ -317,7 +317,7 @@ listLiteral
 
 
 dictLiteral
-    : '{' dictEntry (',' dictEntry)* '}'
+    : '{' (dictEntry (',' dictEntry)*)? '}'
     ;
 
 
