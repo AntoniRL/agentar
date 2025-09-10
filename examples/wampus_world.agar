@@ -18,9 +18,6 @@ agent finder{
         bool has_gold = False;
 
         list<tuple<int,int>> plan_path;
-        int POSSIBLE = -1;
-        int NO = 0;
-        int YES = 1;
     }
     beliefs{
         // position
@@ -85,7 +82,7 @@ agent finder{
             do make_clear_after_screem();
         }
     }
-    destroy{
+    destroy {
         print("I have been killed. Having gold: ", self.has_gold);
     }
     action propagate_local(tuple<int,int> pos): void{
