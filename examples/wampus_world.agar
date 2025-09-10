@@ -204,8 +204,9 @@ agent mother{
     }
     initialize{
         logging(self.WORLD);
-        spawn(finder, {WORLD: &self.WORLD, HARD_SCREEM: &self.hard_screem, start_pos: (0,3)});
-        print(0,3); //start point
+        tuple<int,int> start_pos = (0,3);
+        spawn(finder, {WORLD: &self.WORLD, HARD_SCREEM: &self.hard_screem, start_pos: start_pos});
+        print("AGENT POS::", start_pos[0], start_pos[1]); //start point
     }
     receive position{
         when () then {
