@@ -1,13 +1,11 @@
 // ==== messages ========================
-message SENSE_DELTA {
-    calls;
+message SENSE_DETAILS {
+    
 }
 
 
 // ==== GREEN TEAM ========================
-agent green_courrier{
-
-}
+agent green_courrier{}
 
 agent green_scout{
     fields {
@@ -18,9 +16,10 @@ agent green_scout{
     beliefs {
         int x;
         int y;
-        int pos_reword;
+        int reword;
         dict<tuple<int,int>, int> neighbor_map;
         dict<tuple<int,int>, int> to_visit;
+        
         list<tuple<int,int>> plan_path;
         tuple<int,int> target;
     }
@@ -33,19 +32,16 @@ agent green_scout{
         bel.target = self.START;
     }
     sense {
-        bel.pos_reword = *self.WORLD[bel.y][bel.x];
+        bel.reword = *self.WORLD[bel.y][bel.x];
         for (int i=0; i<4; i=i+1){
             tuple<int,int> neighbor = (bel.x + self.neighbors[i][0], bel.y + self.neighbors[i][1]);
-            if (neighbor[0] < 0 || neighbor[0] >= len(*self.WORLD[0]) || neighbor[1] < 0 || neighbor[1] >= len(*self.WORLD)) {
-                continue;
-            } else {
-                bel.neighbor_map[neighbor] = *self.WORLD[neighbor[1]][neighbor[0]];
-            }
+            if (neighbor[0] < 0 || neighbor[0] >= len(*self.WORLD[0]) || neighbor[1] < 0 || neighbor[1] >= len(*self.WORLD)) continue;
+            else bel.neighbor_map[neighbor] = *self.WORLD[neighbor[1]][neighbor[0]];
         }
     }
     rules {
         when () then {
-            
+            print(bel.neighbor_map);
         } 
     }
 }
