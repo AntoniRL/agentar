@@ -45,7 +45,7 @@ agent finder{
     initialize{
         bel.x = self.start_pos[0];
         bel.y = self.start_pos[1];
-        del bel.visited_l[0]; //problem of initialize list of tuples in agentar AGENTAR
+        del bel.visited_l[0]; //problem of initialize list of tuples in AGENTAR
         del bel.frontier[0]; // -||-
         del self.plan_path[0]; // -||-
     }

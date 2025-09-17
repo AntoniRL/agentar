@@ -25,7 +25,7 @@ class AgentInstance:
         self._next_child = 1
         self._now = 1                        # time step counter (Agent perception time)
         self._inbox = Queue()                # Queue for incoming messages
-        self._is_goal_achived = False         # Flag to indicate if the agent's goal is achieved        
+        self._is_goal_achieved = False         # Flag to indicate if the agent's goal is achieved
 
         self._runtime = system               # Reference to the AgentarSystem instance
 
@@ -42,6 +42,22 @@ class AgentInstance:
         self._message_handler = MessageHandler(self)       # Message handler for the agent instance
         self._action_executor = ActionExecutor(self)       # Action executor for the agent instance
 
+
+    @property
+    def name(self):
+        return self._name
+    @property
+    def is_goal_achieved(self):
+        return self._is_goal_achieved
+    @property
+    def id(self):
+        return self._id
+    @property
+    def parent(self):
+        return self._parent
+    @property
+    def children(self):
+        return self._children
 
     def __repr__(self):
         return (

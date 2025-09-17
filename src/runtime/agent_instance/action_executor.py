@@ -44,7 +44,7 @@ class ActionExecutor:
     
     def check_global_goal(self):
         if self.agent._sub_goals == {}:
-            self.agetn._is_goal_achived = True
+            self.agent._is_goal_achieved = True
             return
         else:
             sub_goals_results = VariableContainer("SubGoals")
@@ -54,12 +54,12 @@ class ActionExecutor:
             if self.agent._merge_goals_condition is not None:
                 merge_result = self.agent._evaluator.eval_expr(self.agent._merge_goals_condition, sub_goals_results, None, self.agent._merge_goals_condition._line)
                 if merge_result:
-                    self.agent._is_goal_achived = True
+                    self.agent._is_goal_achieved = True
                 else:
-                    self.agent._is_goal_achived = False
+                    self.agent._is_goal_achieved = False
             else: 
-                self.agent._is_goal_achived = all(sub_goals_results.get(goal_name, condition._line) for goal_name, condition in self.agent._sub_goals._value.items()) 
-        if self.agent._is_goal_achived:
+                self.agent._is_goal_achieved = all(sub_goals_results.get(goal_name, condition._line) for goal_name, condition in self.agent._sub_goals._value.items()) 
+        if self.agent._is_goal_achieved:
             pass # logging.info(f"{self.agent._id.path}:: Global goal achieved!")
 
 

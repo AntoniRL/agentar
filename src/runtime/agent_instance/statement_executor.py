@@ -99,7 +99,8 @@ class StatementExecutor:
                         if self.agent._break_flag or self.agent._return_flag:
                             break
                         self.execute_stmt(statement, local_vars, message, stmt._line)
-                elif stmt.elifBlocks:
+                    return
+                if stmt.elifBlocks:
                     for elif_block in stmt.elifBlocks:
                         condition = self.agent._evaluator.eval_expr(elif_block.condition, local_vars, message, stmt._line)
                         if condition:
@@ -107,13 +108,13 @@ class StatementExecutor:
                                 if self.agent._break_flag or self.agent._return_flag:
                                     break
                                 self.execute_stmt(statement, local_vars, message, stmt._line)
+                            return
+                if stmt.elseStmt:
+                    for statement in stmt.elseStmt:
+                        if self.agent._break_flag or self.agent._return_flag:
                             break
-                else:
-                    if stmt.elseStmt is not None:
-                        for statement in stmt.elseStmt:
-                            if self.agent._break_flag or self.agent._return_flag:
-                                break
-                            self.execute_stmt(statement, local_vars, message, stmt._line)
+                        self.execute_stmt(statement, local_vars, message, stmt._line)
+                    return
 
 
             case ForLoopNode():
@@ -129,7 +130,6 @@ class StatementExecutor:
                         self.execute_stmt(statement, local_vars_iter, message, stmt._line)
                         if self.agent._continue_flag: # If continue flag is set, skip to the next iteration
                             self.agent._continue_flag = False
-                            update_loop_var()
                             break
                         if self.agent._break_flag:  # If break flag is set, exit the loop
                             break
@@ -140,8 +140,8 @@ class StatementExecutor:
                     if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
                         break
                     update_loop_var()
-                self.agent._break_flag = False  # Reset break flag after loop execution
                 self.agent._continue_flag = False  # Reset continue flag after loop execution
+                self.agent._break_flag = False  # Reset break flag after loop execution
 
 
             case WhileLoopNode():
