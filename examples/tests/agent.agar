@@ -1,0 +1,15 @@
+agent mother {
+    fields {
+        str init_text = "Hello";
+    }
+    initialize{
+        print(self.init_text);
+        float y = 5.0;
+        float x;
+        x = do test(y*4.5);
+        print(x);
+    }
+    action test(float x): float{
+        return x;
+    }
+}

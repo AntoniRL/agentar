@@ -21,7 +21,7 @@ def show_help():
     print("    -f / -file    Log output to agentar.log")
     print("    -t <seconds>  Set maximum runtime for the script (default is 5 seconds) or 'inf' for infinite runtime")
     print("  tree         Print the AST of a .agar file")
-    print("tree <paht_to_file> | tee ast.txt        Print the AST of a .agar file to the console and save it to ast.txt")
+    print("  tree <paht_to_file> | tee ast.txt        Print the AST of a .agar file to the console and save it to ast.txt")
     print("\nExamples:")
     print("  agentar run examples/hello.agar -r -t 10")
 

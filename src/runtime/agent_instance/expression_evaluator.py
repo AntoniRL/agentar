@@ -11,7 +11,7 @@ from runtime.errors import *
 from core.variable_info import VariableInfo
 from core.typed_structures import TypedList, TypedDict, TypedTuple
 
-
+import math
 from copy import deepcopy
 import random
 
@@ -34,9 +34,21 @@ class ExpressionEvaluator:
                         return MessageType.CONFIRM
                     case 'msgType_deny':
                         return MessageType.DENY
+                    case 'pi':
+                        return math.pi
                     case _:
                         return value
+                    
 
+            case ListTypeNode():
+               return resolve_type(expr)[0]
+
+            case DictTypeNode():
+               return resolve_type(expr)[0]
+            
+            case TupleTypeNode():
+               return resolve_type(expr)[0]
+            
 
             case AgentIdNode(path=path):
                 return AgentId(path)
@@ -78,7 +90,14 @@ class ExpressionEvaluator:
                 if isinstance(value, (TypedList, TypedDict, TypedTuple, str)):
                     return len(value)
                 else:
-                    raise WrongTypeError(base.name, "list, string, tuple or dict", type(value).__name__, line)
+                    if isinstance(base, BelAccessNode):
+                        raise WrongTypeError("bel."+base.path[1], "list, string, tuple or dict", type(value).__name__, line)
+                    elif isinstance(base, MsgAccessNode):
+                        raise WrongTypeError("msg."+base.path[1], "list, string, tuple or dict", type(value).__name__, line)
+                    elif isinstance(base, SelfAccessNode):
+                        raise WrongTypeError("self."+base.path[1], "list, string, tuple or dict", type(value).__name__, line)
+                    else:
+                        raise WrongTypeError(base.name, "list, string, tuple or dict", type(value).__name__, line)
                 
 
             case AbsExprNode(base=base, _line=line):
@@ -125,9 +144,15 @@ class ExpressionEvaluator:
                     else:
                         raise WrongTypeError("index", int, type(index_value), line)
                 elif type(base_value) == TypedDict:
-                    return base_value[index_value]
+                    try:
+                        return base_value[index_value]
+                    except KeyError:
+                        raise VariableNotFoundError(f"Key {index_value} not found in TypedDict", line)
                 elif isinstance(base_value, list):
-                    return base_value[index_value]
+                    try:
+                        return base_value[index_value]
+                    except IndexError:
+                        raise IndexOutOfRangeError(index_value, len(base_value), line)
                 else:
                     raise WrongTypeError("base", "TypedList, TypedDict, TypedTuple", type(base_value), line)
                     
@@ -170,7 +195,7 @@ class ExpressionEvaluator:
                 
 
             case MessageInitNode():
-                return self.agent._message_handler.handle_message_init(expr, local_vars)
+                return self.agent._message_handler.handle_message_init(expr, local_vars, message=message)
                 
             
             case BelAccessNode(path=path, _line=line):
@@ -233,48 +258,70 @@ class ExpressionEvaluator:
                     raise WrongTypeError("random() parameters", "int", f"{type(start).__name__} and {type(end).__name__}", line)   # TODO: check the appiriance of error in the tests
                 
 
+            case Atan2ExprNode(y=y, x=x, _line=line):
+                y = self.eval_expr(y, local_vars, message, line, deref)
+                x = self.eval_expr(x, local_vars, message, line, deref)
+                if isinstance(y, (int, float)) and isinstance(x, (int, float)):
+                    return math.atan2(y, x)
+                else:
+                    raise WrongTypeError("atan2() parameters", "int or float", f"{type(y).__name__} and {type(x).__name__}", line)      
+                
+
+            case SqrtExprNode(value=value, _line=line):
+                value = self.eval_expr(value, local_vars, message, line, deref)
+                if isinstance(value, (int, float)):
+                    if value < 0:
+                        raise MinusValueForSquare(value, line)
+                    return math.sqrt(value)
+                else:
+                    raise WrongTypeError("sqrt() parameter", "int or float", type(value).__name__, line)    
+                
+
             case BinaryOpNode(left=left, right=right, op=op, _line=line):
                 if isinstance(left, BinaryOpNode) or not isinstance(left, (bool, int, float, str)):
                     left = self.eval_expr(left, local_vars, message, line, deref)
                 if isinstance(right, BinaryOpNode) or not isinstance(right, (bool, int, float, str)):
                     right = self.eval_expr(right, local_vars, message, line, deref)
 
-                match op:
-                    case '+':
-                        return left + right
-                    case '-':
-                        return left - right
-                    case '*':
-                        return left * right
-                    case '/':
-                        if right == 0:
-                            raise ZeroDivisionError("Division by zero is not allowed.")
-                        return left / right
-                    case '%':
-                        if right == 0:
-                            raise ZeroDivisionError("Modulo by zero is not allowed.")
-                        return left % right
-                    case '**':
-                        return left ** right
-                    case '==':
-                        return left == right
-                    case '!=':
-                        return left != right
-                    case '<':
-                        return left < right
-                    case '<=':
-                        return left <= right
-                    case '>':
-                        return left > right
-                    case '>=':
-                        return left >= right
-                    case 'AND':
-                        return left and right
-                    case 'OR':
-                        return left or right
-                    case 'XOR':
-                        return left ^ right
-                    case 'NOT':
-                        return not left
-                    case _:
-                        raise UnsupportedOperatorError(op, line)
+                try:
+                    match op:
+                        case '+':
+                            return left + right
+                        case '-':
+                            return left - right
+                        case '*':
+                            return left * right
+                        case '/':
+                            if right == 0:
+                                raise ZeroDivisionError("Division by zero is not allowed.")
+                            return left / right
+                        case '%':
+                            if right == 0:
+                                raise ZeroDivisionError("Modulo by zero is not allowed.")
+                            return left % right
+                        case '**':
+                            return left ** right
+                        case '==':
+                            return left == right
+                        case '!=':
+                            return left != right
+                        case '<':
+                            return left < right
+                        case '<=':
+                            return left <= right
+                        case '>':
+                            return left > right
+                        case '>=':
+                            return left >= right
+                        case 'AND':
+                            return left and right
+                        case 'OR':
+                            return left or right
+                        case 'XOR':
+                            return left ^ right
+                        case 'NOT':
+                            return not left
+                        case _:
+                            raise UnsupportedOperatorError(op, line)
+                except TypeError as e:
+                    raise WrongTypeError(f"operands of '{op}'", "compatible types", f"{type(left).__name__} and {type(right).__name__}", line) from e

@@ -755,6 +755,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#SymbolExpr.
+    def enterSymbolExpr(self, ctx:AgentarParser.SymbolExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SymbolExpr.
+    def exitSymbolExpr(self, ctx:AgentarParser.SymbolExprContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#TypeExpr.
     def enterTypeExpr(self, ctx:AgentarParser.TypeExprContext):
         pass
@@ -827,6 +836,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#SqrtExpr.
+    def enterSqrtExpr(self, ctx:AgentarParser.SqrtExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#SqrtExpr.
+    def exitSqrtExpr(self, ctx:AgentarParser.SqrtExprContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#NoneExpr.
     def enterNoneExpr(self, ctx:AgentarParser.NoneExprContext):
         pass
@@ -851,6 +869,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#ParenExpr.
     def exitParenExpr(self, ctx:AgentarParser.ParenExprContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#Atan2Expr.
+    def enterAtan2Expr(self, ctx:AgentarParser.Atan2ExprContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#Atan2Expr.
+    def exitAtan2Expr(self, ctx:AgentarParser.Atan2ExprContext):
         pass
 
 
@@ -1022,6 +1049,15 @@ class AgentarListener(ParseTreeListener):
 
     # Exit a parse tree produced by AgentarParser#BoolLiteral.
     def exitBoolLiteral(self, ctx:AgentarParser.BoolLiteralContext):
+        pass
+
+
+    # Enter a parse tree produced by AgentarParser#PiSymbol.
+    def enterPiSymbol(self, ctx:AgentarParser.PiSymbolContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#PiSymbol.
+    def exitPiSymbol(self, ctx:AgentarParser.PiSymbolContext):
         pass
 
 

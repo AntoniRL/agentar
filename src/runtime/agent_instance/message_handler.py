@@ -18,7 +18,7 @@ class MessageHandler:
         self.agent = agent
 
 
-    def handle_message_init(self, msg_node, local_vars):
+    def handle_message_init(self, msg_node, local_vars, message=None):
         message_type = msg_node.message_type
         
         message_init_content = msg_node.fields
@@ -29,7 +29,7 @@ class MessageHandler:
         for name, (new_name, new_value) in zip(new_content._variables.keys(), message_init_content.items()):
             if name != new_name:
                 raise MismatchMessageContentError(message_type, name, new_name, msg_node._line)
-            new_value = self.agent._evaluator.eval_expr(new_value, local_vars)  # Evaluate the expression to get the value
+            new_value = self.agent._evaluator.eval_expr(new_value, local_vars, message=message)  # Evaluate the expression to get the value
             if not isinstance(new_value, Pointer):
                 new_value = deepcopy(new_value)
             new_content.set(name, new_value, msg_node._line)
@@ -37,16 +37,16 @@ class MessageHandler:
         return message_instance
     
 
-    def handle_message_declaration(self, msg_decl_node, local_vars):
+    def handle_message_declaration(self, msg_decl_node, local_vars, message=None):
         message_type = msg_decl_node.message_type
         if not self.agent._runtime.messages_decl.exists(message_type):
             raise ASTNodeNotFoundError(message_type, "Message declaration", msg_decl_node._line)
         if message_type != msg_decl_node.message.message_type:
             raise MismatchTypeWithDeclarationError(message_type, msg_decl_node.message.message_type, msg_decl_node._line)
-        local_vars.declare(msg_decl_node.name, msg_decl_node.message, MessageInstance, msg_decl_node._line)
+        local_vars.declare(msg_decl_node.name, msg_decl_node.message, MessageInstance, msg_decl_node._line, message=message)
 
 
-    def send_message(self, stmt,  local_vars): 
+    def send_message(self, stmt,  local_vars, message = None): 
         msg = self.agent._evaluator.eval_expr(stmt.message, local_vars)
         # --- Create a deep copy of the message to avoid modifying the original message. It helps to prevent issues with shared references.
         content = msg._content
@@ -60,7 +60,7 @@ class MessageHandler:
         if stmt.to == "PARENT":
             msg._receiver = self.agent._parent
         else:
-            msg._receiver = self.agent._evaluator.eval_expr(stmt.to, local_vars)
+            msg._receiver = self.agent._evaluator.eval_expr(stmt.to, local_vars, message=message)
         self.agent._runtime.send_message(msg)
 
 

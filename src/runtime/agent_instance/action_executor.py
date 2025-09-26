@@ -100,5 +100,5 @@ class ActionExecutor:
                 break
         if return_type != 'void':
             if type(return_object) != return_type:
-                raise WrongTypeError("Return value", return_type, type(self.agent._return_object), action_node._line)
+                raise WrongTypeError("Return value", return_type, type(return_object), action_node._line)
             return return_object

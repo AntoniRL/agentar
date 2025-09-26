@@ -22,7 +22,6 @@ agent green_scout{
     fields {
         pointer<list<list<int>>> WORLD;
         tuple<int,int> START;
-
         list<tuple<int,int>> neighbors;
         list<tuple<int,int>> plan_path;
         tuple<int,int> target;
@@ -54,9 +53,7 @@ agent green_scout{
             tuple<int,int> neighbor = (bel.x + self.neighbors[i][0], bel.y + self.neighbors[i][1]);
             if (neighbor[0] < 0 || neighbor[0] >= len(*self.WORLD[0]) || neighbor[1] < 0 || neighbor[1] >= len(*self.WORLD)) continue;
             elif (*self.WORLD[neighbor[1]][neighbor[0]] == -1) continue;
-            elif (bel.visited.get((neighbor[0],neighbor[1])) != None) continue;
-            else  bel.neighbor_map[neighbor] = -2;         
-            }
+            else  bel.neighbor_map[neighbor] = -2;         }
     }
     rules {
         when (self.is_goal_achieved == True && bel.visited.get((bel.x, bel.y)) == None) then {
@@ -229,7 +226,7 @@ agent red_master{}
 // ==== MOTHER ========================
 agent mother {
     fields{
-        
+        /*
         list<list<int>> WORLD = [[0, 4, 0, -1, 4, 0, 3, 0, 3, 3, 0, 0, 2, 2, 0, 0, -1, 0, 0, 0],
                                 [0, 0, 0, 4, 0, -1, 0, 3, 0, 0, 2, 4, 0, 0, 0, 0, 0, 1, -1, 0],
                                 [0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 4, 0, 0, -1, 1, 0, 0, 0, -1, 0],
@@ -251,8 +248,8 @@ agent mother {
                                 [0, -1, 1, 0, 0, 0, 0, 0, 4, 2, 0, 0, 3, 0, -1, 0, 4, 0, 0, 0],
                                 [0, 0, 0, -1, 0, 0, 2, 2, 0, 0, 3, 3, 0, 3, 0, 4, -1, 0, 4, 0]
                                 ];
-        
-        //list<list<int>> WORLD  = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
+        */
+        list<list<int>> WORLD  = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
                                 
     }
     initialize {

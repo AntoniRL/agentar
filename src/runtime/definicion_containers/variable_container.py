@@ -33,7 +33,7 @@ class VariableContainer:
         return VariableContainer(self._agent, scope_name, parent_container=self)
     
 
-    def declare(self, name: str, value: Optional[ASTNode], var_type, declaration_line: Optional[int] = None):
+    def declare(self, name: str, value: Optional[ASTNode], var_type, declaration_line: Optional[int] = None, message=None):
         """Declare a variable in the current scope."""
         try:
             if name in self._variables:
@@ -46,7 +46,7 @@ class VariableContainer:
                     if self._agent is None:
                         value = ExpressionEvaluator(None).eval_expr(value, self)  # Evaluate the expression to get the value (for VariableContainer Fields and Beliefs) (self == variable_container of place where the declaration is called)
                     else:
-                        value = self._agent._evaluator.eval_expr(value, self)  # Evaluate the expression to get the value. (self == variable_container of place where the declaration is called)
+                        value = self._agent._evaluator.eval_expr(value, self, message=message)  # Evaluate the expression to get the value. (self == variable_container of place where the declaration is called)
                 if not isinstance(value, reference_type):
                     raise WrongTypeError(name, reference_type, type(value), declaration_line)
 

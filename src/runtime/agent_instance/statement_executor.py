@@ -38,11 +38,11 @@ class StatementExecutor:
 
 
             case MessageVarDeclNode():
-                self.agent._message_handler.handle_message_declaration(stmt, local_vars)
+                self.agent._message_handler.handle_message_declaration(stmt, local_vars, message=message)
             
 
             case SendNode():
-                self.agent._message_handler.send_message(stmt, local_vars)
+                self.agent._message_handler.send_message(stmt, local_vars, message=message)
             
 
             case SendToChildrenNode():
@@ -182,7 +182,10 @@ class StatementExecutor:
                 base = self.agent._evaluator.eval_expr(base, local_vars, message, stmt._line)
                 value = self.agent._evaluator.eval_expr(value, local_vars, message, stmt._line)
                 if isinstance(base, TypedList):
-                    base.append(deepcopy(value))
+                    try:
+                        base.append(deepcopy(value))
+                    except TypeError as e:
+                        raise WrongTypeError(f"operands of 'append'", "compatible types", f"{type(base).__name__} and {type(value).__name__}", stmt._line) from e
                 else:
                     raise WrongTypeError("base", "TypedList", type(base), stmt._line)
 
