@@ -87,7 +87,7 @@ class ExpressionEvaluator:
 
             case LenNode(base=base, _line=line):
                 value = self.eval_expr(base, local_vars, message, line, deref)
-                if isinstance(value, (TypedList, TypedDict, TypedTuple, str)):
+                if isinstance(value, (TypedList, TypedDict, TypedTuple, str, list)):
                     return len(value)
                 else:
                     if isinstance(base, BelAccessNode):

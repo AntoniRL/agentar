@@ -82,6 +82,7 @@ class AgentInstance:
         """
         self._action_executor.sense_world()
         if not self._inbox.empty():
+            # print(self._inbox.qsize(), self._inbox.queue)
             self._message_handler.process_messages(self._inbox.get())
         self._action_executor.check_global_goal()
         self._action_executor.follow_rules()

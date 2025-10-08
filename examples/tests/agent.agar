@@ -5,6 +5,7 @@ agent mother {
     initialize{
         print(self.init_text);
         float y = 5.0;
+        y = "hello";
         float x;
         x = do test(y*4.5);
         print(x);

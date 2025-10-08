@@ -61,24 +61,24 @@ agent finder{
         bel.hard_screem = *self.HARD_SCREEM;
     }
     rules{
-        when (self._is_goal_achived) then {
-            print("My goal of finding the gold:", self.has_gold);
+        when (self.is_goal_achieved == True) then {
+            print("My goal of finding the gold:", self.has_gold, bel.x, bel.y);
             collect_gold mess = collect_gold{};
             send2parent(mess, msgType_inform);
         }
-        when (bel.visited.get((bel.x, bel.y)) == None) then {
+        when (bel.visited.get((bel.x, bel.y)) == None && self.is_goal_achieved == False) then {
             bel.safe[(bel.x,bel.y)] = 1;
             bel.visited[(bel.x,bel.y)] = 1;
             bel.visited_l.add((bel.x, bel.y));
             do propagate_local((bel.x, bel.y));
         }
-        when (len(bel.frontier) > 0) then {
+        when (len(bel.frontier) > 0 && self.is_goal_achieved == False) then {
             tuple<int, int> next_field = bel.frontier[-1];
             del bel.frontier[-1];
             do create_plan_bfs(next_field);
             do go();
         }
-        when (bel.hard_screem == True) then {
+        when (bel.hard_screem == True && self.is_goal_achieved == False) then {
             do make_clear_after_screem();
         }
     }
@@ -114,7 +114,7 @@ agent finder{
         print("wampus", bel.wampus);
         print("pit", bel.pit);
         print("safe", bel.safe);
-        print("frontair", bel.frontier);
+        print("frontier", bel.frontier);
         print("visirted", bel.visited);
     }
 
@@ -172,12 +172,24 @@ agent finder{
     }
 
     action make_clear_after_screem(): void{
+        /*
         bel.breeze = {};
         bel.pit = {};
         bel.wampus = {};
         bel.stanch = {};
         bel.visited = {};
         *self.HARD_SCREEM = False;
+        */
+        list<tuple<int,int>> stanch_keys = bel.stanch.keys();
+        for (int i = 0; i < len(stanch_keys); i=i+1){
+            if (bel.stanch[stanch_keys[i]] == 0) continue;
+            elif (bel.stanch[stanch_keys[i]] == 1) {
+                del bel.visited[stanch_keys[i]];
+                bel.frontier.add(stanch_keys[i]);
+            }
+        }
+        bel.wampus = {};
+        bel.stanch = {};
     }
 }
 
@@ -186,17 +198,20 @@ agent finder{
 agent mother{
     fields{
         // (stanch, wampus, breeze, pit, gold)
-        list<list<list<int>>> WORLD = [[[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,1],[0,0,0,1,0]],
-                                       [[0,1,0,0,0],[1,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0]],
+        list<list<list<int>>> WORLD = [[[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]],
+                                       [[0,1,0,0,0],[1,0,1,0,1],[0,0,0,1,0],[0,0,1,0,0]],
                                        [[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0]],
                                        [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0]]];
+        /*list<list<list<int>>> WORLD = [[[1,0,0,0,0],[0,1,0,0,0],[1,0,1,0,1],[0,0,0,1,0]],
+                                       [[0,0,0,0,0],[1,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0]],
+                                       [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0]],
+                                       [[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0]]];*/
         /*list<list<list<int>>> WORLD = [
                                     [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]],
-                                    [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[1,0,0,0,0],[0,0,1,0,0]],
+                                    [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[1,0,0,0,1],[0,0,1,0,0]],
                                     [[0,0,1,0,0],[0,0,0,1,0],[1,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0]],
-                                    [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[1,0,0,0,0],[0,0,0,0,1]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
-                                    ];*/
+                                    [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[1,0,0,0,0],[0,0,0,0,0]],
+                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]];*/
         bool hard_screem = False;
     }
     initialize{
@@ -217,6 +232,7 @@ agent mother{
 
     receive collect_gold{
         when () then {
+            print("HAVEHAVE HAVE HAVE");
             print("killing the system...");
             kill();
         }
