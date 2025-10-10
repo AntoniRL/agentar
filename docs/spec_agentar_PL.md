@@ -371,7 +371,22 @@ Rodzaj wiadomości umożliwiają programiście rozszerzyć warunki komunikacji.
 ---
 
 
+## 8. Struktura klas uruchomienia interpretera
+```
+agent.agar → AST → AgentarInterpreter → (mother, agents, messages)
+                                 ↓
+                       AgentarSystem(mother, agents, ...)
+                                 ↓
+       ┌────────────┬────────────┬────────────┐
+       ▼            ▼            ▼            ▼
+  AgentRunner   AgentRunner   AgentRunner   ...
+     │             │             │
+AgentInstance  AgentInstance  AgentInstance
+     │             │             │
+  AgentarAgent   AgentarAgent   AgentarAgent
+  ```
 
-# 8. Przykłady
+
+# 9. Przykłady
 
 Przykłądy znajdują się w folderze `examples/`
