@@ -10,7 +10,7 @@ __pycache__/
 *.pyd
 *.so
 
-# Systemowe
+# System
 .DS_Store
 *.swp
 
@@ -20,6 +20,7 @@ __pycache__/
 
 *.egg-info/
 
+# extra
 /grammar/antlr-*-complete.jar
 
 /logs
