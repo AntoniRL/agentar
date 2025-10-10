@@ -451,3 +451,14 @@ class DerefExprNode(ASTNode):
 @dataclass
 class ParentShadowNode(ASTNode):
     base: ASTNode
+
+
+@dataclass
+class Atan2ExprNode(ASTNode):
+    y: ASTNode
+    x: ASTNode
+
+
+@dataclass
+class SqrtExprNode(ASTNode):
+    value: ASTNode

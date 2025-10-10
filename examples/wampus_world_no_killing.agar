@@ -18,6 +18,9 @@ agent finder{
         bool has_gold = False;
 
         list<tuple<int,int>> plan_path;
+        int POSSIBLE = -1;
+        int NO = 0;
+        int YES = 1;
     }
     beliefs{
         // position
@@ -45,7 +48,7 @@ agent finder{
     initialize{
         bel.x = self.start_pos[0];
         bel.y = self.start_pos[1];
-        del bel.visited_l[0]; //problem of initialize list of tuples in AGENTAR
+        del bel.visited_l[0]; //problem of initialize list of tuples in agentar AGENTAR
         del bel.frontier[0]; // -||-
         del self.plan_path[0]; // -||-
     }
@@ -61,28 +64,28 @@ agent finder{
         bel.hard_screem = *self.HARD_SCREEM;
     }
     rules{
-        when (self.is_goal_achieved == True) then {
-            print("My goal of finding the gold:", self.has_gold, bel.x, bel.y);
+        when (self._is_goal_achived) then {
+            print("Goal:", self.has_gold);
             collect_gold mess = collect_gold{};
             send2parent(mess, msgType_inform);
         }
-        when (bel.visited.get((bel.x, bel.y)) == None && self.is_goal_achieved == False) then {
+        when (bel.visited.get((bel.x, bel.y)) == None) then {
             bel.safe[(bel.x,bel.y)] = 1;
             bel.visited[(bel.x,bel.y)] = 1;
             bel.visited_l.add((bel.x, bel.y));
             do propagate_local((bel.x, bel.y));
         }
-        when (len(bel.frontier) > 0 && self.is_goal_achieved == False) then {
+        when (len(bel.frontier) > 0) then {
             tuple<int, int> next_field = bel.frontier[-1];
             del bel.frontier[-1];
             do create_plan_bfs(next_field);
             do go();
         }
-        when (bel.hard_screem == True && self.is_goal_achieved == False) then {
-            do make_clear_after_screem();
+        when (bel.hard_screem == True) then {
+            print("TAK");
         }
     }
-    destroy {
+    destroy{
         print("I have been killed. Having gold: ", self.has_gold);
     }
     action propagate_local(tuple<int,int> pos): void{
@@ -107,14 +110,14 @@ agent finder{
 
             if (bel.wampus[neighbor] == 0 && bel.pit[neighbor] == 0) bel.safe[neighbor] = 1;
 
-            if (bel.safe.get(neighbor) == 1 && bel.visited.get(neighbor) == None) bel.frontier.add(neighbor);
-
             if (bel.wampus[neighbor] == 1) do kill_wampus(neighbor);    
+
+            if (bel.safe.get(neighbor) == 1 && bel.visited.get(neighbor) == None) bel.frontier.add(neighbor);
         }
         print("wampus", bel.wampus);
         print("pit", bel.pit);
         print("safe", bel.safe);
-        print("frontier", bel.frontier);
+        print("frontair", bel.frontier);
         print("visirted", bel.visited);
     }
 
@@ -170,27 +173,6 @@ agent finder{
         kill_wam mess_of_killing = kill_wam{pos: target};
         send2parent(mess_of_killing, msgType_request);
     }
-
-    action make_clear_after_screem(): void{
-        /*
-        bel.breeze = {};
-        bel.pit = {};
-        bel.wampus = {};
-        bel.stanch = {};
-        bel.visited = {};
-        *self.HARD_SCREEM = False;
-        */
-        list<tuple<int,int>> stanch_keys = bel.stanch.keys();
-        for (int i = 0; i < len(stanch_keys); i=i+1){
-            if (bel.stanch[stanch_keys[i]] == 0) continue;
-            elif (bel.stanch[stanch_keys[i]] == 1) {
-                del bel.visited[stanch_keys[i]];
-                bel.frontier.add(stanch_keys[i]);
-            }
-        }
-        bel.wampus = {};
-        bel.stanch = {};
-    }
 }
 
 
@@ -198,48 +180,20 @@ agent finder{
 agent mother{
     fields{
         // (stanch, wampus, breeze, pit, gold)
-        list<list<list<int>>> WORLD = [[[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]],
-                                       [[0,1,0,0,0],[1,0,1,0,1],[0,0,0,1,0],[0,0,1,0,0]],
+        list<list<list<int>>> WORLD = [[[1,0,0,0,0],[0,0,0,0,1],[0,0,1,0,0],[0,0,0,1,0]],
+                                       [[0,1,0,0,0],[1,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0]],
                                        [[1,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0]],
                                        [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0]]];
-        list<list<list<int>>> WORLD_v2 = [[[1,0,0,0,0],[0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,0]],
-                                          [[0,0,0,0,0],[1,0,0,0,0],[0,0,1,0,0],[0,0,0,0,1]],
-                                          [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0]],
-                                          [[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]]];
-        list<list<list<int>>> WORLD_5 = [
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]],
-                                    [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[1,0,0,0,1],[0,0,1,0,0]],
-                                    [[0,0,1,0,0],[0,0,0,1,0],[1,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0]],
-                                    [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[1,0,0,0,0],[0,0,0,0,0]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]];
-
-        list<list<list<int>>> WORLD_15 = [[[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0]],
-                                    [[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0]],
-                                    [[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,1,0]],
-                                    [[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[1,0,0,0,0],[0,0,0,0,1]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[1,0,0,0,0],[0,1,0,0,0],[1,0,0,0,0]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[1,0,0,0,0],[0,0,0,0,0]],
-                                    [[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]],
-                                    [[0,0,0,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0]],
-                                    [[0,0,1,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,0,0]],
-                                    [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,1,0],[0,0,1,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0]]];
         bool hard_screem = False;
     }
     initialize{
-        self.WORLD = self.WORLD_v2;
         logging(self.WORLD);
-        tuple<int,int> start_pos = (0,3);
-        spawn(finder, {WORLD: &self.WORLD, HARD_SCREEM: &self.hard_screem, start_pos: start_pos});
-        print("AGENT POS::", start_pos[0], start_pos[1]); //start point
+        spawn(finder, {WORLD: &self.WORLD, HARD_SCREEM: &self.hard_screem, start_pos: (0,3)});
+        print(0,3); //start point
     }
     receive position{
         when () then {
-            print("AGENT POS::", msg.x, msg.y);
+            print(msg.x, msg.y);
         }
         when (self.WORLD[msg.y][msg.x][1] == 1 || self.WORLD[msg.y][msg.x][3] == 1) then {
             kill_children(_);
@@ -249,7 +203,6 @@ agent mother{
 
     receive collect_gold{
         when () then {
-            print("HAVEHAVE HAVE HAVE");
             print("killing the system...");
             kill();
         }
@@ -262,7 +215,7 @@ agent mother{
             int y;
             x = msg.pos[0];
             y = msg.pos[1];
-            self.WORLD[y][x][1] = 0;
+            self.WORLD[x][y][1] = 0;
             list<tuple<int,int>> neighbors = [(x,y-1), (x-1,y), (x,y+1), (x+1,y)];
             for (int i = 0; i<4; i=i+1){
                 tuple<int,int> neighbor = neighbors[i];

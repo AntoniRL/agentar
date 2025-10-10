@@ -1,6 +1,7 @@
 agent mother {
     fields{
         list<int> l = [0,2,3,4];
+        list<tuple<int,int>> lll = [(1,1)];
     }
 
     initialize {
@@ -47,6 +48,13 @@ agent mother {
         print("after set grid[1][0] -> 100:", grid);
         del grid[1][2];
         print("after del grid[1][2]:", grid);
+
+        print("===");
+
+        print(self.lll);
+        tuple<int,int> ttt = (1,2);
+        self.lll.add(ttt);
+        print(self.lll);
 
         kill();
     }

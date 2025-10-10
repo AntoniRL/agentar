@@ -44,7 +44,7 @@ class ActionExecutor:
     
     def check_global_goal(self):
         if self.agent._sub_goals == {}:
-            self.agetn._is_goal_achived = True
+            self.agent._is_goal_achieved = True
             return
         else:
             sub_goals_results = VariableContainer("SubGoals")
@@ -54,12 +54,12 @@ class ActionExecutor:
             if self.agent._merge_goals_condition is not None:
                 merge_result = self.agent._evaluator.eval_expr(self.agent._merge_goals_condition, sub_goals_results, None, self.agent._merge_goals_condition._line)
                 if merge_result:
-                    self.agent._is_goal_achived = True
+                    self.agent._is_goal_achieved = True
                 else:
-                    self.agent._is_goal_achived = False
+                    self.agent._is_goal_achieved = False
             else: 
-                self.agent._is_goal_achived = all(sub_goals_results.get(goal_name, condition._line) for goal_name, condition in self.agent._sub_goals._value.items()) 
-        if self.agent._is_goal_achived:
+                self.agent._is_goal_achieved = all(sub_goals_results.get(goal_name, condition._line) for goal_name, condition in self.agent._sub_goals._value.items()) 
+        if self.agent._is_goal_achieved:
             pass # logging.info(f"{self.agent._id.path}:: Global goal achieved!")
 
 
@@ -74,6 +74,7 @@ class ActionExecutor:
 
 
     def execute_action(self, action_node, parameters, line_of_call_action=None):
+        # print(f"Executing action: {action_node.name}")
         local_vars = VariableContainer(agent=self.agent, scope="Action")
         # Initialize parameters
         for i, param_decl in enumerate(action_node.parameters):
@@ -94,11 +95,13 @@ class ActionExecutor:
         return_type = self.agent._evaluator.eval_expr(action_node.return_type, local_vars, None, action_node._line)
 
         for stmt in action_node.body:
+            # print(stmt)
             return_object = self.agent._executor.execute_stmt(stmt, local_vars, None)
             if self.agent._return_flag:
                 self.agent._return_flag = False
                 break
+        # print("Return object:", return_object)
         if return_type != 'void':
             if type(return_object) != return_type:
-                raise WrongTypeError("Return value", return_type, type(self.agent._return_object), action_node._line)
+                raise WrongTypeError("Return value", return_type, type(return_object), action_node._line)
             return return_object

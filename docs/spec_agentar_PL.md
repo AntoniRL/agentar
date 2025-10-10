@@ -123,13 +123,13 @@ UWAGA: Pola wudowane tylko do odczytu!!!
 
 | Pole                      | Opis                                         |
 | ------------------------- | -------------------------------------------- |
-| `self._id`                 | ID agenta np. `.1.2.1`                       |
-| `self._parent`             | ID rodzica np. `.1.2`                        |
-| `self._children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
-| `self._name`               | nazwa rodzaju agenta (jedna ze zdefiniowanych przez programistę) |
-| `self._isGoalAchieved`     | flaga sprawdzająca czy sel został osiągnięty  aktualizowana co krop agenta |
+| `self.id`                 | ID agenta np. `.1.2.1`                       |
+| `self.parent`             | ID rodzica np. `.1.2`                        |
+| `self.children`           | lista ID dzieci np. [`.1.2.1.1`, `.1.2.1.2`] |
+| `self.name`               | nazwa rodzaju agenta (jedna ze zdefiniowanych przez programistę) |
+| `self.is_goal_achieved`     | flaga sprawdzająca czy sel został osiągnięty  aktualizowana co krop agenta |
 
-Zastrzeżone nazwy: `self._agent`, `self._isMother`, `self._next_child`, `self._inbox`, `self._runtime`, `self._return_flag`, `self._break_flag`, `self._fields`, `self._fields_type`, `self._beliefs`, `self._beliefs_type`, `self._sense`, `self._goals`, `self._rules`, `self._receive`, `self._actions`, `self._initialize`, `self._destroy`
+Zastrzeżone nazwy: `self.id`, `self.parent`, `self.children`, `self.name`, `self.is_goal_achieved`, `self._agent`, `self._isMother`, `self._next_child`, `self._inbox`, `self._runtime`, `self._return_flag`, `self._break_flag`, `self._fields`, `self._fields_type`, `self._beliefs`, `self._beliefs_type`, `self._sense`, `self._goals`, `self._rules`, `self._receive`, `self._actions`, `self._initialize`, `self._destroy`
 
 TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie takiej potrzeby. 
 
@@ -154,8 +154,6 @@ TODO: Dać możliwość proframiście zamienić nazwę pola wbudowanego w razie 
 | `kill(child_id)` | Usunięcie dziecka o podanym ID | dowolnie |
 | `kill_children(_)` | Kończy działanie wszystkich dzieci|
 | `kill_children(childen_type_name)` | Kończy działanie wszystkich dzieci o podanym typie|
-| `kill_siblings()` | Kończy działanie wszystkich braci |
-| `kill_siblings(sibling_type_name)` | Kończy działanie wszystkich braci o podanym typie|
 | `spawn(agent_name, {field_name: value, ...})`   | Tworzenie dzieci. Zwraca id stworzonego dziecka | `initialize`, `action` |
 | `sleep(ms)`    | Pauza w wykonaniu | `action`, `receive` |
 | `sense()`      | Możaliwość wywołania z dowolnego miejsca w ciele agenta. Wykonuje polecenia z `sense{}` |
@@ -230,9 +228,9 @@ Wybrór kawałka listy:
 
 
 #### Krotka:
-`tuple<int> myTuple = (1,2,3)` jeszcze nie działa
+`tuple<int, int, int> myTuple = (1,2,3)` jeszcze nie działa
 
-`tuple<int, string> = (3, "trzy")`
+`tuple<int, str> = (3, "trzy")`
 
 `tuple<any> = (3, "trzy", 3.3)`
 
@@ -317,10 +315,10 @@ Przed wysłaniem wiadomości należy zdefiniować jej instancję:
 `msg` jako struktura zawierająca pola:
 ```
 msg {
-    _sender: ID        // nadawca wiadomości
-    _receiver: ID      // adresat wiadomości
-    _type: string      // systemowy typ wiadomości (inform, request ...)
-    _sending_time: int         // czas wysłania wiadomości
+    sender: ID        // nadawca wiadomości
+    receiver: ID      // adresat wiadomości
+    type: string      // systemowy typ wiadomości (inform, request ...)
+    sending_time: int         // czas wysłania wiadomości
     <Pola wiadomości>   // treść wiadomości – instancja klasy zdefiniowanej w message { ... }
 }
 ```

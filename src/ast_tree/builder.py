@@ -510,6 +510,11 @@ class AgentarToASTBuilder(AgentarVisitor):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
         return ast.BinaryOpNode(op='==', left=left, right=right, **self.node_meta(ctx))
+    
+
+    def visitSqrtExpr(self, ctx:AgentarParser.SqrtExprContext):
+        value = self.visit(ctx.expression())
+        return ast.SqrtExprNode(value=value, **self.node_meta(ctx))
 
 
     def visitNeqExpr(self, ctx:AgentarParser.NeqExprContext):
@@ -534,6 +539,10 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitMsgTypeValueExpr(self, ctx:AgentarParser.MsgTypeValueExprContext):
         return ast.LiteralNode(value=ctx.getText(), **self.node_meta(ctx))
+    
+
+    def visitSymbolExpr(self, ctx:AgentarParser.PiSymbolContext):
+        return ast.LiteralNode(value=ctx.getText(), **self.node_meta(ctx))
 
 
     def visitNotExpr(self, ctx:AgentarParser.NotExprContext):
@@ -548,6 +557,12 @@ class AgentarToASTBuilder(AgentarVisitor):
 
     def visitParenExpr(self, ctx:AgentarParser.ParenExprContext):
         return self.visit(ctx.expression())
+    
+
+    def visitAtan2Expr(self, ctx:AgentarParser.Atan2ExprContext):
+        y = self.visit(ctx.expression(0))
+        x = self.visit(ctx.expression(1))
+        return ast.Atan2ExprNode(y=y, x=x, **self.node_meta(ctx))
 
 
     def visitParentAccessExpr(self, ctx:AgentarParser.ParentAccessExprContext):

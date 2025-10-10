@@ -38,11 +38,11 @@ class StatementExecutor:
 
 
             case MessageVarDeclNode():
-                self.agent._message_handler.handle_message_declaration(stmt, local_vars)
+                self.agent._message_handler.handle_message_declaration(stmt, local_vars, message=message)
             
 
             case SendNode():
-                self.agent._message_handler.send_message(stmt, local_vars)
+                self.agent._message_handler.send_message(stmt, local_vars, message=message)
             
 
             case SendToChildrenNode():
@@ -94,26 +94,28 @@ class StatementExecutor:
             case IfStmtNode():
                 local_vars = local_vars.create_child_scope("if")
                 condition = self.agent._evaluator.eval_expr(stmt.conditions, local_vars, message, stmt._line)
+                return_object = None
                 if condition:
                     for statement in stmt.statements:
                         if self.agent._break_flag or self.agent._return_flag:
                             break
-                        self.execute_stmt(statement, local_vars, message, stmt._line)
-                elif stmt.elifBlocks:
+                        return_object = self.execute_stmt(statement, local_vars, message, stmt._line)
+                    return return_object
+                if stmt.elifBlocks:
                     for elif_block in stmt.elifBlocks:
                         condition = self.agent._evaluator.eval_expr(elif_block.condition, local_vars, message, stmt._line)
                         if condition:
                             for statement in elif_block.statement:
                                 if self.agent._break_flag or self.agent._return_flag:
                                     break
-                                self.execute_stmt(statement, local_vars, message, stmt._line)
+                                return_object = self.execute_stmt(statement, local_vars, message, stmt._line)
+                            return return_object
+                if stmt.elseStmt:
+                    for statement in stmt.elseStmt:
+                        if self.agent._break_flag or self.agent._return_flag:
                             break
-                else:
-                    if stmt.elseStmt is not None:
-                        for statement in stmt.elseStmt:
-                            if self.agent._break_flag or self.agent._return_flag:
-                                break
-                            self.execute_stmt(statement, local_vars, message, stmt._line)
+                        return_object = self.execute_stmt(statement, local_vars, message, stmt._line)
+                    return return_object
 
 
             case ForLoopNode():
@@ -129,11 +131,18 @@ class StatementExecutor:
                         self.execute_stmt(statement, local_vars_iter, message, stmt._line)
                         if self.agent._continue_flag: # If continue flag is set, skip to the next iteration
                             self.agent._continue_flag = False
-                            update_loop_var()
                             break
+                        if self.agent._break_flag:  # If break flag is set, exit the loop
+                            break
+                        if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
+                            break
+                    if self.agent._break_flag:  # If break flag is set, exit the loop
+                        break
+                    if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
+                        break
                     update_loop_var()
-                self.agent._break_flag = False  # Reset break flag after loop execution
                 self.agent._continue_flag = False  # Reset continue flag after loop execution
+                self.agent._break_flag = False  # Reset break flag after loop execution
 
 
             case WhileLoopNode():
@@ -146,6 +155,14 @@ class StatementExecutor:
                         if self.agent._continue_flag: # If continue flag is set, skip to the next iteration
                             self.agent._continue_flag = False
                             break
+                        if self.agent._break_flag:  # If break flag is set, exit the loop
+                            break
+                        if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
+                            break
+                    if self.agent._break_flag:  # If break flag is set, exit the loop
+                        break
+                    if self.agent._return_flag:  # If return flag is set, exit the loop and propagate
+                        break
                 self.agent._continue_flag = False  # Reset continue flag after loop execution
                 self.agent._break_flag = False  # Reset break flag after loop execution
 
@@ -166,7 +183,10 @@ class StatementExecutor:
                 base = self.agent._evaluator.eval_expr(base, local_vars, message, stmt._line)
                 value = self.agent._evaluator.eval_expr(value, local_vars, message, stmt._line)
                 if isinstance(base, TypedList):
-                    base.append(value)
+                    try:
+                        base.append(deepcopy(value))
+                    except TypeError as e:
+                        raise WrongTypeError(f"operands of 'append'", "compatible types", f"{type(base).__name__} and {type(value).__name__}", stmt._line) from e
                 else:
                     raise WrongTypeError("base", "TypedList", type(base), stmt._line)
 

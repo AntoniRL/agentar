@@ -424,6 +424,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#SymbolExpr.
+    def visitSymbolExpr(self, ctx:AgentarParser.SymbolExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#TypeExpr.
     def visitTypeExpr(self, ctx:AgentarParser.TypeExprContext):
         return self.visitChildren(ctx)
@@ -464,6 +469,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#SqrtExpr.
+    def visitSqrtExpr(self, ctx:AgentarParser.SqrtExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#NoneExpr.
     def visitNoneExpr(self, ctx:AgentarParser.NoneExprContext):
         return self.visitChildren(ctx)
@@ -476,6 +486,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#ParenExpr.
     def visitParenExpr(self, ctx:AgentarParser.ParenExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#Atan2Expr.
+    def visitAtan2Expr(self, ctx:AgentarParser.Atan2ExprContext):
         return self.visitChildren(ctx)
 
 
@@ -571,6 +586,11 @@ class AgentarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AgentarParser#BoolLiteral.
     def visitBoolLiteral(self, ctx:AgentarParser.BoolLiteralContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AgentarParser#PiSymbol.
+    def visitPiSymbol(self, ctx:AgentarParser.PiSymbolContext):
         return self.visitChildren(ctx)
 
 

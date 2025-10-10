@@ -194,6 +194,15 @@ agent finder{
 }
 
 
+agent wampir{
+    fields{
+        pointer<list<list<list<int>>>> WORLD;
+        pointer<bool> HARD_SCREEM;
+    }
+
+
+}
+
 
 agent mother{
     fields{
@@ -234,6 +243,7 @@ agent mother{
         self.WORLD = self.WORLD_v2;
         logging(self.WORLD);
         tuple<int,int> start_pos = (0,3);
+        //spawn(wampir, {WORLD: &self.WORLD, HARD_SCREEM: &self.hard_screem});
         spawn(finder, {WORLD: &self.WORLD, HARD_SCREEM: &self.hard_screem, start_pos: start_pos});
         print("AGENT POS::", start_pos[0], start_pos[1]); //start point
     }

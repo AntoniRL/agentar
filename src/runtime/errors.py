@@ -143,6 +143,13 @@ class NotAssignableError(AgentarRuntimeError):
         message = f"Cannot assign to '{target}' of type '{target_type}'."
         super().__init__(message, line)
 
+
+class MinusValueForSquare(AgentarRuntimeError):
+    """Raised when trying to calculate the square root of a negative number."""
+    def __init__(self, value, line=None):
+        message = f"Cannot calculate square root of negative value '{value}'."
+        super().__init__(message, line)
+
 # =============================================================================
 # 3. Error listener for ANTLR
 # =============================================================================

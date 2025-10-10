@@ -18,6 +18,9 @@ agent child {
 }
 
 agent mother {
+    fields{
+        int num_of_msg = 10;
+    }
     beliefs {
         int counter = 0;
     }
@@ -28,10 +31,12 @@ agent mother {
         send(agentid_, msg_, msgType_request);
     }
     rules {
-        when (bel.counter == 10) then {
-            print("I have repaid", bel.counter,"messages with agent", self._children[0]);
+        when (bel.counter == self.num_of_msg) then {
             kill();
         }
+    }
+    destroy{
+        print("I have repaid", bel.counter,"/",self.num_of_msg,"messages with agent", self._children[0]);
     }
     receive pong {
         when () then {

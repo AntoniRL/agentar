@@ -14,7 +14,7 @@ motherDecl
 
 // === Agent declaration
 agentDecl
-    : 'agent' ID '{' agentBody '}'
+    : AGENT ID '{' agentBody '}'
     ;
 
 agentBody
@@ -156,7 +156,7 @@ killStmt
     ;
 
 killChildrenStmt
-    : 'killChildren' '(' expression? ')' ';'
+    : 'kill_children' '(' expression? ')' ';'
     ;
 
 sleepStmt  
@@ -273,6 +273,8 @@ expression
     | 'abs' '(' expression ')'              # AbsExpr  
     | 'random' '(' expression ',' expression ')' # RandomExpr
     | 'parent::' expression                   # ParentAccessExpr
+    | 'atan2' '(' expression ',' expression ')' # Atan2Expr
+    | 'sqrt' '(' expression ')'               # SqrtExpr
     | NOT expression                          # NotExpr 
     | AMPERSAND expression                    # AddressOfExpr
     | STAR expression                         # DerefExpr
@@ -296,6 +298,7 @@ expression
     | tupleLiteral                          # TupleExpr
     | listLiteral                           # ListExpr
     | dictLiteral                           # DictExpr
+    | symbols                               # SymbolExpr
     | literal                               # LiteralExpr
     ;
 
@@ -317,7 +320,7 @@ listLiteral
 
 
 dictLiteral
-    : '{' dictEntry (',' dictEntry)* '}'
+    : '{' (dictEntry (',' dictEntry)*)? '}'
     ;
 
 
@@ -348,6 +351,11 @@ literal
     | FLOAT     # FloatLiteral
     | STRING    # StringLiteral
     | BOOL      # BoolLiteral
+    ;
+
+
+symbols
+    : PI        # PiSymbol
     ;
 
 
@@ -418,7 +426,7 @@ SPAWN: 'spawn';
 DO: 'do';
 SLEEP: 'sleep';
 RETURN: 'return';
-
+PI: 'pi';
 
 
 INT: [0-9]+;

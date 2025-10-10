@@ -1,0 +1,20 @@
+message basic{
+    str text;
+}
+
+agent worker {
+    receive basic {
+        when (msg.type == msgType_request) then {
+            print("The content", msg.text);
+        }
+    } 
+}
+
+agent mother {
+    initialize{
+        agentid a_id;
+        a_id = spawn(worker);
+        basic my_msg = basic{text: 'HELLO!'};
+        send(a_id, my_msg, msgType_request);
+    }
+}
