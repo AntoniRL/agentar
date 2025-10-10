@@ -105,7 +105,7 @@ class ReplayApp:
 
         # GUI
         self.root = tk.Tk()
-        self.root.title("Agentar Replay")
+        self.root.title("Wampus World Replay")
         top = tk.Frame(self.root); top.pack(fill="x")
         self.status = tk.StringVar(value="Gotowy")
         tk.Label(top, textvariable=self.status, anchor="w").pack(side="left", fill="x", expand=True)
@@ -186,6 +186,9 @@ class ReplayApp:
                     stench, wampus, breeze, pit, gold = self.world[y][x]
                 except Exception:
                     continue
+
+                if gold:
+                    self.canvas.create_rectangle(x0, y0, x1, y1, fill="#fff9c4", outline=COL_GRID)
 
                 if stench:
                     self.canvas.create_rectangle(x0+2, y0+2, x1-2, y0 + CELL*0.25, fill=COL_STENCH, outline="")

@@ -5,7 +5,6 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 # =============== Konfiguracja ===============
-# kolory agentów (ciemny – kropka/ramka; jasny – pole odwiedzone przez siebie)
 AGENTS = {
     "1": {"name": "Agent 1 (.1.1.1)", "color": "#14b84a", "light": "#a6e9b7"},
     "2": {"name": "Agent 2 (.1.1.2)", "color": "#1f6fff", "light": "#a8c8ff"},
@@ -13,12 +12,13 @@ AGENTS = {
     "4": {"name": "Agent 4 (.1.1.4)", "color": "#f2c200", "light": "#ffeb99"},
 }
 
-TOP_CELL = 26     # rozmiar kafla górnej planszy
-SUB_CELL = 16     # rozmiar kafla dolnych plansz (mniejsze)
+TOP_CELL = 26     # górna mapa
+SUB_CELL = 16     # dolne mapy
 MARGIN = 8
 
-SUB_N = 17        # dolna mapa NxN (nieparzyste, środek = start)
+SUB_N = 17        # okno widoku dolnych map (nieparzyste)
 CENTER = SUB_N // 2
+PAN_MARGIN = 1    # margines (w polach) zanim zaczniemy przesuwać
 
 # =============== Wzorce z logów ===============
 WORLD_RE  = re.compile(r"WORLD::\s*(\[\[.*\]\])")
@@ -31,7 +31,6 @@ FRONT_RE  = re.compile(r"\.(1\.1\.(\d))::.*FRONTIERS::\s*(\{.*\})")
 
 # =============== Pomocnicze ===============
 def parse_dict_of_pairs(s):
-    """Parsuje np. {(0, 0): 1, (-1, 0): 1} -> set([(0,0),(-1,0)])"""
     try:
         d = ast.literal_eval(s)
         pts = set()
@@ -44,7 +43,7 @@ def parse_dict_of_pairs(s):
 
 # =============== Widoki ===============
 class AgentView:
-    """Dolna plansza pojedynczego agenta (oś Y w dół)."""
+    """Dolna plansza pojedynczego agenta (oś Y w dół) z auto-panningiem."""
     DOT_TAG = "agent_pos_dot"
 
     def __init__(self, root, aid, title, color, light):
@@ -57,82 +56,167 @@ class AgentView:
         h = SUB_N * SUB_CELL
         self.canvas = tk.Canvas(self.frame, width=w, height=h, bg="white")
         self.canvas.pack(padx=6, pady=6)
-        self._draw_grid()
-        self._draw_start_frame()
-        self.dot_id = None
+
+        # „okno” widoku (lew. górny narożnik) w ukł. relatywnym agenta:
+        self.vx = -CENTER
+        self.vy = -CENTER
+
+        # stan wiedzy
         self.known_not_visited = set()
         self.visited_self = set()
         self.frontiers = set()
 
-    def _draw_grid(self):
+        # pozycja kropki (ostatnia znana)
+        self.pos = (0, 0)
+        self.dot_id = None
+
+        self._redraw_all()
+
+    # ---------- pomocnicze ----------
+    def _grid(self):
         for i in range(SUB_N + 1):
             p = i * SUB_CELL
             self.canvas.create_line(p, 0, p, SUB_N * SUB_CELL, fill="#ddd")
             self.canvas.create_line(0, p, SUB_N * SUB_CELL, p, fill="#ddd")
 
     def _cell_bbox(self, rx, ry):
-        """rx, ry – współrzędne relatywne (Y w dół)."""
-        cx = CENTER + rx
-        cy = CENTER + ry            # <-- Y w dół
-        x0 = cx * SUB_CELL
-        y0 = cy * SUB_CELL
+        # mapuje współrzędne relatywne -> piksele w aktualnym oknie; None jeżeli poza oknem
+        rx_rel = rx - self.vx
+        ry_rel = ry - self.vy  # Y w dół
+        if not (0 <= rx_rel < SUB_N and 0 <= ry_rel < SUB_N):
+            return None
+        x0 = rx_rel * SUB_CELL
+        y0 = ry_rel * SUB_CELL
         return x0, y0, x0 + SUB_CELL, y0 + SUB_CELL
 
     def _draw_start_frame(self):
-        x0, y0, x1, y1 = self._cell_bbox(0, 0)
-        self.canvas.create_rectangle(x0+2, y0+2, x1-2, y1-2, outline=self.color, width=3)
+        bb = self._cell_bbox(0, 0)
+        if bb:
+            x0, y0, x1, y1 = bb
+            self.canvas.create_rectangle(x0+2, y0+2, x1-2, y1-2, outline=self.color, width=3)
 
     def _raise_dot(self):
-        """Zapewnij, że kropka pozycji jest zawsze na wierzchu."""
         self.canvas.tag_raise(self.DOT_TAG)
 
-    def set_relative_pos(self, rx, ry):
-        # narysuj/odśwież kropkę pozycji agenta (w jego kolorze)
-        x0, y0, x1, y1 = self._cell_bbox(rx, ry)
-        cx = (x0 + x1) / 2
-        cy = (y0 + y1) / 2
-        r = SUB_CELL * 0.35
-        if self.dot_id is not None:
-            self.canvas.delete(self.dot_id)
-        self.dot_id = self.canvas.create_oval(
-            cx - r, cy - r, cx + r, cy + r,
-            fill=self.color, outline="", tags=(self.DOT_TAG,)
-        )
-        self._raise_dot()
+    # ---------- panning ----------
+    def _ensure_visible_point(self, rx, ry):
+        """Pan tak, aby punkt był w oknie (z marginesem). Zwraca True jeśli zmieniono okno."""
+        changed = False
+        rx_rel = rx - self.vx
+        ry_rel = ry - self.vy
+        if rx_rel < PAN_MARGIN:
+            self.vx = rx - PAN_MARGIN
+            changed = True
+        elif rx_rel > SUB_N - 1 - PAN_MARGIN:
+            self.vx = rx - (SUB_N - 1 - PAN_MARGIN)
+            changed = True
+        if ry_rel < PAN_MARGIN:
+            self.vy = ry - PAN_MARGIN
+            changed = True
+        elif ry_rel > SUB_N - 1 - PAN_MARGIN:
+            self.vy = ry - (SUB_N - 1 - PAN_MARGIN)
+            changed = True
+        return changed
 
-    def paint_known(self):
-        # szare – znane ale nie odwiedzone (NIE malujemy startu 0,0)
+    def _ensure_visible_points(self, pts):
+        """Pan tak, by nowe znane punkty były w oknie (wystarczy objąć środek ich bboxa)."""
+        if not pts:
+            return False
+        xs = [x for x, _ in pts]
+        ys = [y for _, y in pts]
+        cx = (min(xs) + max(xs)) // 2
+        cy = (min(ys) + max(ys)) // 2
+        return self._ensure_visible_point(cx, cy)
+
+    # ---------- pełne przerysowanie okna ----------
+    def _redraw_all(self):
+        self.canvas.delete("all")
+        self._grid()
+        self._draw_start_frame()
+
+        # 1) znane-ale-nieodwiedzone (nie kolorujemy startu)
         for (rx, ry) in self.known_not_visited:
             if (rx, ry) == (0, 0):
-                continue  # nie przykrywaj pola startowego
-            x0, y0, x1, y1 = self._cell_bbox(rx, ry)
+                continue
+            bb = self._cell_bbox(rx, ry)
+            if not bb:
+                continue
+            x0, y0, x1, y1 = bb
             self.canvas.create_rectangle(x0+1, y0+1, x1-1, y1-1, fill="#d9d9d9", outline="")
 
-        # jaśniejszy kolor – odwiedzone przez siebie (NIE malujemy startu 0,0)
+        # 2) odwiedzone przez siebie (nie kolorujemy startu)
         for (rx, ry) in self.visited_self:
             if (rx, ry) == (0, 0):
-                continue  # nie koloruj, gdy agent stoi/ wszedł na start
-            x0, y0, x1, y1 = self._cell_bbox(rx, ry)
+                continue
+            bb = self._cell_bbox(rx, ry)
+            if not bb:
+                continue
+            x0, y0, x1, y1 = bb
             self.canvas.create_rectangle(x0+1, y0+1, x1-1, y1-1, fill=self.light, outline="")
 
-        # frontiers – szara ramka
+        # 3) frontiery – szara ramka
         for (rx, ry) in self.frontiers:
-            x0, y0, x1, y1 = self._cell_bbox(rx, ry)
+            bb = self._cell_bbox(rx, ry)
+            if not bb:
+                continue
+            x0, y0, x1, y1 = bb
             self.canvas.create_rectangle(x0+3, y0+3, x1-3, y1-3, outline="#7f7f7f", width=2)
 
-        # kropka ma być na wierzchu
-        self._raise_dot()
+        # 4) kropka pozycji – zawsze na wierzchu
+        self._draw_dot_at_current_pos()
+
+    def _draw_dot_at_current_pos(self):
+        rx, ry = self.pos
+        bb = self._cell_bbox(rx, ry)
+        if bb:
+            x0, y0, x1, y1 = bb
+            cx = (x0 + x1) / 2
+            cy = (y0 + y1) / 2
+            r = SUB_CELL * 0.35
+            if self.dot_id is not None:
+                self.canvas.delete(self.dot_id)
+            self.dot_id = self.canvas.create_oval(
+                cx - r, cy - r, cx + r, cy + r,
+                fill=self.color, outline="", tags=(self.DOT_TAG,)
+            )
+            self._raise_dot()
+
+    # ---------- aktualizacje ----------
+    def set_relative_pos(self, rx, ry):
+        self.pos = (rx, ry)
+        # jeżeli okno musi się przesunąć — przerysuj całość (z kropką)
+        if self._ensure_visible_point(rx, ry):
+            self._redraw_all()
+        else:
+            # tylko zaktualizuj kropkę
+            self._draw_dot_at_current_pos()
+
+    def paint_known(self):
+        # pełny redraw, żeby wszystko „pojechało” razem
+        self._redraw_all()
 
     def update_knowledge(self, visited_set=None, frontier_set=None, path_point=None):
-        if path_point:
-            self.visited_self.add(path_point)
-        if visited_set is not None:
+        # nowe informacje mogą wypchnąć poza okno -> też pan
+        moved = False
+        if visited_set:
+            # dodaj do znanych
             for p in visited_set:
                 if p not in self.visited_self:
                     self.known_not_visited.add(p)
+            moved = self._ensure_visible_points(visited_set) or moved
+
         if frontier_set is not None:
             self.frontiers = set(frontier_set)
-        self.paint_known()
+            moved = self._ensure_visible_points(self.frontiers) or moved
+
+        if path_point:
+            self.visited_self.add(path_point)
+
+        # przerysuj (jeśli było przesunięcie) albo odśwież bez zmiany okna
+        if moved:
+            self._redraw_all()
+        else:
+            self.paint_known()
 
 
 class WorldView:
@@ -148,7 +232,6 @@ class WorldView:
         self.draw_base()
 
     def grid_bbox(self, gx, gy):
-        """gx,gy – współrzędne globalne (Y w dół)."""
         x0 = MARGIN + gx * TOP_CELL
         y0 = MARGIN + gy * TOP_CELL
         return x0, y0, x0 + TOP_CELL, y0 + TOP_CELL
@@ -159,7 +242,6 @@ class WorldView:
         H = MARGIN * 2 + self.h * TOP_CELL
         self.canvas.config(width=W, height=H, bg="white")
 
-        # komórki 0/−1
         for y in range(self.h):
             for x in range(self.w):
                 x0, y0, x1, y1 = self.grid_bbox(x, y)
@@ -167,19 +249,18 @@ class WorldView:
                 fill = "black" if val == -1 else "white"
                 self.canvas.create_rectangle(x0, y0, x1, y1, fill=fill, outline="#ddd")
 
-        # start – cztery kolorowe rożki (w kolorach agentów)
+        # start – cztery kolorowe rożki
         sx, sy = self.start_xy
         x0, y0, x1, y1 = self.grid_bbox(sx, sy)
         corners = [
-            ("1", [(x0, y0), ((x0+x1)/2, y0), (x0, (y0+y1)/2)]),      # lewy górny
-            ("2", [((x0+x1)/2, y0), (x1, y0), (x1, (y0+y1)/2)]),      # prawy górny
-            ("3", [(x0, (y0+y1)/2), (x0, y1), ((x0+x1)/2, y1)]),      # lewy dolny
-            ("4", [((x0+x1)/2, y1), (x1, y1), (x1, (y0+y1)/2)]),      # prawy dolny
+            ("1", [(x0, y0), ((x0+x1)/2, y0), (x0, (y0+y1)/2)]),
+            ("2", [((x0+x1)/2, y0), (x1, y0), (x1, (y0+y1)/2)]),
+            ("3", [(x0, (y0+y1)/2), (x0, y1), ((x0+x1)/2, y1)]),
+            ("4", [((x0+x1)/2, y1), (x1, y1), (x1, (y0+y1)/2)]),
         ]
         for aid, pts in corners:
             self.canvas.create_polygon(*sum(pts, ()), fill=AGENTS[aid]["color"], outline="")
 
-        # siatka
         for i in range(self.w + 1):
             x = MARGIN + i * TOP_CELL
             self.canvas.create_line(x, MARGIN, x, H - MARGIN, fill="#bbb")
@@ -188,53 +269,84 @@ class WorldView:
             self.canvas.create_line(MARGIN, y, W - MARGIN, y, fill="#bbb")
 
     def put_agent_number(self, aid, gx, gy):
-        """Numer agenta nad tłem trójkąta (zawsze widoczny)."""
-        # nie kolorujemy pola startowego
+        # # nie kolorujemy własności na polu startowym
+        # if (gx, gy) != self.start_xy and (gx, gy) not in self.first_owner:
+        #     self.first_owner[(gx, gy)] = aid
+        #     x0, y0, x1, y1 = self.grid_bbox(gx, gy)
+        #     tri = [(x0, y0), (x1, y0), (x0, y1)]
+        #     self.canvas.create_polygon(*sum(tri, ()), fill=AGENTS[aid]["color"], outline="")
+        # # numer agenta nad tłem
+        # if self.agent_text_ids[aid]:
+        #     self.canvas.delete(self.agent_text_ids[aid])
+        # x0, y0, x1, y1 = self.grid_bbox(gx, gy)
+        # tx = (x0 + x1) / 2
+        # ty = (y0 + y1) / 2
+        # self.agent_text_ids[aid] = self.canvas.create_text(
+        #     tx, ty, text=aid, fill="black", font=("Helvetica", int(TOP_CELL * 0.6), "bold")
+        # )
+        # self.canvas.tag_raise(self.agent_text_ids[aid])
+
+        # nie kolorujemy własności na polu startowym
         if (gx, gy) != self.start_xy and (gx, gy) not in self.first_owner:
             self.first_owner[(gx, gy)] = aid
             x0, y0, x1, y1 = self.grid_bbox(gx, gy)
-            tri = [(x0, y0), (x1, y0), (x0, y1)]  # górny-lewy trójkąt
+            tri = [(x0, y0), (x1, y0), (x0, y1)]
             self.canvas.create_polygon(*sum(tri, ()), fill=AGENTS[aid]["color"], outline="")
-        # numer (po trójkącie -> na wierzchu)
-        if self.agent_text_ids[aid]:
-            self.canvas.delete(self.agent_text_ids[aid])
+
         x0, y0, x1, y1 = self.grid_bbox(gx, gy)
         tx = (x0 + x1) / 2
         ty = (y0 + y1) / 2
-        self.agent_text_ids[aid] = self.canvas.create_text(
+
+        # --- nowość: wspólny tag, żeby usuwać i numer, i kółko ---
+        tag = f"agent_{aid}"
+        self.canvas.delete(tag)  # usuń poprzednie kółko i numer tego agenta
+
+        # najpierw rysujemy numer, żeby znać jego bbox
+        text_id = self.canvas.create_text(
             tx, ty, text=aid, fill="black",
-            font=("Helvetica", int(TOP_CELL * 0.6), "bold")
+            font=("Helvetica", int(TOP_CELL * 0.6), "bold"),
+            tags=(tag,)
         )
-        self.canvas.tag_raise(self.agent_text_ids[aid])
+
+        # dopasuj kółko do rozmiaru tekstu z niewielkim marginesem
+        bx0, by0, bx1, by1 = self.canvas.bbox(text_id)
+        pad = max(2, int(TOP_CELL * 0.08))  # „lekko większe niż numer”
+        rx = (bx1 - bx0) / 2 + pad
+        ry = (by1 - by0) / 2 + pad
+
+        circle_id = self.canvas.create_oval(
+            tx - rx, ty - rx, tx + rx, ty + rx,
+            fill="white", outline="black",
+            tags=(tag,)
+        )
+
+        # upewnij się, że numer jest nad kółkiem
+        self.canvas.tag_lower(circle_id, text_id)
+        self.canvas.tag_raise(text_id)
+
+        # zapamiętaj id tekstu (jeśli wykorzystujesz to gdzie indziej)
+        self.agent_text_ids[aid] = text_id
 
 
 # =============== Aplikacja ===============
 class App:
     def __init__(self, root):
         self.root = root
-        root.title("Przeszukiwanie terenu - wizualizacja")
+        root.title("Przeszukiwanie terenu — wizualizacja")
         root.bind("<space>", self.on_space)  # spacja = pauza/start
 
-        # górna plansza
         self.top_canvas = tk.Canvas(root, bg="white")
         self.top_canvas.pack(side="top", fill="both", expand=False, padx=6, pady=6)
 
-        # dolne 4 plansze
         self.bottom = tk.Frame(root)
         self.bottom.pack(side="top", fill="x", padx=6, pady=6)
 
         self.agent_views = {}
         for i, aid in enumerate(["1", "2", "3", "4"]):
-            v = AgentView(
-                self.bottom, aid,
-                title=f"{AGENTS[aid]['name']}",
-                color=AGENTS[aid]["color"],
-                light=AGENTS[aid]["light"]
-            )
+            v = AgentView(self.bottom, aid, AGENTS[aid]["name"], AGENTS[aid]["color"], AGENTS[aid]["light"])
             v.frame.grid(row=0, column=i, padx=4, pady=4, sticky="n")
             self.agent_views[aid] = v
 
-        # sterowanie
         controls = tk.Frame(root)
         controls.pack(side="bottom", fill="x", padx=6, pady=6)
 
@@ -248,7 +360,6 @@ class App:
         self.speed.set(4)
         self.speed.pack(side="left")
 
-        # stan
         self.world = []
         self.start_xy = (0, 0)
         self.world_view = None
@@ -261,11 +372,11 @@ class App:
         if os.path.exists(default):
             self.load_log(default)
 
-    # ---------- Obsługa spacji ----------
+    # --- sterowanie klawiaturą ---
     def on_space(self, _event):
         self.toggle_play()
 
-    # ---------- Parsowanie i ładowanie ----------
+    # --- logi ---
     def load_log(self, path):
         try:
             with open(path, "r", encoding="utf-8") as f:
@@ -330,17 +441,17 @@ class App:
         self.reset_geometry()
         self.reset_events()
 
-    # ---------- Inicjalizacja widoków ----------
+    # --- inicjalizacja widoków ---
     def reset_geometry(self):
         self.world_view = WorldView(self.top_canvas, self.world, self.start_xy)
         for v in self.agent_views.values():
-            v.canvas.delete("all")
-            v._draw_grid()
-            v._draw_start_frame()
-            v.dot_id = None
+            v.vx, v.vy = -CENTER, -CENTER
             v.known_not_visited.clear()
             v.visited_self.clear()
             v.frontiers.clear()
+            v.pos = (0, 0)
+            v.dot_id = None
+            v._redraw_all()
 
     def reset_events(self):
         self.stop_loop()
@@ -349,7 +460,7 @@ class App:
             self.agent_views[aid].set_relative_pos(0, 0)
         self.btn_start.config(text="Start")
 
-    # ---------- Sterowanie ----------
+    # --- sterowanie odtwarzaniem ---
     def open_log(self):
         path = filedialog.askopenfilename(
             title="Wybierz plik logów",
@@ -392,7 +503,7 @@ class App:
         delay = int(600 / self.speed.get())
         self.timer = self.root.after(max(20, delay), self.loop)
 
-    # ---------- Zastosowanie zdarzeń ----------
+    # --- zastosowanie zdarzeń ---
     def apply_event(self, kind, payload):
         if kind == "world":
             self.world = payload["world"]
@@ -409,9 +520,7 @@ class App:
         elif kind == "move":
             aid = payload["aid"]
             gx, gy, rx, ry = payload["gx"], payload["gy"], payload["rx"], payload["ry"]
-            # górna plansza – najpierw tło (z pominięciem startu), potem numer (na wierzchu)
             self.world_view.put_agent_number(aid, gx, gy)
-            # dolna plansza – kropka + oznaczenie „odwiedził” (bez kolorowania startu)
             self.agent_views[aid].set_relative_pos(rx, ry)
             self.agent_views[aid].update_knowledge(path_point=(rx, ry))
 

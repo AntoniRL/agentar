@@ -269,22 +269,63 @@ class WorldView:
             self.canvas.create_line(MARGIN, y, W - MARGIN, y, fill="#bbb")
 
     def put_agent_number(self, aid, gx, gy):
+        # # nie kolorujemy własności na polu startowym
+        # if (gx, gy) != self.start_xy and (gx, gy) not in self.first_owner:
+        #     self.first_owner[(gx, gy)] = aid
+        #     x0, y0, x1, y1 = self.grid_bbox(gx, gy)
+        #     tri = [(x0, y0), (x1, y0), (x0, y1)]
+        #     self.canvas.create_polygon(*sum(tri, ()), fill=AGENTS[aid]["color"], outline="")
+        # # numer agenta nad tłem
+        # if self.agent_text_ids[aid]:
+        #     self.canvas.delete(self.agent_text_ids[aid])
+        # x0, y0, x1, y1 = self.grid_bbox(gx, gy)
+        # tx = (x0 + x1) / 2
+        # ty = (y0 + y1) / 2
+        # self.agent_text_ids[aid] = self.canvas.create_text(
+        #     tx, ty, text=aid, fill="black", font=("Helvetica", int(TOP_CELL * 0.6), "bold")
+        # )
+        # self.canvas.tag_raise(self.agent_text_ids[aid])
+
         # nie kolorujemy własności na polu startowym
         if (gx, gy) != self.start_xy and (gx, gy) not in self.first_owner:
             self.first_owner[(gx, gy)] = aid
             x0, y0, x1, y1 = self.grid_bbox(gx, gy)
             tri = [(x0, y0), (x1, y0), (x0, y1)]
             self.canvas.create_polygon(*sum(tri, ()), fill=AGENTS[aid]["color"], outline="")
-        # numer agenta nad tłem
-        if self.agent_text_ids[aid]:
-            self.canvas.delete(self.agent_text_ids[aid])
+
         x0, y0, x1, y1 = self.grid_bbox(gx, gy)
         tx = (x0 + x1) / 2
         ty = (y0 + y1) / 2
-        self.agent_text_ids[aid] = self.canvas.create_text(
-            tx, ty, text=aid, fill="black", font=("Helvetica", int(TOP_CELL * 0.6), "bold")
+
+        # --- nowość: wspólny tag, żeby usuwać i numer, i kółko ---
+        tag = f"agent_{aid}"
+        self.canvas.delete(tag)  # usuń poprzednie kółko i numer tego agenta
+
+        # najpierw rysujemy numer, żeby znać jego bbox
+        text_id = self.canvas.create_text(
+            tx, ty, text=aid, fill="black",
+            font=("Helvetica", int(TOP_CELL * 0.6), "bold"),
+            tags=(tag,)
         )
-        self.canvas.tag_raise(self.agent_text_ids[aid])
+
+        # dopasuj kółko do rozmiaru tekstu z niewielkim marginesem
+        bx0, by0, bx1, by1 = self.canvas.bbox(text_id)
+        pad = max(2, int(TOP_CELL * 0.08))  # „lekko większe niż numer”
+        rx = (bx1 - bx0) / 2 + pad
+        ry = (by1 - by0) / 2 + pad
+
+        circle_id = self.canvas.create_oval(
+            tx - rx, ty - rx, tx + rx, ty + rx,
+            fill="white", outline="black",
+            tags=(tag,)
+        )
+
+        # upewnij się, że numer jest nad kółkiem
+        self.canvas.tag_lower(circle_id, text_id)
+        self.canvas.tag_raise(text_id)
+
+        # zapamiętaj id tekstu (jeśli wykorzystujesz to gdzie indziej)
+        self.agent_text_ids[aid] = text_id
 
 
 # =============== Aplikacja ===============

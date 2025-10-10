@@ -111,6 +111,8 @@ class MessageHandler:
         msg_to_send = []
         with self.agent._runtime._lock:
             for child in self.agent._runtime.agents[self.agent._parent.path]._children:
+                if child.path == self.agent._id.path:
+                    continue
                 if agent_type != "_" and agent_type == self.agent._runtime.agents[child.path]._name:
                     new_msg = deepcopy(msg)
                     new_msg._content = content # Restore the content after deepcopy

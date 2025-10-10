@@ -94,12 +94,13 @@ class StatementExecutor:
             case IfStmtNode():
                 local_vars = local_vars.create_child_scope("if")
                 condition = self.agent._evaluator.eval_expr(stmt.conditions, local_vars, message, stmt._line)
+                return_object = None
                 if condition:
                     for statement in stmt.statements:
                         if self.agent._break_flag or self.agent._return_flag:
                             break
-                        self.execute_stmt(statement, local_vars, message, stmt._line)
-                    return
+                        return_object = self.execute_stmt(statement, local_vars, message, stmt._line)
+                    return return_object
                 if stmt.elifBlocks:
                     for elif_block in stmt.elifBlocks:
                         condition = self.agent._evaluator.eval_expr(elif_block.condition, local_vars, message, stmt._line)
@@ -107,14 +108,14 @@ class StatementExecutor:
                             for statement in elif_block.statement:
                                 if self.agent._break_flag or self.agent._return_flag:
                                     break
-                                self.execute_stmt(statement, local_vars, message, stmt._line)
-                            return
+                                return_object = self.execute_stmt(statement, local_vars, message, stmt._line)
+                            return return_object
                 if stmt.elseStmt:
                     for statement in stmt.elseStmt:
                         if self.agent._break_flag or self.agent._return_flag:
                             break
-                        self.execute_stmt(statement, local_vars, message, stmt._line)
-                    return
+                        return_object = self.execute_stmt(statement, local_vars, message, stmt._line)
+                    return return_object
 
 
             case ForLoopNode():
