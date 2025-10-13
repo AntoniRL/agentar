@@ -7,6 +7,9 @@ setup(
     package_dir={"": "src"},
     install_requires=[
         "antlr4-python3-runtime>=4.9.3",
+        "rich>=13.0.0",
+        "numpy>=1.21.0",
+        "antlr4-tools>=4.9.3",
     ],
     entry_points={
         "console_scripts": [
