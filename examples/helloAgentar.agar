@@ -2,7 +2,7 @@
 
 agent mother {
     initialize {
-        print("Hello Agentar!");
+        print("Hello Agentar!")
         kill();
     }
 }

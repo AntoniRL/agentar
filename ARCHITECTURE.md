@@ -9,12 +9,12 @@
 │   └── spec_agentar_EN.md              # Documentation of agentar Language ENGLISH
 ├── examples                            # FOLDER with examples of .agar files
 │   ├── __init__.py
-│   ├── hello.agar                      
-│   └── test.agar
+│   ├── helloAgentar.agar                      
+│   └── tests                           # folder with basic functionality tests
 ├── grammar                             # ANTLR gramar file which describing Agentar
 │   └── Agentar.g4
 ├── java_tree                           
-│   └── grammar                         # files for parser tree in java
+│   └── grammar                         # files for parser tree in java (not included in Git repository)
 ├── scripts                             # Script to run agentar
 │   └── generate_parser.sh
 ├── src
@@ -57,22 +57,7 @@
 │   |   └── message_instance.py         # Class to deal with message instance
 |   |
 |   └── cli.py                          # Command-line entry
-└── tests
-    ├── agentar_files
-    └── run_tests.py
+└── logs                                # folder with generated logs from working programs (not included in repository)
+    └── agentar.log
 ```
-
-```
-agent.agar → AST → AgentarInterpreter → (mother, agents, messages)
-                                 ↓
-                       AgentarSystem(mother, agents, ...)
-                                 ↓
-       ┌────────────┬────────────┬────────────┐
-       ▼            ▼            ▼            ▼
-  AgentRunner   AgentRunner   AgentRunner   ...
-     │             │             │
-AgentInstance  AgentInstance  AgentInstance
-     │             │             │
-  AgentarAgent   AgentarAgent   AgentarAgent
-  ```
 
