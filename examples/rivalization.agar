@@ -1,11 +1,6 @@
-// ==== MESSAGE =============================
-message BLOCK_OF_INFO{
-    dict<tuple<int,int>, float> frontiers; //dict of unvisited fields 
-    dict<tuple<int,int>, int> visited;     //dict of fields which agent visited
-}
 
 
-// ==== GREEN SCOUR =========================
+// ==== GREEN TEAM =========================
 agent green_scout{
     fields {
         pointer<list<list<int>>> WORLD;
@@ -21,6 +16,7 @@ agent green_scout{
         float D0 = 10.0;     // constant to normalize the distance (the bigger, the gentler)
 
         int counter = 0;
+        int number_of_steps = 0;
 
     }
     beliefs {
@@ -63,27 +59,31 @@ agent green_scout{
     rules {
         when () then {
             self.counter = self.counter+1;
-            logging("FRONTIERS::",bel.frontiers);
-            logging("VISITED::",bel.visited);
+            //logging("FRONTIERS::",bel.frontiers);
+            //logging("VISITED::",bel.visited);
         }
         when (self.counter%5 == 0) then {
             BLOCK_OF_INFO msg_ = BLOCK_OF_INFO{frontiers: bel.frontiers, visited: bel.visited};
-            send2siblings(_, msg_, msgType_inform);
+            send2siblings(green_scout, msg_, msgType_inform);
         }
-        when (self.is_goal_achieved == False && bel.in_the_area == 0 && len(self.plan_path) == 0 && len(bel.frontiers) > 0) then {
-            do find_out_of_area();
-        }
-        when (self.is_goal_achieved == False && bel.in_the_area > 0 && len(self.plan_path) == 0) then {
-            do find_new_target();
+        when (self.is_goal_achieved == False && len(self.plan_path) == 0) then {
+            if (bel.in_the_area == 0) do find_out_of_area();
+            elif (bel.in_the_area > 0) do find_new_target();
         }
         when (len(self.plan_path) > 0) then {
             do follow_the_path();
+            self.number_of_steps = self.number_of_steps + 1;
         }
         when (self.is_goal_achieved == True) then {
-            BLOCK_OF_INFO msg_ = BLOCK_OF_INFO{frontiers: bel.frontiers, visited: bel.visited};
-            send2siblings(_, msg_, msgType_inform);
             kill();
         }
+    }
+
+    destroy {
+        BLOCK_OF_INFO msg_ = BLOCK_OF_INFO{frontiers: bel.frontiers, visited: bel.visited};
+        send2siblings(green, msg_, msgType_inform);
+        NUMBER_OF_STEPS number = NUMBER_OF_STEPS{number: self.number_of_steps};
+        send2parent(number, msgType_inform);
     }
 
     receive BLOCK_OF_INFO{
@@ -262,13 +262,12 @@ agent green_scout{
         float d;
         if (d1<d2) d = d1; else d = d2;
         float denom = (2*pi-sector_width)/2.0; //max possible dist
-        return  d/denom;
+        if (denom == 0.0) return 0.0;
+        else return d/denom;
     }
 }
 
 
-
-// ==== GREEN MASTER ========================
 agent green_master{
     fields {
         pointer<list<list<int>>> WORLD;
@@ -277,10 +276,8 @@ agent green_master{
     beliefs {
     }
     initialize {
-        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (0,90), neighbors: [(1,0),(0,-1),(-1,0),(0,1)]});
-        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (90,180), neighbors: [(0,1),(1,0),(0,-1),(-1,0)]});
-        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (180,270), neighbors: [(-1,0),(0,1),(1,0),(0,-1)]});
-        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (270,360), neighbors: [(0,-1),(-1,0),(0,1),(1,0)]});
+        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (0,180), neighbors: [(1,0),(0,-1),(-1,0),(0,1)]});
+        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (180,360), neighbors: [(-1,0),(0,1),(1,0),(0,-1)]});
     }
     rules {
         when (len(self._children) == 0) then {
@@ -289,58 +286,97 @@ agent green_master{
     }
 }
 
-// ==== MOTHER ==============================
-agent mother {
-    fields{
-        list<list<int>> WORLD = [[0,0,0,0,0,0,0,-1,0,0],
-                                [0,0,-1,-1,0,0,0,0,0,0],
-                                [-1,-1,-1,-1,0,0,0,-1,0,0],
-                                [0,-1,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,-1,0,0,0,0,0,0,0],
-                                [0,0,-1,0,0,0,0,0,-1,0],
-                                [0,0,-1,0,0,0,0,-1,0,0],
-                                [0,-1,0,0,-1,-1,0,0,0,0],
-                                [0,-1,0,0,-1,0,0,0,0,0]];
 
-        list<list<int>> WORLD_zero = [[0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,0,0,0,0]];
-        
-        list<list<int>> WORLD_15 = [[0,-1,-1,-1,-1,-1,-1,0,0,0,0,-1,-1,-1,0],
-                                [0,0,0,0,0,0,-1,0,-1,-1,0,0,0,-1,0],
-                                [-1,-1,-1,-1,-1,0,-1,0,-1,0,0,-1,0,-1,0],
-                                [0,0,0,0,-1,0,-1,0,-1,0,-1,-1,0,-1,0],
-                                [0,-1,-1,0,-1,0,-1,0,-1,0,0,0,0,-1,0],
-                                [0,-1,0,0,-1,0,0,0,-1,-1,-1,-1,-1,-1,0],
-                                [0,-1,0,-1,-1,-1,-1,0,0,0,0,0,0,0,0],
-                                [0,-1,0,0,0,0,-1,-1,-1,-1,0,-1,-1,-1,0],
-                                [0,-1,-1,-1,-1,0,0,0,0,-1,0,0,0,-1,0],
-                                [0,0,0,0,-1,0,-1,-1,0,-1,-1,-1,0,-1,0],
-                                [-1,-1,-1,0,-1,0,0,-1,0,0,0,-1,0,-1,0],
-                                [0,0,-1,0,-1,-1,0,-1,-1,-1,0,-1,0,-1,0],
-                                [0,-1,-1,0,0,0,0,0,0,-1,0,0,0,0,0],
-                                [0,0,0,-1,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,0],
-                                [0,-1,-1,-1,0,0,0,0,0,0,0,0,0,0,0]];                       
+// ======= RED TEAM ============
+agent red_scout {
+    fields {
+        pointer<list<list<int>>> WORLD;
+        tuple<int,int> START;
+        dict<tuple<int,int>,tuple<int,int>> wall_sequence;
+        tuple<int,int> first_wall; 
 
-        //list<list<int>> WORLD_test =      
+        list<tuple<int,int>> neighbors = [(1,0),(0,-1),(-1,0),(0,1)];
+        int gold_counter = 0;
+        list<tuple<int,int>> plan_path;
+    }
+    beliefs {
+        int x = 0;
+        int y = 0;
+        tuple<int,int> wall;
+        tuple<int,int> reserved_by_other;
+        bool gold_sensor = False;
+
+        dict<tuple<int,int>, int> frontiers; //dict of unvisited fields 
+        dict<tuple<int,int>, int> visited; //dict of fields which agent visited
+    }
+    sense {
+        if (bel.visited.get((bel.x, bel.y)) == None) {
+            bel.visited[(bel.x, bel.y)] = 1;
+            if (self.WORLD[bel.y][bel.x] == 1) bel.gold_sensor = True;
+            for (int i=0; i<4; i=i+1){ 
+                tuple<int,int> neighbor = (self.START[0] + bel.x + self.neighbors[i][0], self.START[1] + bel.y + self.neighbors[i][1]);     // location in the map
+                tuple<int,int> neighbor_local = (bel.x + self.neighbors[i][0], bel.y + self.neighbors[i][1]);                               // my belief of the location
+                if (neighbor[0] < 0 || neighbor[0] >= len(*self.WORLD[0]) || neighbor[1] < 0 || neighbor[1] >= len(*self.WORLD)) continue;  // out of world -> continue
+                elif (*self.WORLD[neighbor[1]][neighbor[0]] == -1) continue;                                                                // wall -> continue
+                elif (bel.visited.get((neighbor_local[0],neighbor_local[1])) != None) continue;                                             // already visited -> continue
+                else  {
+                    bel.frontiers[neighbor_local] = 1;
+                }
+            }
+        }
     }
     initialize {
-        logging("WORLD:: ", self.WORLD_test);
-        tuple<int, int> green_start_pose = (7,8);
-        print("START POSSITION::", green_start_pose);
-        //spawn(green_master, {WORLD: &self.WORLD, START: green_start_pose});
+        del self.plan_path[-1];
+    }
+    rules {
+        when (bel.gold_sensor == true) then {
+            sleep(0.5);
+            self.gold_counter = self.gold_counter + 1;
+        }
+        when (len(self.plan_path) == 0) then {
+            print("find next field to go");
+        }
+    }
+} 
+
+agent red_master {
+    fields {
+        pointer<list<list<int>>> WORLD;
+        tuple<int,int> START;
+    }
+    beliefs {
+    }
+    initialize {
+        spawn(red_scout, {WORLD: self.WORLD, START: self.START, wall_sequence: {(1,0):(0,1),(0,1):(-1,0),(-1,0):(0,-1),(0,-1):(1,0)}, first_wall: (1,0) });
+        //spawn(red_scout, {WORLD: self.WORLD, START: self.START, wall_sequence: {(0,1):(1,0),(1,0):(0,-1),(0,-1):(-1,0),(-1,0):(0,1)}, first_wall: (0,1) });
     }
     rules {
         when (len(self._children) == 0) then {
             kill();
         }
+    }
+    destroy {
+        print("Team RED finished");
+    }
+}
+
+
+agent mother {
+    fields {
+        list<list<int>> WORLD = [[0,1,0,0,0,1,0,-1,0,0],
+            [0,1,-1,-1,0,0,0,0,0,0],
+            [-1,-1,-1,-1,0,0,0,-1,0,1],
+            [0,-1,0,0,0,1,0,0,0,0],
+            [0,0,1,0,0,0,0,0,0,0],
+            [0,0,-1,0,0,1,0,0,1,0],
+            [0,0,-1,0,1,0,0,0,-1,0],
+            [0,0,-1,0,0,0,1,-1,0,0],
+            [1,-1,0,0,-1,-1,0,0,0,0],
+            [0,-1,0,0,-1,0,0,0,0,0]];
+    }
+
+    initialize {
+        spawn(red_master, {WORLD: &self.WORLD, START: (-1,-1)});
+        //spawn(green_master, {WORLD: &self.WORLD, START: (0,0)});
     }
 }

@@ -239,6 +239,11 @@ class AgentarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AgentarParser#processMessageStmt.
+    def visitProcessMessageStmt(self, ctx:AgentarParser.ProcessMessageStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AgentarParser#doStmt.
     def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):
         return self.visitChildren(ctx)

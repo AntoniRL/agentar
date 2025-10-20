@@ -38,6 +38,7 @@ def run_file(file_path, max_runtime):
             break
         time.sleep(0.1)
     system.stop()
+    print("System was runing:: ", time.time() - start_time)
 
 
 def ast_tree(file_path):

@@ -291,6 +291,10 @@ class AgentarToASTBuilder(AgentarVisitor):
         return ast.ContinueNode(**self.node_meta(ctx))
     
 
+    def visitProcessMessageStmt(self, ctx:AgentarParser.ProcessMessageStmtContext):
+        return ast.ProcessMessageNode(**self.node_meta(ctx))
+    
+
     def visitDoStmt(self, ctx:AgentarParser.DoStmtContext):
         name = ctx.ID().getText()
         variables = [self.visit(var) for var in ctx.expression()] if ctx.expression() else []

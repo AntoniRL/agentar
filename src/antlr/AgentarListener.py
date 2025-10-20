@@ -422,6 +422,15 @@ class AgentarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AgentarParser#processMessageStmt.
+    def enterProcessMessageStmt(self, ctx:AgentarParser.ProcessMessageStmtContext):
+        pass
+
+    # Exit a parse tree produced by AgentarParser#processMessageStmt.
+    def exitProcessMessageStmt(self, ctx:AgentarParser.ProcessMessageStmtContext):
+        pass
+
+
     # Enter a parse tree produced by AgentarParser#doStmt.
     def enterDoStmt(self, ctx:AgentarParser.DoStmtContext):
         pass

@@ -184,6 +184,7 @@ class StatementExecutor:
                 value = self.agent._evaluator.eval_expr(value, local_vars, message, stmt._line)
                 if isinstance(base, TypedList):
                     try:
+                        # print(value)
                         base.append(deepcopy(value))
                     except TypeError as e:
                         raise WrongTypeError(f"operands of 'append'", "compatible types", f"{type(base).__name__} and {type(value).__name__}", stmt._line) from e
@@ -195,12 +196,19 @@ class StatementExecutor:
                 # Both Dict and List 'del' operator in one case
                 base = self.agent._evaluator.eval_expr(base, local_vars, message, stmt._line)
                 key = self.agent._evaluator.eval_expr(key, local_vars, message, stmt._line)
-                if isinstance(base, TypedDict):
-                    del base[key]
-                elif isinstance(base, TypedList):
-                    del base[key]
-                else:
-                    raise WrongTypeError("base", "TypedDict or TypedList", type(base), stmt._line)
+                try:
+                    if isinstance(base, TypedDict):
+                        del base[key]
+                    elif isinstance(base, TypedList):
+                        del base[key]
+                    else:
+                        raise WrongTypeError("base", "TypedDict or TypedList", type(base), stmt._line)
+                except Exception as e:
+                    raise AgentarRuntimeError(e, stmt._line) from e
+                
+            
+            case ProcessMessageNode():
+                self.agent._message_handler.process_messages(self.agent._inbox.get())
 
 
 
