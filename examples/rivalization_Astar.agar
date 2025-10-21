@@ -547,7 +547,7 @@ agent mother {
 
     initialize {
         logging("WORLD::", self.WORLD);
-        spawn(red_master, {WORLD: &self.WORLD, START: (len(self.WORLD[0])-1, len(self.WORLD)-1 )});
+        //spawn(red_master, {WORLD: &self.WORLD, START: (len(self.WORLD[0])-1, len(self.WORLD)-1 )});
         spawn(green_master, {WORLD: &self.WORLD, START: (0,0)});
     }
     rules {

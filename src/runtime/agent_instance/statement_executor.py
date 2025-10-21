@@ -13,6 +13,7 @@ from runtime.errors import *
 # from core.agentar_types import resolve_type
 from runtime.definicion_containers.variable_container import VariableContainer
 from core.typed_structures import TypedList, TypedDict
+from core.pointer import Pointer
 
 
 class StatementExecutor:
@@ -222,7 +223,7 @@ class StatementExecutor:
             for arg in spawn_node.args:
                 key, value = arg
                 value_to_assign = self.agent._evaluator.eval_expr(value, local_vars, message, spawn_node._line)
-                if isinstance(value, AddressOfExprNode):
+                if isinstance(value, AddressOfExprNode) or type(value_to_assign) is Pointer:
                     fields[key] = value_to_assign
                 else:
                     fields[key] = deepcopy(value_to_assign)
