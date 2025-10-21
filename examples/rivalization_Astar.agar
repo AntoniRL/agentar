@@ -5,7 +5,7 @@ message BLOCK_OF_INFO{
 }
 
 message RED_RESERVATION{
-    dict<tuple<int,int>, int> frontiers; //dict of unvisited fields 
+    dict<tuple<int,int>, int> frontiers;   //dict of unvisited fields 
     dict<tuple<int,int>, int> visited;     //dict of fields which agent visited
     tuple<int,int> reserve;
 }
@@ -24,6 +24,7 @@ agent green_scout{
         list<tuple<int,int>> neighbors;
 
         tuple<float,float> area_angles_rad;
+        dict<tuple<int,int>, float> angle_cache;
         list<tuple<int,int>> plan_path;
 
         float wD = 1.1;     // distance weidth
@@ -64,8 +65,13 @@ agent green_scout{
                 elif (*self.WORLD[neighbor[1]][neighbor[0]] == -1) continue;
                 elif (bel.visited.get((neighbor_local[0],neighbor_local[1])) != None) continue;
                 else  {
-                    float angle = atan2(neighbor_local[1], neighbor_local[0]);
-                    if (angle < 0) angle = angle + 2*pi;
+                    float angle;
+                    if (self.angle_cache.get(neighbor_local) == None) {
+                        angle = atan2(neighbor_local[1], neighbor_local[0]);
+                        if (angle < 0) angle = angle + 2*pi;
+                        self.angle_cache[neighbor_local] = angle;
+                    }
+                    else angle = self.angle_cache.get(neighbor_local);
                     // think about areas ex. 330-30
                     if (angle >= self.area_angles_rad[0] && angle < self.area_angles_rad[1] && bel.frontiers.get(neighbor_local) == None) bel.in_the_area = bel.in_the_area + 1;
                     bel.frontiers[neighbor_local] = angle;
@@ -136,46 +142,95 @@ agent green_scout{
     }
 
     action find_new_target(): void {
-        dict<tuple<int,int>, tuple<int,int>> parent; // BFS tree (field: previous field)
         tuple<int, int> start = (bel.x, bel.y);
+
+        float a0 = self.area_angles_rad[0];
+        float a1 = self.area_angles_rad[1];
+        tuple<int,int> goal;  //cloasest frontier to go (manhatan)
+        bool has_goal = False;
+        int best_d = 1000000;
+
+        //looking for closest frontier in the area
+        list<tuple<int,int>> fKey = bel.frontiers.keys();
+        for (int i = 0; i<len(bel.frontiers); i=i+1){
+            float ang = bel.frontiers.get(fKey[i]);
+            if (ang >= a0 && ang < a1) {
+                int d = abs(bel.x - fKey[i][0]) + abs(bel.y - fKey[i][1]);
+                if (d < best_d) { best_d = d; goal = fKey[i]; has_goal = True; }
+            }
+        }
+        if (has_goal == False) return;
+
+        dict<tuple<int,int>, tuple<int,int>> parent; // to make path
+        dict<tuple<int,int>, int> g;                  // cost from start
+        dict<tuple<int,int>, int> f;                  // g + h (h := manhatan dist)
+        dict<tuple<int,int>, int> in_open;
+        dict<tuple<int,int>, int> closed;
+
         parent[start] = start;
-        list<tuple<int,int>> Q = [start];
-        dict<tuple<int,int>, int> seen = {start: 1};
-        tuple<int,int> found = start;
-        self.plan_path = [];
-        while (len(Q)>0 && found == start){
-            tuple<int,int> u = Q[0];
-            del Q[0];
-            if (bel.frontiers.get(u) != None)
-                if (bel.frontiers.get(u) >= self.area_angles_rad[0] && bel.frontiers.get(u) < self.area_angles_rad[1] ) {
-                    found = u;
-                    break;
+        g[start] = 0;
+        f[start] = abs(start[0] - goal[0]) + abs(start[1] - goal[1]);
+        list<tuple<int,int>> open = [start];
+        in_open[start] = 1;
+        bool found = False;
+
+        while (len(open) > 0) {
+            // take node with smalest f
+            int best_i = 0;
+            int best_f = f[open[0]];
+            for (int i = 1; i < len(open); i = i + 1) {
+                tuple<int,int> cand = open[i];
+                int fi = f[cand];
+                if (fi < best_f) { best_f = fi; best_i = i; }
+            }
+            tuple<int,int> u = open[best_i];
+            del open[best_i];
+            in_open[u] = 0;
+            closed[u] = 1;
+
+            if (u == goal) { found = True; break; }
+
+            // for all neighbours
+            for (int k = 0; k < 4; k = k + 1) {
+                int nx = u[0] + self.neighbors[k][0];
+                int ny = u[1] + self.neighbors[k][1];
+                tuple<int,int> v = (nx, ny);
+
+                if (closed.get(v) == 1) continue;
+
+                // ruch dozwolony po polach juz odwiedzonych LUB bezposrednio w 'goal'
+                if (v != goal && bel.visited.get(v) == None) continue;
+
+                int tentative_g = g[u] + 1;
+
+                bool better = False;
+                if (in_open.get(v) != 1) {
+                    better = True;
+                } elif (tentative_g < g.get(v)) {
+                    better = True;
                 }
-            for (int i=0; i<4; i=i+1){
-                tuple<int,int> neighbor = (u[0] + self.neighbors[i][0], u[1] + self.neighbors[i][1]);
-                if (seen.get(neighbor) == 1) continue;
-                elif (bel.visited.get(neighbor) != None) {
-                    seen[neighbor] = 1;
-                    parent[neighbor] = u;
-                    Q.add(neighbor);
-                }
-                elif (bel.frontiers.get(neighbor) != None) {
-                    if (bel.frontiers.get(neighbor) >= self.area_angles_rad[0] && bel.frontiers.get(neighbor) < self.area_angles_rad[1]) {
-                        found = neighbor;
-                        parent[found] = u;
-                        break;
+
+                if (better) {
+                    parent[v] = u;
+                    g[v] = tentative_g;
+                    int h = abs(v[0] - goal[0]) + abs(v[1] - goal[1]); // Manhattan
+                    f[v] = g[v] + h;
+
+                    if (in_open.get(v) != 1) {
+                        open.add(v);
+                        in_open[v] = 1;
                     }
                 }
             }
         }
-        if (found != start){
-            tuple<int,int> curr = found;
+
+        if (found == True) {
+            tuple<int,int> curr = goal;
             while (curr != start) {
                 self.plan_path.add(curr);
                 curr = parent[curr];
             }
-            if (bel.frontiers.get(found) >= self.area_angles_rad[0] && bel.frontiers.get(found) < self.area_angles_rad[1]) bel.in_the_area = bel.in_the_area -1;
-            //del bel.frontiers[found];
+            bel.in_the_area = bel.in_the_area - 1;
         }
     }
 
@@ -188,80 +243,116 @@ agent green_scout{
     }
 
     action find_out_of_area(): void{
-        dict<tuple<int,int>, float> best_4 = {}; //simple angle with manhatan
-        dict<tuple<int,int>, float> best_4_angle = {}; //only angle for nest calculation
-        list<tuple<int,int>> keys_front = bel.frontiers.keys();
-        for (int i=0; i<len(keys_front); i = i+1){
-            float score;
-            float manh_dist;
-            float angle_dist_normalize;
-            manh_dist = do count_manhatan_dist(keys_front[i]);
-            angle_dist_normalize = do count_normalize_angle_dist(bel.frontiers[keys_front[i]]);
-            score = self.wTheta*angle_dist_normalize + self.wD*manh_dist;
-            if (len(best_4) < 4) {
-                best_4[keys_front[i]] = score;
-                best_4_angle[keys_front[i]] = angle_dist_normalize;
-            } else {
-                list<tuple<int,int>> keys_b_4 = best_4.keys();
-                for (int j=0; j<4; j=j+1){
-                    if (best_4[keys_b_4[j]] > score){
-                        del best_4_angle[keys_b_4[j]];
-                        del best_4[keys_b_4[j]];
-                        best_4[keys_front[i]] = score;
-                        best_4_angle[keys_front[i]] = angle_dist_normalize;
-                        break;
+        tuple<int,int> start = (bel.x, bel.y);
+
+        float a0 = self.area_angles_rad[0];
+        float a1 = self.area_angles_rad[1];
+
+        int K = 2;
+        tuple<int,int> best1; float best1s = 1000000.0; float best1ang = 0.0;
+        tuple<int,int> best2; float best2s = 1000000.0; float best2ang = 0.0;
+
+        //looking for closest frontier out of area
+        list<tuple<int,int>> fKey = bel.frontiers.keys();
+        for (int i = 0; i<len(bel.frontiers); i=i+1){
+            float ang = bel.frontiers.get(fKey[i]);
+
+            float manh_norm;
+            manh_norm = do count_manhatan_dist(fKey[i]);            // [0..1]
+            float ang_norm;
+            ang_norm = do count_normalize_angle_dist(ang);   // [0..1]
+            float score = self.wTheta * ang_norm + self.wD * manh_norm;
+
+            if (score < best1s) { best2 = best1; best2s = best1s; best2ang = best1ang;
+                                   best1 = fKey[i];    best1s = score;   best1ang = ang_norm; }
+            elif (score < best2s) { best2 = fKey[i];  best2s = score;    best2ang = ang_norm; }
+        }
+
+        // not important...
+        dict<tuple<int,int>, int> targets;
+        if (best1s < 1000000) targets[best1] = 1;
+        if (best2s < 1000000 && best2 != best1) targets[best2] = 1;
+        if (len(targets) == 0) return;
+
+        // A star
+        dict<tuple<int,int>, tuple<int,int>> parent;
+        dict<tuple<int,int>, int> g;
+        dict<tuple<int,int>, int> f;
+        dict<tuple<int,int>, int> in_open;
+        dict<tuple<int,int>, int> closed;
+        parent[start] = start;
+        g[start] = 0;
+
+        int h0 = 1000000;
+        list<tuple<int,int>> tkey = targets.keys();
+        for (int i=0; i<len(tkey); i=i+1) {
+            int hcand = abs(start[0]-tkey[i][0]) + abs(start[1]-tkey[i][1]);
+            if (hcand < h0) h0 = hcand;
+        }
+        f[start] = h0;
+        list<tuple<int,int>> open = [start];
+        in_open[start] = 1;
+        bool found = False;
+        tuple<int,int> reached_goal;
+
+        while (len(open) > 0) {
+            int best_i = 0;
+            int best_f = f[open[0]];
+            for (int i=1; i<len(open); i=i+1) {
+                tuple<int,int> cand = open[i];
+                int fi = f[cand];
+                if (fi < best_f) { best_f = fi; best_i = i; }
+            }
+            tuple<int,int> u = open[best_i];
+            del open[best_i];
+            in_open[u] = 0;
+            closed[u] = 1;
+
+            if (targets.get(u) == 1) {
+                found = True; reached_goal = u; break;
+            }
+
+            for (int k=0; k<4; k=k+1) {
+                int nx = u[0] + self.neighbors[k][0];
+                int ny = u[1] + self.neighbors[k][1];
+                tuple<int,int> v = (nx, ny);
+
+                if (closed.get(v) == 1) continue;
+                if (targets.get(v) != 1 && bel.visited.get(v) == None) continue;
+
+                int tentative_g = g[u] + 1;
+                bool better = False;
+                if (in_open.get(v) != 1) better = True;
+                elif (tentative_g < g.get(v)) better = True;
+
+                if (better) {
+                    parent[v] = u;
+                    g[v] = tentative_g;
+
+                    int hv = 1000000;
+
+                    list<tuple<int,int>> tkey = targets.keys();
+                    for (int i=0; i<len(tkey); i=i+1) {
+                        int hcand = abs(v[0]-tkey[i][0]) + abs(v[1]-tkey[i][1]);
+                        if (hcand < hv) hv = hcand;
+                    }
+                    f[v] = g[v] + hv;
+
+                    if (in_open.get(v) != 1) {
+                        open.add(v);
+                        in_open[v] = 1;
                     }
                 }
             }
         }
-        //===search for the best among the selected four
-        dict<tuple<int,int>, float> cost; // of going to the 4 selected
-        dict<tuple<int,int>, tuple<int,int>> parent; // BFS tree (field: previous field)
-        tuple<int, int> start = (bel.x, bel.y);
-        parent[start] = start;
-        list<tuple<int,int>> Q = [start];
-        dict<tuple<int,int>, int> seen = {start: 1};
-        self.plan_path = [];
-        while (len(Q)>0 && len(cost)<len(best_4)){
-            tuple<int,int> u = Q[0];
-            del Q[0];
-            if (best_4.get(u) != None) cost[u] = 0.0;
-            for (int i=0; i<4; i=i+1){
-                tuple<int,int> neighbor = (u[0] + self.neighbors[i][0], u[1] + self.neighbors[i][1]);
-                if (seen.get(neighbor) == 1) continue;
-                elif (bel.visited.get(neighbor) != None) {
-                    seen[neighbor] = 1;
-                    parent[neighbor] = u;
-                    Q.add(neighbor);
-                }
-                elif (best_4.get(neighbor) != None) {
-                    cost[neighbor] = 0.0;
-                    parent[neighbor] = u;
-                    seen[neighbor] = 1;
-                }
-            }
-        }
-        list<tuple<int,int>> key_best4 = best_4.keys();
-        tuple<int,int> best_choise;
-        for (int i=0; i<len(key_best4); i=i+1){
-            if (i==0) best_choise = key_best4[i];
-            tuple<int,int> curr = key_best4[i];
-            int counter = 0;
+
+        if (found == True) {
+            tuple<int,int> curr = reached_goal;
             while (curr != start) {
-                counter = counter + 1;
+                self.plan_path.add(curr);
                 curr = parent[curr];
             }
-            float counter_notmalize = counter/self.D0;
-            if (counter_notmalize>1.0) counter_notmalize = 1.0;
-            cost[key_best4[i]] = self.wTheta * best_4_angle[key_best4[i]] + self.wD * counter_notmalize;
-            if (cost[best_choise] > cost[key_best4[i]]) best_choise = key_best4[i];
         }
-        tuple<int,int> curr = best_choise;
-        while (curr != start) {
-            self.plan_path.add(curr);
-            curr = parent[curr];
-        }
-        //del bel.frontiers[best_choise];
     }
 
     action count_manhatan_dist(tuple<int,int> pos): float {
@@ -307,8 +398,8 @@ agent green_master{
     }
     initialize {
         print("Color BLUE; start possition:", self.START);
-        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (1,45), neighbors: [(1,0),(0,-1),(-1,0),(0,1)]});
-        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (45,90), neighbors: [(0,1),(-1,0),(0,-1),(1,0)]});
+        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (0,45), neighbors: [(1,0),(0,-1),(-1,0),(0,1)]});
+        spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (45,91), neighbors: [(0,1),(-1,0),(0,-1),(1,0)]});
     }
     rules {
         when (self.received == 2) then {
@@ -547,7 +638,7 @@ agent mother {
 
     initialize {
         logging("WORLD::", self.WORLD);
-        //spawn(red_master, {WORLD: &self.WORLD, START: (len(self.WORLD[0])-1, len(self.WORLD)-1 )});
+        spawn(red_master, {WORLD: &self.WORLD, START: (len(self.WORLD[0])-1, len(self.WORLD)-1 )});
         spawn(green_master, {WORLD: &self.WORLD, START: (0,0)});
     }
     rules {
