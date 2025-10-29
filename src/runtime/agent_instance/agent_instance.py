@@ -81,9 +81,13 @@ class AgentInstance:
         Perform a single step in the agent's lifecycle, executing its actions and processing messages.
         """
         self._action_executor.sense_world()
-        if not self._inbox.empty():
-            # print(self._inbox.qsize(), self._inbox.queue)
-            self._message_handler.process_messages(self._inbox.get())
+        qsize = self._inbox.qsize()
+        batch = min( max(1, qsize // 2), 10 )
+        for _ in range(batch):
+            if not self._inbox.empty():
+                self._message_handler.process_messages(self._inbox.get())
+        # if not self._inbox.empty():
+        #     self._message_handler.process_messages(self._inbox.get())
         self._action_executor.check_global_goal()
         self._action_executor.follow_rules()
 

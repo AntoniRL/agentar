@@ -28,6 +28,8 @@ MOVE_RE   = re.compile(
 )
 VIS_RE    = re.compile(r"\.(1\.1\.(\d))::.*VISITED::\s*(\{.*\})")
 FRONT_RE  = re.compile(r"\.(1\.1\.(\d))::.*FRONTIERS::\s*(\{.*\})")
+# --- NOWE: wyłapujemy licznik area ---
+AREA_RE   = re.compile(r"\.(1\.1\.(\d))::.*area:\s*(\d+)", re.IGNORECASE)
 
 # =============== Pomocnicze ===============
 def parse_dict_of_pairs(s):
@@ -117,6 +119,13 @@ class AgentView:
         self.canvas = tk.Canvas(self.frame, width=w, height=h, bg="white")
         self.canvas.pack(padx=6, pady=6)
 
+        # --- statystyki agenta ---
+        self.total_white = 0   # App uzupełni po wczytaniu WORLD
+        self.steps = 0
+        self.area_here = None  # NOWE: ostatnia znana wartość licznika area
+        self.stats_var = tk.StringVar(value="Frontiery: 0\nOdkryte: 0/0 (0.0%)\nKroki: 0\nArea tu: -")
+        tk.Label(self.frame, textvariable=self.stats_var, justify="left").pack(pady=(0,6))
+
         # „okno” widoku (lew. górny narożnik) w ukł. relatywnym agenta:
         self.vx = -CENTER
         self.vy = -CENTER
@@ -157,6 +166,18 @@ class AgentView:
 
     def _raise_dot(self):
         self.canvas.tag_raise(self.DOT_TAG)
+
+    def _update_stats_label(self):
+        # pole (0,0) traktujemy jako odkryte
+        discovered_set = set(self.known_not_visited) | set(self.visited_self) | {(0, 0)}
+        discovered = len(discovered_set)
+        total = max(1, int(self.total_white))  # unikamy dzielenia przez zero
+        pct = (discovered / total) * 100.0
+        front = len(self.frontiers)
+        area_txt = "-" if self.area_here is None else str(self.area_here)
+        self.stats_var.set(
+            f"Frontiery: {front}\nOdkryte: {discovered}/{total} ({pct:.1f}%)\nKroki: {self.steps}\nArea tu: {area_txt}"
+        )
 
     # ---------- panning ----------
     def _ensure_visible_point(self, rx, ry):
@@ -250,6 +271,8 @@ class AgentView:
         else:
             # tylko zaktualizuj kropkę
             self._draw_dot_at_current_pos()
+        
+        self._update_stats_label()
 
     def paint_known(self):
         # pełny redraw, żeby wszystko „pojechało” razem
@@ -278,6 +301,14 @@ class AgentView:
         else:
             self.paint_known()
 
+        # --- aktualizacja statystyk ---
+        self._update_stats_label()
+
+    # --- NOWE: setter dla area ---
+    def set_area(self, val:int):
+        self.area_here = val
+        self._update_stats_label()
+
 
 class WorldView:
     """Górna plansza świata (oś Y w dół)."""
@@ -297,19 +328,13 @@ class WorldView:
         return x0, y0, x0 + TOP_CELL, y0 + TOP_CELL
 
     def draw_base(self):
-        # TODO: changes for sliding window
-        # self.canvas.delete("all")
-        # W = MARGIN * 2 + self.w * TOP_CELL
-        # H = MARGIN * 2 + self.h * TOP_CELL
-        # self.canvas.config(width=W, height=H, bg="white")
-
         self.canvas.delete("all")
         W = MARGIN * 2 + self.w * TOP_CELL
         H = MARGIN * 2 + self.h * TOP_CELL
         self.canvas.config(bg="white")
         # umożliwia przewijanie, nawet jeśli content > viewport
         self.canvas.config(scrollregion=(0, 0, W, H))
-        # (opcjonalnie) narysuj białe tło na cały obszar scrollowalny:
+        # tło na cały obszar scrollowalny
         self.canvas.create_rectangle(0, 0, W, H, fill="white", outline="")
 
         for y in range(self.h):
@@ -339,23 +364,6 @@ class WorldView:
             self.canvas.create_line(MARGIN, y, W - MARGIN, y, fill="#bbb")
 
     def put_agent_number(self, aid, gx, gy):
-        # # nie kolorujemy własności na polu startowym
-        # if (gx, gy) != self.start_xy and (gx, gy) not in self.first_owner:
-        #     self.first_owner[(gx, gy)] = aid
-        #     x0, y0, x1, y1 = self.grid_bbox(gx, gy)
-        #     tri = [(x0, y0), (x1, y0), (x0, y1)]
-        #     self.canvas.create_polygon(*sum(tri, ()), fill=AGENTS[aid]["color"], outline="")
-        # # numer agenta nad tłem
-        # if self.agent_text_ids[aid]:
-        #     self.canvas.delete(self.agent_text_ids[aid])
-        # x0, y0, x1, y1 = self.grid_bbox(gx, gy)
-        # tx = (x0 + x1) / 2
-        # ty = (y0 + y1) / 2
-        # self.agent_text_ids[aid] = self.canvas.create_text(
-        #     tx, ty, text=aid, fill="black", font=("Helvetica", int(TOP_CELL * 0.6), "bold")
-        # )
-        # self.canvas.tag_raise(self.agent_text_ids[aid])
-
         # nie kolorujemy własności na polu startowym
         if (gx, gy) != self.start_xy and (gx, gy) not in self.first_owner:
             self.first_owner[(gx, gy)] = aid
@@ -367,22 +375,21 @@ class WorldView:
         tx = (x0 + x1) / 2
         ty = (y0 + y1) / 2
 
-        # --- nowość: wspólny tag, żeby usuwać i numer, i kółko ---
+        # wspólny tag, żeby usuwać i numer, i kółko
         tag = f"agent_{aid}"
-        self.canvas.delete(tag)  # usuń poprzednie kółko i numer tego agenta
+        self.canvas.delete(tag)
 
-        # najpierw rysujemy numer, żeby znać jego bbox
+        # tekst
         text_id = self.canvas.create_text(
             tx, ty, text=aid, fill="black",
             font=("Helvetica", int(TOP_CELL * 0.6), "bold"),
             tags=(tag,)
         )
 
-        # dopasuj kółko do rozmiaru tekstu z niewielkim marginesem
+        # dopasuj kółko do rozmiaru tekstu
         bx0, by0, bx1, by1 = self.canvas.bbox(text_id)
-        pad = max(2, int(TOP_CELL * 0.08))  # „lekko większe niż numer”
+        pad = max(2, int(TOP_CELL * 0.08))
         rx = (bx1 - bx0) / 2 + pad
-        ry = (by1 - by0) / 2 + pad
 
         circle_id = self.canvas.create_oval(
             tx - rx, ty - rx, tx + rx, ty + rx,
@@ -390,11 +397,9 @@ class WorldView:
             tags=(tag,)
         )
 
-        # upewnij się, że numer jest nad kółkiem
         self.canvas.tag_lower(circle_id, text_id)
         self.canvas.tag_raise(text_id)
 
-        # zapamiętaj id tekstu (jeśli wykorzystujesz to gdzie indziej)
         self.agent_text_ids[aid] = text_id
 
 
@@ -404,10 +409,6 @@ class App:
         self.root = root
         root.title("Przeszukiwanie terenu — wizualizacja")
         root.bind("<space>", self.on_space)  # spacja = pauza/start
-
-        # TODO: changes for sliding window
-        # self.top_canvas = tk.Canvas(root, bg="white")
-        # self.top_canvas.pack(side="top", fill="both", expand=False, padx=6, pady=6)
 
         self.top_scroller = ScrollableCanvas(root)
         self.top_scroller.pack(side="top", fill="both", expand=True, padx=6, pady=6)
@@ -431,7 +432,7 @@ class App:
         tk.Button(controls, text="Początek", command=self.reset).pack(side="left")
 
         tk.Label(controls, text="Szybkość").pack(side="left", padx=(12,4))
-        self.speed = tk.Scale(controls, from_=1, to=8, orient="horizontal")
+        self.speed = tk.Scale(controls, from_=1, to=50, orient="horizontal")
         self.speed.set(4)
         self.speed.pack(side="left")
 
@@ -485,19 +486,26 @@ class App:
                 push("start", start=start_xy)
                 continue
 
+            # --- NOWE: area może wystąpić w tej samej linii co ruch; nie używamy 'continue'
+            ma = AREA_RE.search(ln)
+            if ma:
+                aid = ma.group(2)
+                area_val = int(ma.group(3))
+                push("area", aid=aid, area=area_val)
+                # brak continue — pozwalamy wyłapać też np. 'move'
+
             mv = VIS_RE.search(ln)
             if mv:
                 aid = mv.group(2)
                 pts = parse_dict_of_pairs(mv.group(3))
                 push("visited", aid=aid, pts=pts)
-                continue
+                # continue niepotrzebne — linia może zawierać też inne informacje
 
             mf = FRONT_RE.search(ln)
             if mf:
                 aid = mf.group(2)
                 pts = parse_dict_of_pairs(mf.group(3))
                 push("frontiers", aid=aid, pts=pts)
-                continue
 
             mm = MOVE_RE.search(ln)
             if mm:
@@ -505,7 +513,6 @@ class App:
                 gx, gy = int(mm.group(3)), int(mm.group(4))
                 rx, ry = int(mm.group(5)), int(mm.group(6))
                 push("move", aid=aid, gx=gx, gy=gy, rx=rx, ry=ry)
-                continue
 
         if not world or start_xy is None:
             messagebox.showerror("Błąd", "Brak WORLD lub START POSSITION w logu.")
@@ -519,6 +526,14 @@ class App:
     # --- inicjalizacja widoków ---
     def reset_geometry(self):
         self.world_view = WorldView(self.top_canvas, self.world, self.start_xy)
+
+        # --- policz łączną liczbę białych pól (nie-ścian) ---
+        self.total_white = 0
+        for row in self.world:
+            for val in row:
+                if val != -1:
+                    self.total_white += 1
+
         for v in self.agent_views.values():
             v.vx, v.vy = -CENTER, -CENTER
             v.known_not_visited.clear()
@@ -526,13 +541,21 @@ class App:
             v.frontiers.clear()
             v.pos = (0, 0)
             v.dot_id = None
+            v.steps = 0
+            v.total_white = self.total_white
+            v.area_here = None  # wyzeruj znaną wartość area przy starcie/nowym świecie
             v._redraw_all()
+            v._update_stats_label()
 
     def reset_events(self):
         self.stop_loop()
         self.ei = 0
         for aid in self.agent_views:
-            self.agent_views[aid].set_relative_pos(0, 0)
+            v = self.agent_views[aid]
+            v.set_relative_pos(0, 0)
+            v.steps = 0
+            v.area_here = None
+            v._update_stats_label()
         self.btn_start.config(text="Start")
 
     # --- sterowanie odtwarzaniem ---
@@ -576,7 +599,7 @@ class App:
         self.ei += 1
 
         delay = int(600 / self.speed.get())
-        self.timer = self.root.after(max(20, delay), self.loop)
+        self.timer = self.root.after(max(5, delay), self.loop)
 
     # --- zastosowanie zdarzeń ---
     def apply_event(self, kind, payload):
@@ -591,9 +614,15 @@ class App:
             self.agent_views[aid].update_knowledge(visited_set=payload["pts"])
         elif kind == "frontiers":
             aid = payload["aid"]
-            self.agent_views[aid].update_knowledge(frontier_set=payload["pts"])
+            self.agent_views[aid].update_knowledge(frontier_set=payload["pts"])\
+
+        elif kind == "area":
+            aid = payload["aid"]
+            self.agent_views[aid].set_area(payload["area"])
+
         elif kind == "move":
             aid = payload["aid"]
+            self.agent_views[aid].steps += 1
             gx, gy, rx, ry = payload["gx"], payload["gy"], payload["rx"], payload["ry"]
             self.world_view.put_agent_number(aid, gx, gy)
             self.agent_views[aid].set_relative_pos(rx, ry)

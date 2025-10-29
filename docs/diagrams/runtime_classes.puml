@@ -1,0 +1,157 @@
+@startuml
+title Agentar — Runtime class diagram (runtime only)
+
+' Classes
+class AgentarSystem {
+  - mother_decl
+  - agents_decl
+  - messages_decl
+  - agents: dict[AgentId, AgentInstance]
+  - threads: dict[AgentId, AgentRunner]
+  + start()
+  + stop()
+  + send_message(message)
+  + spawn_agent(parentInstance, agent_type, fields)
+  + kill_agent(agent_id)
+}
+
+class AgentRunner {
+  - instance: AgentInstance
+  - system: AgentarSystem
+  - agent_id: AgentId
+  - tick_interval
+  + run()
+  + stopAgent()
+}
+
+class AgentInstance {
+  - _id: AgentId
+  - _parent: AgentId
+  - _children: List[AgentId]
+  - _inbox: Queue[MessageInstance]
+  - _runtime: AgentarSystem
+  - _executor: StatementExecutor
+  - _evaluator: ExpressionEvaluator
+  - _message_handler: MessageHandler
+  - _action_executor: ActionExecutor
+  + initializeAgent()
+  + step()
+  + destroyAgent()
+}
+
+class StatementExecutor
+class ExpressionEvaluator {
+  - agent: AgentInstance
+}
+class MessageHandler {
+  - agent: AgentInstance
+}
+class ActionExecutor {
+  - agent: AgentInstance
+}
+
+class AgentarAgent {
+  - _fields: VariableContainer
+  - _beliefs: VariableContainer
+  - _actions: ASTNodeContainer
+  - _initialize
+  - _destroy
+  - _name
+}
+
+class AgentarMessage
+class MessageInstance {
+  - _name: str
+  - _sender: AgentId
+  - _receiver: AgentId
+  - _type
+  - _content: VariableContainer
+}
+
+class AgentContainer
+class MessageContainer
+class VariableContainer {
+  - _variables: dict[str, VariableInfo]
+  - _agent: AgentInstance
+}
+class VariableInfo
+class Pointer
+class TypedList
+class TypedDict
+class TypedTuple
+class AgentId
+
+' Errors (hierarchy)
+class AgentarRuntimeError
+class VariableNotFoundError
+class VariableAlreadyDeclaredError
+class AgentNameAlreadyDeclaredError
+class AgentNotFoundError
+class MessageAlreadyDeclaredError
+class MessageNotFoundError
+class ASTNodeAlreadyDeclaredError
+class ASTNodeNotFoundError
+class WrongTypeError
+class IndexOutOfRangeError
+class KeyNotFoundError
+class UnsupportedOperatorError
+class NoValueInActionCall
+class MismatchTypeWithDeclarationError
+class MismatchMessageContentError
+class FieldWithNoneValueError
+class NotAssignableError
+class MinusValueForSquare
+
+AgentarRuntimeError <|-- VariableNotFoundError
+AgentarRuntimeError <|-- VariableAlreadyDeclaredError
+AgentarRuntimeError <|-- AgentNameAlreadyDeclaredError
+AgentarRuntimeError <|-- AgentNotFoundError
+AgentarRuntimeError <|-- MessageAlreadyDeclaredError
+AgentarRuntimeError <|-- MessageNotFoundError
+AgentarRuntimeError <|-- ASTNodeAlreadyDeclaredError
+AgentarRuntimeError <|-- ASTNodeNotFoundError
+AgentarRuntimeError <|-- WrongTypeError
+AgentarRuntimeError <|-- IndexOutOfRangeError
+AgentarRuntimeError <|-- KeyNotFoundError
+AgentarRuntimeError <|-- UnsupportedOperatorError
+AgentarRuntimeError <|-- NoValueInActionCall
+AgentarRuntimeError <|-- MismatchTypeWithDeclarationError
+AgentarRuntimeError <|-- MismatchMessageContentError
+AgentarRuntimeError <|-- FieldWithNoneValueError
+AgentarRuntimeError <|-- NotAssignableError
+AgentarRuntimeError <|-- MinusValueForSquare
+
+' Associations / compositions
+AgentarSystem "1" o-- "0..*" AgentInstance : manages
+AgentarSystem "1" o-- "0..*" AgentRunner : threads
+AgentRunner --> AgentInstance : instance
+AgentRunner --> AgentarSystem : system
+AgentRunner --> AgentId : agent_id
+
+AgentInstance --> StatementExecutor
+AgentInstance --> ExpressionEvaluator
+AgentInstance --> MessageHandler
+AgentInstance --> ActionExecutor
+AgentInstance --> AgentId
+AgentInstance --> AgentarAgent : from declaration
+AgentInstance --> AgentarSystem : _runtime
+
+ActionExecutor --> VariableContainer
+MessageHandler --> MessageInstance
+MessageInstance --> VariableContainer
+
+AgentContainer --> AgentarAgent
+MessageContainer --> AgentarMessage
+VariableContainer --> VariableInfo
+VariableContainer --> Pointer
+TypedList --> Pointer
+TypedDict --> Pointer
+TypedTuple --> Pointer
+
+' Notes
+note top of AgentarSystem
+  This diagram includes only runtime/core classes.
+  AST nodes and the ANTLR-generated parser are omitted.
+end note
+
+@enduml

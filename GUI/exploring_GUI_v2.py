@@ -117,6 +117,13 @@ class AgentView:
         self.canvas = tk.Canvas(self.frame, width=w, height=h, bg="white")
         self.canvas.pack(padx=6, pady=6)
 
+        # --- statystyki agenta ---
+        # TODO: new
+        self.total_white = 0   # App uzupełni po wczytaniu WORLD
+        self.steps = 0
+        self.stats_var = tk.StringVar(value="Frontiery: 0\nOdkryte: 0/0 (0.0%)\nKroki: 0")
+        tk.Label(self.frame, textvariable=self.stats_var, justify="left").pack(pady=(0,6))
+
         # „okno” widoku (lew. górny narożnik) w ukł. relatywnym agenta:
         self.vx = -CENTER
         self.vy = -CENTER
@@ -157,6 +164,16 @@ class AgentView:
 
     def _raise_dot(self):
         self.canvas.tag_raise(self.DOT_TAG)
+
+    # TODO: new
+    def _update_stats_label(self):
+        # pole (0,0) traktujemy jako odkryte
+        discovered_set = set(self.known_not_visited) | set(self.visited_self) | {(0, 0)}
+        discovered = len(discovered_set)
+        total = max(1, int(self.total_white))  # unikamy dzielenia przez zero
+        pct = (discovered / total) * 100.0
+        front = len(self.frontiers)
+        self.stats_var.set(f"Frontiery: {front}\nOdkryte: {discovered}/{total} ({pct:.1f}%)\nKroki: {self.steps}")
 
     # ---------- panning ----------
     def _ensure_visible_point(self, rx, ry):
@@ -250,6 +267,9 @@ class AgentView:
         else:
             # tylko zaktualizuj kropkę
             self._draw_dot_at_current_pos()
+        
+        # TODO: new
+        self._update_stats_label()
 
     def paint_known(self):
         # pełny redraw, żeby wszystko „pojechało” razem
@@ -277,6 +297,10 @@ class AgentView:
             self._redraw_all()
         else:
             self.paint_known()
+
+        # TODO: new
+        # --- aktualizacja statystyk ---
+        self._update_stats_label()
 
 
 class WorldView:
@@ -431,7 +455,7 @@ class App:
         tk.Button(controls, text="Początek", command=self.reset).pack(side="left")
 
         tk.Label(controls, text="Szybkość").pack(side="left", padx=(12,4))
-        self.speed = tk.Scale(controls, from_=1, to=8, orient="horizontal")
+        self.speed = tk.Scale(controls, from_=1, to=50, orient="horizontal")
         self.speed.set(4)
         self.speed.pack(side="left")
 
@@ -519,6 +543,15 @@ class App:
     # --- inicjalizacja widoków ---
     def reset_geometry(self):
         self.world_view = WorldView(self.top_canvas, self.world, self.start_xy)
+
+        # TODO: new
+        # --- policz łączną liczbę białych pól (nie-ścian) ---
+        self.total_white = 0
+        for row in self.world:
+            for val in row:
+                if val != -1:
+                    self.total_white += 1
+
         for v in self.agent_views.values():
             v.vx, v.vy = -CENTER, -CENTER
             v.known_not_visited.clear()
@@ -526,13 +559,19 @@ class App:
             v.frontiers.clear()
             v.pos = (0, 0)
             v.dot_id = None
+            v.steps = 0
+            v.total_white = self.total_white
             v._redraw_all()
+            v._update_stats_label()
 
     def reset_events(self):
         self.stop_loop()
         self.ei = 0
         for aid in self.agent_views:
-            self.agent_views[aid].set_relative_pos(0, 0)
+            v = self.agent_views[aid]
+            v.set_relative_pos(0, 0)
+            v.steps = 0
+            v._update_stats_label()
         self.btn_start.config(text="Start")
 
     # --- sterowanie odtwarzaniem ---
@@ -576,7 +615,7 @@ class App:
         self.ei += 1
 
         delay = int(600 / self.speed.get())
-        self.timer = self.root.after(max(20, delay), self.loop)
+        self.timer = self.root.after(max(5, delay), self.loop)
 
     # --- zastosowanie zdarzeń ---
     def apply_event(self, kind, payload):
@@ -594,6 +633,7 @@ class App:
             self.agent_views[aid].update_knowledge(frontier_set=payload["pts"])
         elif kind == "move":
             aid = payload["aid"]
+            self.agent_views[aid].steps += 1
             gx, gy, rx, ry = payload["gx"], payload["gy"], payload["rx"], payload["ry"]
             self.world_view.put_agent_number(aid, gx, gy)
             self.agent_views[aid].set_relative_pos(rx, ry)

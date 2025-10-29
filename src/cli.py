@@ -99,7 +99,7 @@ def main():
                 print("Error: You must provide a valid integer after '-t' or 'inf' for infinite runtime.")
                 sys.exit(1)
         else:
-            max_runtime = 5
+            max_runtime = float("inf")
 
         try:
             logging_setup(raport_flag, to_file)

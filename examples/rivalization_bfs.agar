@@ -15,7 +15,7 @@ message GOLD_COLLECT{
 }
 
 
-// ==== GREEN TEAM =========================
+// ==== GREEN SCOUR =========================
 agent green_scout{
     fields {
         pointer<list<list<int>>> WORLD;
@@ -38,7 +38,10 @@ agent green_scout{
     beliefs {
         dict<tuple<int,int>, float> frontiers; //dict of unvisited fields 
         dict<tuple<int,int>, int> visited; //dict of fields which agent visited
-        int in_the_area;  // number of fields in my area
+        dict<tuple<int,int>, float> frontiers_to_send; //dict of unvisted fields to send
+        dict<tuple<int,int>, int> visited_to_send;
+
+        int in_the_area = 0;  // number of fields in my area
 
         int x = 0; // actual position x
         int y = 0; // actual position y
@@ -48,7 +51,6 @@ agent green_scout{
     }
     initialize {
         del self.plan_path[0]; // probelm of initializing empty plan_path in agentar
-        bel.in_the_area = 0;
         self.area_angles_rad = (self.area_angles_deg[0] * pi / 180, self.area_angles_deg[1] * pi / 180);
     }
     sense {
@@ -57,6 +59,7 @@ agent green_scout{
             int y = self.START[1] + bel.y;
             if (*self.WORLD[self.START[1] + bel.y][self.START[0] + bel.x] == 1) do collect_gold();
             bel.visited[(bel.x, bel.y)] = 1;
+            bel.visited_to_send[(bel.x, bel.y)] = 1;
             for (int i=0; i<4; i=i+1){ 
                 tuple<int,int> neighbor = (x + self.neighbors[i][0], y + self.neighbors[i][1]); // location in the map
                 tuple<int,int> neighbor_local = (bel.x + self.neighbors[i][0], bel.y + self.neighbors[i][1]); // my belief of the location
@@ -69,6 +72,7 @@ agent green_scout{
                     // think about areas ex. 330-30
                     if (angle >= self.area_angles_rad[0] && angle < self.area_angles_rad[1] && bel.frontiers.get(neighbor_local) == None) bel.in_the_area = bel.in_the_area + 1;
                     bel.frontiers[neighbor_local] = angle;
+                    bel.frontiers_to_send[neighbor_local] = angle;
                 }
             }
         }
@@ -79,9 +83,11 @@ agent green_scout{
             //logging("FRONTIERS::",bel.frontiers);
             //logging("VISITED::",bel.visited);
         }
-        when (self.counter%5 == 0) then {
-            BLOCK_OF_INFO msg_ = BLOCK_OF_INFO{frontiers: bel.frontiers, visited: bel.visited};
-            send2siblings(green_scout, msg_, msgType_inform);
+        when (self.counter % 5 == 0 && (len(bel.frontiers_to_send) > 0 || len(bel.visited_to_send) > 0)) then {
+            BLOCK_OF_INFO msg_ = BLOCK_OF_INFO{frontiers: bel.frontiers_to_send, visited: bel.visited_to_send};
+            send2siblings(_, msg_, msgType_inform);
+            bel.frontiers_to_send = {};
+            bel.visited_to_send = {};
         }
         when (self.is_goal_achieved == False && len(self.plan_path) == 0) then {
             if (bel.in_the_area == 0) do find_out_of_area();
@@ -98,15 +104,14 @@ agent green_scout{
 
     destroy {
         BLOCK_OF_INFO msg_ = BLOCK_OF_INFO{frontiers: bel.frontiers, visited: bel.visited};
-        send2siblings(green, msg_, msgType_inform);
-        //NUMBER_OF_STEPS number = NUMBER_OF_STEPS{number: self.number_of_steps};
-        //send2parent(number, msgType_inform);
+        send2siblings(_, msg_, msgType_inform);
         GOLD_COLLECT msg_2 = GOLD_COLLECT{num_of_gold: self.gold_counter};
-        send2parent(msg_2, msgType_inform);
+        send2parent(msg_2, msgType_inform);  
     }
 
     receive BLOCK_OF_INFO{
         when (msg._type == msgType_inform) then {
+
             list<tuple<int,int>> keys_visited;
             keys_visited = msg.visited.keys();
             for(int i=0; i<len(keys_visited); i=i+1){
@@ -122,8 +127,9 @@ agent green_scout{
             for(int i=0; i<len(keys_frontiers); i=i+1){
                 if (bel.visited.get(keys_frontiers[i]) != None) continue;
                 if (bel.frontiers.get(keys_frontiers[i]) == None){
-                    bel.frontiers[keys_frontiers[i]] = msg.frontiers[keys_frontiers[i]];
-                    float angle = bel.frontiers[keys_frontiers[i]];
+                    float angle;
+                    angle = msg.frontiers[keys_frontiers[i]];
+                    bel.frontiers[keys_frontiers[i]] = angle;
                     if (angle >= self.area_angles_rad[0] && angle < self.area_angles_rad[1]) bel.in_the_area = bel.in_the_area + 1;
                 }
             }
@@ -174,8 +180,6 @@ agent green_scout{
                 self.plan_path.add(curr);
                 curr = parent[curr];
             }
-            if (bel.frontiers.get(found) >= self.area_angles_rad[0] && bel.frontiers.get(found) < self.area_angles_rad[1]) bel.in_the_area = bel.in_the_area -1;
-            //del bel.frontiers[found];
         }
     }
 
@@ -183,7 +187,12 @@ agent green_scout{
         bel.x = self.plan_path[-1][0];
         bel.y = self.plan_path[-1][1];
         print("GLOBAL POSSITION::", self.START[0] + bel.x, self.START[1] + bel.y, "RELATIV POSSITION::", bel.x, bel.y, "visited::", len(bel.visited), "GOLD::", self.gold_counter);
-        if (self.plan_path[-1] == (bel.x, bel.y) && bel.frontiers.get(self.plan_path[-1]) != None) del bel.frontiers[self.plan_path[-1]];
+        if (bel.frontiers.get((bel.x, bel.y)) != None) {
+            if (bel.frontiers[self.plan_path[-1]] >= self.area_angles_rad[0] && bel.frontiers[self.plan_path[-1]] < self.area_angles_rad[1]){
+                bel.in_the_area = bel.in_the_area - 1;
+            } 
+            del bel.frontiers[self.plan_path[-1]];
+        }
         del self.plan_path[-1];
     }
 
@@ -261,7 +270,6 @@ agent green_scout{
             self.plan_path.add(curr);
             curr = parent[curr];
         }
-        //del bel.frontiers[best_choise];
     }
 
     action count_manhatan_dist(tuple<int,int> pos): float {
