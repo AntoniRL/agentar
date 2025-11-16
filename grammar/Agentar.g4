@@ -117,7 +117,6 @@ statement
     | getTimeStmt
     | dictDelStmt
     | processMessageStmt
-    | fileStatement
     ;
 
 

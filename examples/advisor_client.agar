@@ -1,0 +1,199 @@
+// ===== messages =====
+message ADVISOR_FREE{
+    str adviror_type;
+}
+
+message ASSIGN_CLIENT{
+    agentid client_id;
+    int len_of_queue;
+}
+
+message CLIENT_ASK{
+    str request_type;
+}
+
+message ASK_FOR_DETAILS{}
+
+message GIVE_DETAILS{
+    int waiting_time;
+}
+
+message CONFIRM_WORK{}
+
+
+message ASK_FOR_HELP{
+    str agent_specialisation;
+}
+
+
+// ===== agets =====
+agent client {
+    fields {
+        str request_type;
+        agentid dispatcher_id;
+        int status = 0; //0-waiting; 1-in_servise; 2-done
+        int max_wait = random(25,75);
+    }
+    initialize {
+        logging("Client of request type::", self.request_type);
+        CLIENT_ASK msg_ = CLIENT_ASK{request_type: self.request_type};
+        send(self.dispatcher_id, msg_, msgType_request);
+    }
+    receive ASK_FOR_DETAILS{
+        when () then {
+            self.status = 1;
+            GIVE_DETAILS msg_ = GIVE_DETAILS{waiting_time: random(5,7)};
+            send(msg._sender, msg_, msgType_inform);
+        }
+    }
+    receive CONFIRM_WORK{
+        when () then {
+            kill();
+        }
+    }
+}
+
+
+agent dispatcher {
+    beliefs {
+        list<agentid> A_Q;
+        list<agentid> B_Q;
+        list<agentid> C_Q;
+    }
+    initialize {
+        spawn(advisor, {my_type: "A"});
+        spawn(advisor, {my_type: "B"});
+        spawn(advisor, {my_type: "C"});
+        del bel.A_Q[-1]; del bel.B_Q[-1]; del bel.C_Q[-1];
+    }
+    receive ADVISOR_FREE {
+        when (msg.adviror_type == "A") then {
+            if (len(bel.A_Q) == 0) {
+                ASSIGN_CLIENT msg_ = ASSIGN_CLIENT{client_id: .0, len_of_queue: len(bel.A_Q)};
+                send(msg._sender, msg_, msgType_deny);
+            } else {
+                ASSIGN_CLIENT msg_ = ASSIGN_CLIENT{client_id: bel.A_Q[0], len_of_queue: len(bel.A_Q)};
+                send(msg._sender, msg_, msgType_confirm);
+                del bel.A_Q[0];
+            }
+        }
+        when (msg.adviror_type == "B") then {
+            if (len(bel.B_Q) == 0) {
+                ASSIGN_CLIENT msg_ = ASSIGN_CLIENT{client_id: .0, len_of_queue: len(bel.B_Q)};
+                send(msg._sender, msg_, msgType_deny);
+            } else {
+                ASSIGN_CLIENT msg_ = ASSIGN_CLIENT{client_id: bel.B_Q[0], len_of_queue: len(bel.B_Q)};
+                send(msg._sender, msg_, msgType_confirm);
+                del bel.B_Q[0];
+            } 
+        }
+        when (msg.adviror_type == "C") then {
+            if (len(bel.C_Q) == 0) {
+                ASSIGN_CLIENT msg_ = ASSIGN_CLIENT{client_id: .0, len_of_queue: len(bel.C_Q)};
+                send(msg._sender, msg_, msgType_deny);
+            } else {
+                ASSIGN_CLIENT msg_ = ASSIGN_CLIENT{client_id: bel.C_Q[0], len_of_queue: len(bel.C_Q)};
+                send(msg._sender, msg_, msgType_confirm);
+                del bel.C_Q[0];
+            }
+        }
+    }
+    receive CLIENT_ASK{
+        when (msg.request_type == "A") then {
+            bel.A_Q.add(msg._sender);
+        }
+        when (msg.request_type == "B") then {
+            bel.B_Q.add(msg._sender);
+        }
+        when (msg.request_type == "C") then {
+            bel.C_Q.add(msg._sender);
+        }
+    }
+}
+
+
+agent advisor {
+    fields {
+        str my_type;
+        bool free = True;
+        bool asked = False;
+        bool details = False;
+    }
+    beliefs {
+        int len_of_queue = 0;
+    }
+    initialize {
+        logging("I am adviror of type ", self.my_type);
+    }
+    rules {
+        when (self.free == True && self.asked == False) then {
+            ADVISOR_FREE msg_ = ADVISOR_FREE{adviror_type: self.my_type};
+            send2parent(msg_, msgType_ask);
+            self.asked = True;
+        }
+    }
+    receive ASSIGN_CLIENT{
+        when () then {            
+            bel.len_of_queue = msg.len_of_queue;
+        }
+        when (msg._type == msgType_deny) then {
+            self.asked = False;
+        }
+        when (msg._type == msgType_confirm) then {
+            logging("I have a client:", msg.client_id);
+            self.free = False;
+            self.asked = False;
+            ASK_FOR_DETAILS msg_ = ASK_FOR_DETAILS{};
+            send(msg.client_id, msg_, msgType_ask);
+        }
+        when (bel.len_of_queue > 5) then {
+            ASK_FOR_HELP msg_ = ASK_FOR_HELP{agent_specialisation: self.my_type};
+            send2siblings(_, msg_, msgType_ask);
+        }
+    }
+    receive GIVE_DETAILS{
+        when () then {
+            logging("Doing job for:", msg._sender);
+            sleep(msg.waiting_time);
+            CONFIRM_WORK msg_ = CONFIRM_WORK{};
+            send(msg._sender, msg_, msgType_confirm);
+            self.free = True;
+        }
+    }
+    receive ASK_FOR_HELP{
+        when (bel.len_of_queue == 0) then {
+            ADVISOR_FREE msg_ = ADVISOR_FREE{adviror_type: msg.agent_specialisation};
+            send2parent(msg_, msgType_ask);
+        }
+    }
+}
+
+
+agent client_generator {
+    fields {
+        agentid dispatcher_id;
+    }
+    initialize {
+        sleep(1);
+    }
+    rules{
+        when () then {
+            int request_int = random(1,2);
+            str request_type;
+            if (request_int == 1) request_type = "A";
+            elif (request_int == 2) request_type = "B";
+            elif (request_int == 3) request_type = "C";
+            spawn(client, {request_type: request_type, dispatcher_id: self.dispatcher_id});
+            sleep(1);
+       }
+    }
+}
+
+
+agent mother {
+    initialize {
+        agentid dispatcher_id;
+        dispatcher_id = spawn(dispatcher);
+        spawn(client_generator, {dispatcher_id: dispatcher_id});
+    }
+}

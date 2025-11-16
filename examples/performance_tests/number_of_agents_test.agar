@@ -1,0 +1,43 @@
+agent sorter {
+    fields {
+        list<int> l;
+    }
+    initialize {
+        bool changed = True;
+        int counter = 0;
+        while (changed == True) {
+            changed = False;
+            for (int i=0; i < len(self.l) - counter - 1; i=i+1){
+                if (self.l[i] > self.l[i+1]){
+                    changed = True;
+                    int temp = self.l[i];
+                    self.l[i] = self.l[i+1];
+                    self.l[i+1] = temp;
+                }
+            }
+            counter = counter + 1;
+        }
+        kill();
+    }
+}
+
+agent mother {
+    fields {
+        list<int> list_ = 
+            [654,114,25,759,281,250,228,142,754,104,692,758,913,558,89,604,432,32,30,95,223,238,517,616,27,574,203,733,665,718,558,429,225,459,603,284,828,890,6,777,825,163,714,432,348,284,159,220,980,781,344,104,94,389,99,367,867,352,618,270,826,44,747,470,549,127,996,944,387,80,565,300,849,643,633,906,882,370,591,196,721,71,46,677,233,791,296,81,875,238,887,103,389,284,464,650,854,373,166,379]
+        ;
+
+        int how_meny_agents = 50;
+    }
+    initialize {
+        print("Agent to start::", self.how_meny_agents);
+        for (int i=0; i<self.how_meny_agents; i=i+1){
+            spawn(sorter, {l: self.list_});
+        }
+    }
+    rules {
+        when (len(self._children) == 0) then {
+            kill();
+        }
+    }
+}

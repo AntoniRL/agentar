@@ -24,3 +24,7 @@ __pycache__/
 /grammar/antlr-*-complete.jar
 
 /logs
+/plots
+/multiplerun
+/GUI/performance_tests
+/docs/diagrams

@@ -2,6 +2,8 @@
 # runtime/AgentarSystem.py
 # System runner: starts/stops mother and other agents
 
+import os
+
 import logging
 import threading
 from copy import deepcopy
@@ -54,6 +56,8 @@ class AgentarSystem:
         with self._lock:
             if receiverId in self.agents.keys():
                 receiver = self.agents[receiverId]
+            else:
+                receiver = None
         if receiver is not None:
             receiver._inbox.put(message)
 

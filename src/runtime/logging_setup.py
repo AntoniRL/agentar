@@ -18,11 +18,11 @@ def get_agent_logger(agent_id: str) -> logging.Logger:
     if getattr(logger, "_configured", False):
         return logger
 
-    os.makedirs("logs", exist_ok=True)
+    os.makedirs("logs/agents", exist_ok=True)
 
-    # --- handler to the file: logs/<agent_id>.log ---
+    # --- handler to the file: logs/agents/<agent_id>.log ---
     fh = RotatingFileHandler(
-        f"logs/{_safe_filename(agent_id)}.log",
+        f"logs/agents/{_safe_filename(agent_id)}.log",
         mode='w',
         maxBytes=5_000_000,
         backupCount=3,

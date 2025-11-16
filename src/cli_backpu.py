@@ -10,7 +10,7 @@ from ast_tree.print_ast import main as print_ast
 from runtime.agentar_system import AgentarSystem
 import time
 import logging
-from resource_monitor import ResourceMonitor
+from src.resource_monitor import ResourceMonitor
 
 
 def show_help():
@@ -28,29 +28,25 @@ def show_help():
     print("\nExamples:")
     print("  agentar run examples/hello.agar -r -t 10")
 
-def run_file(file_path, max_runtime, colect_cpu_data=False):
+def run_file(file_path, max_runtime):
     interpreter = AgentarInterpreter()
     mother, agents, messages = interpreter.runAgentar(file_path)
     system = AgentarSystem(mother, agents, messages)
-    if colect_cpu_data:
-        resource_monitor = ResourceMonitor(system=system, time_interval=0.5)
-        resource_monitor.start()
     system.start()
     start_wall = time.time()
     start_cpu = time.process_time()
     while not system.terminated.is_set():
+        time.sleep(0.1)
         if time.time() - start_wall > max_runtime:
-            logging.warning("Timeout reached. Stopping system.")            
+            logging.warning("Timeout reached. Stopping system.")
             system.terminated.set()  # Signal termination
             break
-        time.sleep(0.1)
     system.stop()
     wall_time = time.time() - start_wall
     cpu_time = time.process_time() - start_cpu
-    if colect_cpu_data:
-        resource_monitor.join()
     cpu_usage_ratio = (cpu_time / wall_time) * 100  # % of CPU time over wall time
-    print(f"Wall: {wall_time:.10f}s | CPU: {cpu_time:.10f}s | CPU utilization: {cpu_usage_ratio:.1f}%")
+
+    print(f"Wall: {wall_time:.2f}s | CPU: {cpu_time:.2f}s | CPU utilization: {cpu_usage_ratio:.1f}%")
 
 
 def ast_tree(file_path):
@@ -113,14 +109,9 @@ def main():
         else:
             max_runtime = float("inf")
 
-        if "-cpu-data" in sys.argv:
-            colect_cpu_data = True
-        else:
-            colect_cpu_data = False
-
         try:
             logging_setup(raport_flag, to_file)
-            run_file(input_file, max_runtime, colect_cpu_data)       # run the Agentar script
+            run_file(input_file, max_runtime)       # run the Agentar script
         except FileNotFoundError:
             print(f"Error: File '{input_file}' not found")
             return 1
