@@ -1,8 +1,29 @@
 @startuml
+scale max 700x1100
+
+skinparam defaultFontSize 16
+skinparam classFontSize 16
+skinparam classAttributeFontSize 14
+skinparam classArrowFontSize 14
+
+skinparam dpi 150
+skinparam maxWidth 600
+skinparam maxHeight 1500
+
+skinparam class {
+  AttributePadding 1
+  Padding 2
+}
+skinparam Shadowing false
+
+skinparam titleFontSize 30
+
 title Agentar — Runtime class diagram (declarations + runtime)
 
 ' === Packages / warstwy ===
-package "Runtime" {
+package "Runtime" { 
+  
+
   class AgentarSystem <<runtime>> {
     - mother_decl
     - agents_decl
@@ -70,20 +91,23 @@ package "Runtime" {
     - _parent_container: VariableContainer
   }
 
+ class AgentId <<value object>> {
+    - id: str
+  }
+
   class VariableInfo <<runtime>>
   class Pointer <<runtime>>
   class TypedList <<runtime>>
   class TypedDict <<runtime>>
   class TypedTuple <<runtime>>
 
-  class AgentId <<value object>> {
-    - id: str
-  }
-
   class AgentarRuntimeError <<runtime>>
 }
 
 package "Declarations" {
+  ' MessageContainer -[hidden]down-> AgentContainer
+  AgentarMessage -[hidden]down-> AgentContainer
+
   class AgentarAgent <<declaration>> {
     - _fields: VariableContainer
     - _beliefs: VariableContainer

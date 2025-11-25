@@ -1,151 +1,192 @@
-#  -*- coding: utf-8 -*- 
+#  -*- coding: utf-8 -*-
 # src/cli.py
 # Command Line Interface (CLI) for running Agentar scripts (.agar files)
 
-import psutil
-import os
 import sys
+import time
+import logging
+import argparse
+
 from interpreter.agentar_interpreter import AgentarInterpreter
 from ast_tree.print_ast import main as print_ast
 from runtime.agentar_system import AgentarSystem
-import time
-import logging
 from resource_monitor import ResourceMonitor
 
 
-def show_help():
-    print("Agentar help")
-    print("========================================")
-    print("Usage: agentar <command> [options]")
-    print("\nCommands:")
-    print("  help         Show this help message")
-    print("  run          Execute a .agar file")
-    print("    -r         Log output to console")
-    print("    -f / -file    Log output to agentar.log")
-    print("    -t <seconds>  Set maximum runtime for the script (default is 5 seconds) or 'inf' for infinite runtime")
-    print("  tree         Print the AST of a .agar file")
-    print("  tree <paht_to_file> | tee ast.txt        Print the AST of a .agar file to the console and save it to ast.txt")
-    print("\nExamples:")
-    print("  agentar run examples/hello.agar -r -t 10")
-
-def run_file(file_path, max_runtime, colect_cpu_data=False):
+def run_file(file_path: str, max_runtime: float, collect_cpu_data: bool = False) -> None:
+    """
+    Run a single Agentar program from a .agar file.
+    """
     interpreter = AgentarInterpreter()
     mother, agents, messages = interpreter.runAgentar(file_path)
     system = AgentarSystem(mother, agents, messages)
-    if colect_cpu_data:
+
+    if collect_cpu_data:
         resource_monitor = ResourceMonitor(system=system, time_interval=0.5)
         resource_monitor.start()
+    else:
+        resource_monitor = None
+
     system.start()
     start_wall = time.time()
     start_cpu = time.process_time()
+
+    # Main loop – waits until system finishes or timeout occurs
     while not system.terminated.is_set():
         if time.time() - start_wall > max_runtime:
-            logging.warning("Timeout reached. Stopping system.")            
-            system.terminated.set()  # Signal termination
+            logging.warning("Timeout reached. Stopping system.")
+            system.terminated.set()
             break
         time.sleep(0.1)
+
     system.stop()
     wall_time = time.time() - start_wall
     cpu_time = time.process_time() - start_cpu
-    if colect_cpu_data:
+
+    if resource_monitor is not None:
         resource_monitor.join()
-    cpu_usage_ratio = (cpu_time / wall_time) * 100  # % of CPU time over wall time
+
+    cpu_usage_ratio = (cpu_time / wall_time) * 100 if wall_time > 0 else 0.0
     print(f"Wall: {wall_time:.10f}s | CPU: {cpu_time:.10f}s | CPU utilization: {cpu_usage_ratio:.1f}%")
 
 
-def ast_tree(file_path):
+def ast_tree(file_path: str) -> None:
+    """
+    Print the AST of an Agentar file.
+    Delegates to ast_tree.print_ast.main.
+    """
     print_ast(file_path)
 
 
-def logging_setup(raport_flag=False, to_file=False):
+def logging_setup(report_flag: bool = False, to_file: bool = False) -> None:
+    """
+    Configure logging for the CLI.
+    """
     if to_file:
-        logging.basicConfig(filename='logs/agentar.log',  # write to a file
-                            filemode='w',            # 'a' = append, 'w' = overwrite
-                            level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s',
-                            datefmt='%H:%M:%S')
+        logging.basicConfig(
+            filename='logs/agentar.log',
+            filemode='w',  # 'a' = append, 'w' = overwrite
+            level=logging.INFO,
+            format='[%(asctime)s] %(levelname)s: %(message)s',
+            datefmt='%H:%M:%S',
+        )
     else:
         logging.basicConfig(
-                            level=logging.INFO if raport_flag else logging.ERROR,
-                            format='[%(asctime)s] %(levelname)s: %(message)s',
-                            datefmt='%H:%M:%S'
+            level=logging.INFO if report_flag else logging.ERROR,
+            format='[%(asctime)s] %(levelname)s: %(message)s',
+            datefmt='%H:%M:%S',
+        )
+
+
+
+def handle_run(args: argparse.Namespace) -> int:
+    """
+    Handler for `agentar run`.
+    """
+    timeout_arg = args.timeout
+    if isinstance(timeout_arg, str) and timeout_arg.lower() == "inf":
+        max_runtime = float("inf")
+    else:
+        try:
+            max_runtime = int(timeout_arg)
+        except (TypeError, ValueError):
+            print("Error: You must provide a valid integer for '--timeout' or 'inf' for infinite runtime.")
+            return 1
+
+    logging_setup(report_flag=args.report, to_file=args.file_log)
+
+    try:
+        run_file(args.file, max_runtime, collect_cpu_data=args.cpu_data)
+    except FileNotFoundError:
+        print(f"Error: File '{args.file}' not found")
+        return 1
+
+    return 0
+
+
+def handle_tree(args: argparse.Namespace) -> int:
+    """
+    Handler for `agentar tree`.
+    """
+    try:
+        with open(args.file, "r") as f:
+            source = f.read()
+        ast_tree(source)
+    except FileNotFoundError:
+        print(f"Error: File '{args.file}' not found")
+        return 1
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="agentar",
+        description="Command Line Interface for running Agentar scripts (.agar files).",
     )
 
+    subparsers = parser.add_subparsers(
+        title="commands",
+        dest="command",
+        required=True,
+    )
 
-def main():
-    if len(sys.argv) < 2:
-        print("No command provided.\n")
-        print("Use 'agentar help' to see available commands.")
-        return 1
+    # ----- `run` -----
+    run_parser = subparsers.add_parser(
+        "run",
+        help="Execute a .agar file",
+        description="Execute an Agentar (.agar) script.",
+    )
+    run_parser.add_argument(
+        "file",
+        help="Path to the .agar file to execute.",
+    )
+    run_parser.add_argument(
+        "-r", "--report",
+        action="store_true",
+        help="Log output to console (INFO level).",
+    )
+    run_parser.add_argument(
+        "-f", "--file-log",
+        action="store_true",
+        help="Log output to logs/agentar.log.",
+    )
+    run_parser.add_argument(
+        "-t", "--timeout",
+        default="inf",
+        help="Set maximum runtime for the script in seconds (default: 'inf' = no limit).",
+    )
+    run_parser.add_argument(
+        "--cpu-data",
+        action="store_true",
+        help="Collect periodic CPU usage data for the Agentar system.",
+    )
+    run_parser.set_defaults(func=handle_run)
 
-    command = sys.argv[1]
+    # ----- `tree` -----
+    tree_parser = subparsers.add_parser(
+        "tree",
+        help="Print the AST of a .agar file",
+        description="Print the AST of an Agentar (.agar) script.",
+    )
+    tree_parser.add_argument(
+        "file",
+        help="Path to the .agar file.",
+    )
+    tree_parser.set_defaults(func=handle_tree)
 
-    if command in ('help' or '--help'):
-        show_help()
-        return 0
-    elif command == 'run':
-        if len(sys.argv) < 3:
-            print("Error: No file specified for 'run'.\n")
-            print("Use 'agentar help' to see available commands.")
-            return 1
-        input_file = sys.argv[2]
+    return parser
 
-        if "-r" in sys.argv:
-            raport_flag = True
-        else:
-            raport_flag = False
 
-        if "-file" in sys.argv or "-f" in sys.argv:
-            to_file = True
-        else:
-            to_file = False
-        
-        if "-t" in sys.argv:
-            t_index = sys.argv.index("-t")
-            try:
-                arg = sys.argv[t_index + 1]
-                if arg.lower() == "inf":
-                    max_runtime = float("inf")
-                else:
-                    max_runtime = int(arg)
-            except (IndexError, ValueError):
-                print("Error: You must provide a valid integer after '-t' or 'inf' for infinite runtime.")
-                sys.exit(1)
-        else:
-            max_runtime = float("inf")
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
 
-        if "-cpu-data" in sys.argv:
-            colect_cpu_data = True
-        else:
-            colect_cpu_data = False
-
-        try:
-            logging_setup(raport_flag, to_file)
-            run_file(input_file, max_runtime, colect_cpu_data)       # run the Agentar script
-        except FileNotFoundError:
-            print(f"Error: File '{input_file}' not found")
-            return 1
-        
-
-    elif command == 'tree':
-        if len(sys.argv) < 3:
-            print("Error: No file specified for 'run'.\n")
-            show_help()
-            return 1    
-        elif len(sys.argv) > 3:
-            print("Error: Too many arguments for 'tree' command.\n")
-            show_help()
-            return 1
-        with open(sys.argv[2], "r") as f:
-            source = f.read()
-        try:
-            ast_tree(source)
-        except FileNotFoundError:
-            print(f"Error: File '{input_file}' not found")
-            return 1
+    if hasattr(args, "func"):
+        return args.func(args)
     else:
-        print(f"Error: Unknown command '{command}'\n")
-        print("Use 'agentar help' to see available commands.")
+        parser.print_help()
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

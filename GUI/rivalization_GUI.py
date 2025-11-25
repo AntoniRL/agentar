@@ -143,7 +143,7 @@ class ScrollableCanvas(ttk.Frame):
 class ViewerApp:
     def __init__(self, root, initial_log=None):
         self.root = root
-        self.root.title("Agentar Log Viewer v2")
+        self.root.title("Agentar Rywalizacaja")
         self.state = WorldState()
         self.events: List[Event] = []
         self.step_index = 0
