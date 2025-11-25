@@ -2,6 +2,7 @@
 # src/cli.py
 # Command Line Interface (CLI) for running Agentar scripts (.agar files)
 
+import os
 import sys
 import time
 import logging
@@ -63,6 +64,10 @@ def logging_setup(report_flag: bool = False, to_file: bool = False) -> None:
     Configure logging for the CLI.
     """
     if to_file:
+        if not os.path.exists('logs'):
+            os.makedirs('logs')
+        if not os.path.exists('logs/agentar.log'):
+            open('logs/agentar.log', 'w').close()
         logging.basicConfig(
             filename='logs/agentar.log',
             filemode='w',  # 'a' = append, 'w' = overwrite
