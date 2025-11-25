@@ -28,6 +28,11 @@ deactivate
 ```
 
 ### 3. Initialize the Agentar package.
+Clone the repository
+
+```bash
+git clone https://github.com/AntoniRL/agentar.git
+```
 Run these commands inside the agentar folder (where setup.py is located) and with the virtual environment activated.
 
 Before installation, make sure pip and setuptools are up to date:
@@ -50,7 +55,13 @@ pip install -e .
 - Run the interpreter
 ```bash
 agentar run examples/helloAgentar.agar
-agentar help 
+agentar --help 
+```
+
+- Run the visualization (GUI)
+All programs located in GUI folder, for example:
+```bash
+python GUI/exampleGui.py
 ```
 
 - Generate the parser in Java (useful for testing and visualizing the parse tree)
@@ -65,8 +76,3 @@ agentar help
     find java_tree/grammar -name "*.java" | xargs javac -cp ".:antlr-4.13.1-complete.jar"
     java -cp ".:../antlr-4.13.1-complete.jar:java_tree/grammar" org.antlr.v4.gui.TestRig Agentar program -gui examples/test.agar
     ```
-
-- Run the visualization (GUI)
-```bash
-python GUI/exampleGui.py
-```
