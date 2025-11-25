@@ -1,0 +1,189 @@
+@startuml
+scale max 700x1100
+
+skinparam defaultFontSize 16
+skinparam classFontSize 16
+skinparam classAttributeFontSize 14
+skinparam classArrowFontSize 14
+
+skinparam dpi 150
+skinparam maxWidth 600
+skinparam maxHeight 1500
+
+skinparam class {
+  AttributePadding 1
+  Padding 2
+}
+skinparam Shadowing false
+
+skinparam titleFontSize 30
+
+title Agentar — Runtime class diagram (declarations + runtime)
+
+' === Packages / warstwy ===
+package "Runtime" { 
+  
+
+  class AgentarSystem <<runtime>> {
+    - mother_decl
+    - agents_decl
+    - messages_decl
+    - agents: dict[AgentId, AgentInstance]
+    - threads: dict[AgentId, AgentRunner]
+    + start()
+    + stop()
+    + send_message(message)
+    + spawn_agent(parentInstance, agent_type, fields)
+    + kill_agent(agent_id)
+  }
+
+  class AgentRunner <<runtime>> {
+    - instance: AgentInstance
+    - system: AgentarSystem
+    - agent_id: AgentId
+    - tick_interval
+    + run()
+    + stopAgent()
+  }
+
+  class AgentInstance <<runtime>> {
+    - _id: AgentId
+    - _parent: AgentId
+    - _children: List[AgentId]
+    - _inbox: Queue[MessageInstance]
+    - _runtime: AgentarSystem
+    - _executor: StatementExecutor
+    - _evaluator: ExpressionEvaluator
+    - _message_handler: MessageHandler
+    - _action_executor: ActionExecutor
+    + initializeAgent()
+    + step()
+    + destroyAgent()
+  }
+
+  class StatementExecutor <<runtime>> {
+    - agent: AgentInstance
+  }
+
+  class ExpressionEvaluator <<runtime>> {
+    - agent: AgentInstance
+  }
+
+  class MessageHandler <<runtime>> {
+    - agent: AgentInstance
+  }
+
+  class ActionExecutor <<runtime>> {
+    - agent: AgentInstance
+  }
+
+  class MessageInstance <<runtime>> {
+    - _name: str
+    - _sender: AgentId
+    - _receiver: AgentId
+    - _type
+    - _content: VariableContainer
+  }
+
+  class VariableContainer <<runtime>> {
+    - _variables: dict[str, VariableInfo]
+    - _agent: AgentInstance
+    - _parent_container: VariableContainer
+  }
+
+ class AgentId <<value object>> {
+    - id: str
+  }
+
+  class VariableInfo <<runtime>>
+  class Pointer <<runtime>>
+  class TypedList <<runtime>>
+  class TypedDict <<runtime>>
+  class TypedTuple <<runtime>>
+
+  class AgentarRuntimeError <<runtime>>
+}
+
+package "Declarations" {
+  ' MessageContainer -[hidden]down-> AgentContainer
+  AgentarMessage -[hidden]down-> AgentContainer
+
+  class AgentarAgent <<declaration>> {
+    - _fields: VariableContainer
+    - _beliefs: VariableContainer
+    - _actions: ASTNodeContainer
+    - _rules: ASTNodeContainer
+    - _initialize
+    - _destroy
+    - _name
+  }
+
+  class ASTNodeContainer <<declaration>> {
+    - _nodes: list
+  }
+
+  class AgentarMessage <<declaration>> {
+    - _name: str
+    - _type
+    - _fields: VariableContainer
+  }
+  class AgentContainer <<declaration>> {
+    - _agents: dict[AgentId, AgentarAgent]
+  }
+  class MessageContainer <<declaration>> {
+    - _messages: dict[str, AgentarMessage]
+  }
+}
+
+' === Associations / compositions ===
+
+' System i runtime
+AgentarSystem "1" o-- "0..*" AgentInstance : agents
+AgentarSystem "1" o-- "0..*" AgentRunner : threads
+
+' System i deklaracje
+AgentarSystem "1" *-- "1" AgentContainer : agents_decl
+AgentarSystem "1" *-- "1" MessageContainer : messages_decl
+
+' Runner
+AgentRunner --> AgentInstance : instance
+AgentRunner --> AgentarSystem : system
+AgentRunner --> AgentId : agent_id
+
+' AgentInstance i helpery (kompozycja)
+AgentInstance "1" *-- "1" StatementExecutor
+AgentInstance "1" *-- "1" ExpressionEvaluator
+AgentInstance "1" *-- "1" MessageHandler
+AgentInstance "1" *-- "1" ActionExecutor
+
+' AgentInstance i system / deklaracje / inbox
+AgentInstance --> AgentarSystem : _runtime
+AgentInstance "1" o-- "0..*" MessageInstance : _inbox
+AgentInstance --> AgentId
+
+' Wiadomości
+MessageInstance --> VariableContainer : _content
+MessageInstance --> AgentId : _sender
+MessageInstance --> AgentId : _receiver
+
+MessageHandler --> MessageInstance
+
+' Deklaracje
+AgentContainer --> AgentarAgent
+MessageContainer --> AgentarMessage
+AgentarAgent "1" *-- "0..*" ASTNodeContainer : _actions
+AgentarAgent "1" *-- "0..*" ASTNodeContainer : _rules
+AgentarAgent "1" *-- "1" VariableContainer : _fields
+AgentarAgent "1" *-- "1" VariableContainer : _beliefs
+
+' Zmienne i typy
+VariableContainer "1" o-- "*" VariableInfo : _variables
+VariableContainer --> AgentInstance : _agent
+VariableContainer "0..1" <-- "0..*" VariableContainer : parent / children
+
+VariableContainer --> Pointer
+TypedList "1" o-- "*" Pointer
+TypedDict "1" o-- "*" Pointer
+TypedTuple "1" o-- "*" Pointer
+
+@enduml

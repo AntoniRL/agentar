@@ -71,10 +71,12 @@ class VariableContainer:
 
     def get(self, name: str, line: int, deref=False):
         if deref: 
-            return self._find(name, line).value.get().get()  # Get the value from the Pointer.Pointer
+            if isinstance(self._find(name, line).value.get(), (int, TypedDict, str, float, bool, TypedList, TypedTuple)):
+                return self._find(name, line).value.get()
+            else:
+                return self._find(name, line).value.get().get()  # Get the value from the Pointer.Pointer
         else:
             return self._find(name, line).value.get()  # Get the value from the Pointer
-    
 
     def set(self, target: str, value, line, deref=False):
         try:

@@ -462,3 +462,8 @@ class Atan2ExprNode(ASTNode):
 @dataclass
 class SqrtExprNode(ASTNode):
     value: ASTNode
+
+
+@dataclass
+class ProcessMessageNode(ASTNode):
+    pass

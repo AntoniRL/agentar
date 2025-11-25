@@ -1,0 +1,1009 @@
+// ==== MESSAGE =============================
+message BLOCK_OF_INFO{
+    dict<tuple<int,int>, float> frontiers; //dict of unvisited fields 
+    dict<tuple<int,int>, int> visited;     //dict of fields which agent visited
+}
+
+message RED_RESERVATION{
+    dict<tuple<int,int>, int> frontiers; //dict of unvisited fields 
+    dict<tuple<int,int>, int> visited;     //dict of fields which agent visited
+    tuple<int,int> reserve;
+}
+
+message GOLD_COLLECT{
+    int num_of_gold;
+}
+
+message MASTER_RESPONSE{
+    tuple<int,int> number_of_golds;
+}
+
+message RED_GOLD_COLECT{
+    int gold;
+}
+
+message BLUE_GOLD_COLECT{
+    int gold;
+}
+
+
+// ==== GREEN SCOUR =========================
+agent green_scout{
+    fields {
+        pointer<list<list<int>>> WORLD;
+        tuple<int,int> START;
+        tuple<int,int> area_angles_deg;
+        list<tuple<int,int>> neighbors;
+
+        tuple<float,float> area_angles_rad;
+        list<tuple<int,int>> plan_path;
+
+        float wD = 1.1;     // distance weidth
+        float wTheta = 0.9; // angle weidth
+        float D0 = 10.0;     // constant to normalize the distance (the bigger, the gentler)
+
+        int counter = 0;
+        int number_of_steps = 0;
+
+        int gold_counter = 0;
+    }
+    beliefs {
+        dict<tuple<int,int>, float> frontiers; //dict of unvisited fields 
+        dict<tuple<int,int>, int> visited; //dict of fields which agent visited
+        dict<tuple<int,int>, float> frontiers_to_send; //dict of unvisted fields to send
+        dict<tuple<int,int>, int> visited_to_send;
+
+        int in_the_area = 0;  // number of fields in my area
+
+        int x = 0; // actual position x
+        int y = 0; // actual position y
+    }
+    goals {
+        g1: len(bel.frontiers) == 0;
+    }
+    initialize {
+        del self.plan_path[0]; // probelm of initializing empty plan_path in agentar
+        self.area_angles_rad = (self.area_angles_deg[0] * pi / 180, self.area_angles_deg[1] * pi / 180);
+    }
+    sense {
+        if (bel.visited.get((bel.x, bel.y)) == None) {
+            int x = self.START[0] + bel.x;
+            int y = self.START[1] + bel.y;
+            if (*self.WORLD[self.START[1] + bel.y][self.START[0] + bel.x] == 1) do collect_gold();
+            bel.visited[(bel.x, bel.y)] = 1;
+            bel.visited_to_send[(bel.x, bel.y)] = 1;
+            for (int i=0; i<4; i=i+1){ 
+                tuple<int,int> neighbor = (x + self.neighbors[i][0], y + self.neighbors[i][1]); // location in the map
+                tuple<int,int> neighbor_local = (bel.x + self.neighbors[i][0], bel.y + self.neighbors[i][1]); // my belief of the location
+                if (neighbor[0] < 0 || neighbor[0] >= len(*self.WORLD[0]) || neighbor[1] < 0 || neighbor[1] >= len(*self.WORLD)) continue;
+                elif (*self.WORLD[neighbor[1]][neighbor[0]] == -1) continue;
+                elif (bel.visited.get((neighbor_local[0],neighbor_local[1])) != None) continue;
+                else  {
+                    float angle = atan2(neighbor_local[1], neighbor_local[0]);
+                    if (angle < 0) angle = angle + 2*pi;
+                    // think about areas ex. 330-30
+                    if (angle >= self.area_angles_rad[0] && angle < self.area_angles_rad[1] && bel.frontiers.get(neighbor_local) == None) bel.in_the_area = bel.in_the_area + 1;
+                    bel.frontiers[neighbor_local] = angle;
+                    bel.frontiers_to_send[neighbor_local] = angle;
+                }
+            }
+        }
+    }
+    rules {
+        when () then {
+            self.counter = self.counter+1;
+            //logging("FRONTIERS::",bel.frontiers);
+            //logging("VISITED::",bel.visited);
+        }
+        when (self.counter % 5 == 0 && (len(bel.frontiers_to_send) > 0 || len(bel.visited_to_send) > 0)) then {
+            BLOCK_OF_INFO msg_ = BLOCK_OF_INFO{frontiers: bel.frontiers_to_send, visited: bel.visited_to_send};
+            send2siblings(_, msg_, msgType_inform);
+            bel.frontiers_to_send = {};
+            bel.visited_to_send = {};
+        }
+        when (self.is_goal_achieved == False && len(self.plan_path) == 0) then {
+            if (bel.in_the_area == 0) do find_out_of_area();
+            elif (bel.in_the_area > 0) do find_new_target();
+        }
+        when (len(self.plan_path) > 0) then {
+            do follow_the_path();
+            self.number_of_steps = self.number_of_steps + 1;
+        }
+        when (self.is_goal_achieved == True) then {
+            kill();
+        }
+    }
+
+    destroy {
+        BLOCK_OF_INFO msg_ = BLOCK_OF_INFO{frontiers: bel.frontiers, visited: bel.visited};
+        send2siblings(_, msg_, msgType_inform);
+        GOLD_COLLECT msg_2 = GOLD_COLLECT{num_of_gold: self.gold_counter};
+        send2parent(msg_2, msgType_inform);  
+    }
+
+    receive BLOCK_OF_INFO{
+        when (msg._type == msgType_inform) then {
+
+            list<tuple<int,int>> keys_visited;
+            keys_visited = msg.visited.keys();
+            for(int i=0; i<len(keys_visited); i=i+1){
+                if (bel.visited.get(keys_visited[i]) == None) bel.visited[keys_visited[i]] = 1;
+                if (bel.frontiers.get(keys_visited[i]) != None){
+                    float angle = bel.frontiers[keys_visited[i]];
+                    if (angle >= self.area_angles_rad[0] && angle < self.area_angles_rad[1]) bel.in_the_area = bel.in_the_area - 1;
+                    del bel.frontiers[keys_visited[i]];
+                }
+            }
+            list<tuple<int,int>> keys_frontiers;
+            keys_frontiers = msg.frontiers.keys();
+            for(int i=0; i<len(keys_frontiers); i=i+1){
+                if (bel.visited.get(keys_frontiers[i]) != None) continue;
+                if (bel.frontiers.get(keys_frontiers[i]) == None){
+                    float angle;
+                    angle = msg.frontiers[keys_frontiers[i]];
+                    bel.frontiers[keys_frontiers[i]] = angle;
+                    if (angle >= self.area_angles_rad[0] && angle < self.area_angles_rad[1]) bel.in_the_area = bel.in_the_area + 1;
+                }
+            }
+            if (len(self.plan_path) > 0){
+                if (bel.visited.get(self.plan_path[-1]) != None) {
+                    self.plan_path = [];
+                }
+            }
+        }
+    }
+
+    action find_new_target(): void {
+        dict<tuple<int,int>, tuple<int,int>> parent; // BFS tree (field: previous field)
+        tuple<int, int> start = (bel.x, bel.y);
+        parent[start] = start;
+        list<tuple<int,int>> Q = [start];
+        dict<tuple<int,int>, int> seen = {start: 1};
+        tuple<int,int> found = start;
+        self.plan_path = [];
+        while (len(Q)>0 && found == start){
+            tuple<int,int> u = Q[0];
+            del Q[0];
+            if (bel.frontiers.get(u) != None)
+                if (bel.frontiers.get(u) >= self.area_angles_rad[0] && bel.frontiers.get(u) < self.area_angles_rad[1] ) {
+                    found = u;
+                    break;
+                }
+            for (int i=0; i<4; i=i+1){
+                tuple<int,int> neighbor = (u[0] + self.neighbors[i][0], u[1] + self.neighbors[i][1]);
+                if (seen.get(neighbor) == 1) continue;
+                elif (bel.visited.get(neighbor) != None) {
+                    seen[neighbor] = 1;
+                    parent[neighbor] = u;
+                    Q.add(neighbor);
+                }
+                elif (bel.frontiers.get(neighbor) != None) {
+                    if (bel.frontiers.get(neighbor) >= self.area_angles_rad[0] && bel.frontiers.get(neighbor) < self.area_angles_rad[1]) {
+                        found = neighbor;
+                        parent[found] = u;
+                        break;
+                    }
+                }
+            }
+        }
+        if (found != start){
+            tuple<int,int> curr = found;
+            while (curr != start) {
+                self.plan_path.add(curr);
+                curr = parent[curr];
+            }
+        }
+    }
+
+    action follow_the_path(): void{
+        bel.x = self.plan_path[-1][0];
+        bel.y = self.plan_path[-1][1];
+        print("GLOBAL POSSITION::", self.START[0] + bel.x, self.START[1] + bel.y, "RELATIV POSSITION::", bel.x, bel.y, "visited::", len(bel.visited), "GOLD::", self.gold_counter);
+        if (bel.frontiers.get((bel.x, bel.y)) != None) {
+            if (bel.frontiers[self.plan_path[-1]] >= self.area_angles_rad[0] && bel.frontiers[self.plan_path[-1]] < self.area_angles_rad[1]){
+                bel.in_the_area = bel.in_the_area - 1;
+            } 
+            del bel.frontiers[self.plan_path[-1]];
+        }
+        del self.plan_path[-1];
+    }
+
+    action find_out_of_area(): void{
+        dict<tuple<int,int>, float> best_4 = {}; //simple angle with manhatan
+        dict<tuple<int,int>, float> best_4_angle = {}; //only angle for nest calculation
+        list<tuple<int,int>> keys_front = bel.frontiers.keys();
+        for (int i=0; i<len(keys_front); i = i+1){
+            float score;
+            float manh_dist;
+            float angle_dist_normalize;
+            manh_dist = do count_manhatan_dist(keys_front[i]);
+            angle_dist_normalize = do count_normalize_angle_dist(bel.frontiers[keys_front[i]]);
+            score = self.wTheta*angle_dist_normalize + self.wD*manh_dist;
+            if (len(best_4) < 4) {
+                best_4[keys_front[i]] = score;
+                best_4_angle[keys_front[i]] = angle_dist_normalize;
+            } else {
+                list<tuple<int,int>> keys_b_4 = best_4.keys();
+                for (int j=0; j<4; j=j+1){
+                    if (best_4[keys_b_4[j]] > score){
+                        del best_4_angle[keys_b_4[j]];
+                        del best_4[keys_b_4[j]];
+                        best_4[keys_front[i]] = score;
+                        best_4_angle[keys_front[i]] = angle_dist_normalize;
+                        break;
+                    }
+                }
+            }
+        }
+        //===search for the best among the selected four
+        dict<tuple<int,int>, float> cost; // of going to the 4 selected
+        dict<tuple<int,int>, tuple<int,int>> parent; // BFS tree (field: previous field)
+        tuple<int, int> start = (bel.x, bel.y);
+        parent[start] = start;
+        list<tuple<int,int>> Q = [start];
+        dict<tuple<int,int>, int> seen = {start: 1};
+        self.plan_path = [];
+        while (len(Q)>0 && len(cost)<len(best_4)){
+            tuple<int,int> u = Q[0];
+            del Q[0];
+            if (best_4.get(u) != None) cost[u] = 0.0;
+            for (int i=0; i<4; i=i+1){
+                tuple<int,int> neighbor = (u[0] + self.neighbors[i][0], u[1] + self.neighbors[i][1]);
+                if (seen.get(neighbor) == 1) continue;
+                elif (bel.visited.get(neighbor) != None) {
+                    seen[neighbor] = 1;
+                    parent[neighbor] = u;
+                    Q.add(neighbor);
+                }
+                elif (best_4.get(neighbor) != None) {
+                    cost[neighbor] = 0.0;
+                    parent[neighbor] = u;
+                    seen[neighbor] = 1;
+                }
+            }
+        }
+        list<tuple<int,int>> key_best4 = best_4.keys();
+        tuple<int,int> best_choise;
+        for (int i=0; i<len(key_best4); i=i+1){
+            if (i==0) best_choise = key_best4[i];
+            tuple<int,int> curr = key_best4[i];
+            int counter = 0;
+            while (curr != start) {
+                counter = counter + 1;
+                curr = parent[curr];
+            }
+            float counter_notmalize = counter/self.D0;
+            if (counter_notmalize>1.0) counter_notmalize = 1.0;
+            cost[key_best4[i]] = self.wTheta * best_4_angle[key_best4[i]] + self.wD * counter_notmalize;
+            if (cost[best_choise] > cost[key_best4[i]]) best_choise = key_best4[i];
+        }
+        tuple<int,int> curr = best_choise;
+        while (curr != start) {
+            self.plan_path.add(curr);
+            curr = parent[curr];
+        }
+    }
+
+    action count_manhatan_dist(tuple<int,int> pos): float {
+        float manh_dist;
+        manh_dist = (abs(bel.x-pos[0])+abs(bel.y-pos[1])) / self.D0;
+        if (manh_dist > 1.0) manh_dist = 1.0;
+        return manh_dist;
+    }
+
+    action count_normalize_angle_dist(float angle): float {
+        float sector_width = self.area_angles_rad[1]-self.area_angles_rad[0];
+        if (sector_width<0) sector_width = 2*pi+sector_width;
+        float d1 = abs(angle-self.area_angles_rad[0]);
+        if (d1>pi) d1=2*pi-d1;
+        float d2 = abs(angle-self.area_angles_rad[1]);
+        if (d2>pi) d2=2*pi-d2;
+        float d;
+        if (d1<d2) d = d1; else d = d2;
+        float denom = (2*pi-sector_width)/2.0; //max possible dist
+        if (denom == 0.0) return 0.0;
+        else return d/denom;
+    }
+
+    action collect_gold(): void{
+        if (*self.WORLD[self.START[1] + bel.y][self.START[0] + bel.x] == 1){
+            *self.WORLD[self.START[1] + bel.y][self.START[0] + bel.x] = 0;
+            self.gold_counter = self.gold_counter + 1;
+            logging("GOLD colected at", (self.START[0] + bel.x, self.START[1] + bel.y));
+            sleep(0.5);
+        }
+    }
+}
+
+
+agent green_master{
+    fields {
+        pointer<list<list<int>>> WORLD;
+        tuple<int,int> START;
+        int num_of_gold = 0;
+        int received = 0;
+    }
+    beliefs {
+    }
+    initialize {
+        print("Color BLUE; start possition:", self.START);
+        if (self.START == (0,0)){
+            spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (1,45), neighbors: [(1,0),(0,-1),(-1,0),(0,1)]});
+            spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (45,90), neighbors: [(0,1),(-1,0),(0,-1),(1,0)]});
+        }
+        else {
+            spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (180,225), neighbors: [(-1,0),(0,1),(1,0),(0,-1)]});
+            spawn(green_scout, {WORLD: self.WORLD, START: self.START, area_angles_deg: (225,270), neighbors: [(0,-1),(1,0),(0,1),(-1,0)]});
+        }
+    }
+    rules {
+        when (self.received == 2) then {
+            kill();
+        }
+    }
+    destroy {
+        BLUE_GOLD_COLECT msg_ = BLUE_GOLD_COLECT{gold: self.num_of_gold};
+        send2parent(msg_, msgType_inform);
+        //print("Team BLUE finished with:", self.num_of_gold, "GOLD.");
+    }
+    receive GOLD_COLLECT{
+        when () then {
+            self.received = self.received + 1;
+            self.num_of_gold = self.num_of_gold + msg.num_of_gold;
+        }
+    }
+}
+
+
+// ======= RED TEAM ============
+agent red_scout {
+    fields {
+        pointer<list<list<int>>> WORLD;
+        tuple<int,int> START;
+        dict<tuple<int,int>,tuple<int,int>> wall_sequence;
+        tuple<int,int> first_wall; 
+
+        list<tuple<int,int>> neighbors = [(1,0),(0,-1),(-1,0),(0,1)];
+        int gold_counter = 0;
+        list<tuple<int,int>> plan_path;
+    }
+    beliefs {
+        int x = 0;
+        int y = 0;
+        tuple<int,int> wall;
+        tuple<int,int> reserved_by_other;
+        bool gold_sensor = False;
+
+        dict<tuple<int,int>, int> frontiers; //dict of unvisited fields 
+        dict<tuple<int,int>, int> visited; //dict of fields which agent visited
+    }        
+    goals {
+        g1: len(bel.frontiers) == 0;
+    }
+    initialize {
+        del self.plan_path[-1]; // problems with initializing empty lists of tuples ...
+        bel.wall = self.first_wall;
+    }
+    sense {
+        if (bel.visited.get((bel.x, bel.y)) == None) {
+            bel.visited[(bel.x, bel.y)] = 1;
+            if (*self.WORLD[self.START[1] + bel.y][self.START[0] + bel.x] == 1) do collect_gold();
+            for (int i=0; i<4; i=i+1){ 
+                tuple<int,int> neighbor = (self.START[0] + bel.x + self.neighbors[i][0], self.START[1] + bel.y + self.neighbors[i][1]);     // location in the map
+                tuple<int,int> neighbor_local = (bel.x + self.neighbors[i][0], bel.y + self.neighbors[i][1]);                               // my belief of the location
+                if (neighbor[0] < 0 || neighbor[0] >= len(*self.WORLD[0]) || neighbor[1] < 0 || neighbor[1] >= len(*self.WORLD)) continue;  // out of world -> continue
+                elif (*self.WORLD[neighbor[1]][neighbor[0]] == -1) continue;                                                                // wall -> continue
+                elif (bel.visited.get((neighbor_local[0],neighbor_local[1])) != None) continue;                                             // already visited -> continue
+                else  {
+                    bel.frontiers[neighbor_local] = 1;
+                }
+            }
+        }
+    }
+    rules {
+        when () then {
+            while (len(self._inbox)>0){
+                process_message();
+            }
+        }
+        when (len(self.plan_path) == 0) then {
+            do find_from_neighbours();
+            if (len(self.plan_path) > 0) do reserve_my_targer();
+        }
+        when (len(self.plan_path) > 0) then {
+            do follow_the_path();
+        }
+        when (self.is_goal_achieved == True) then {
+            kill();
+        }
+    }
+    destroy {
+        GOLD_COLLECT msg_ = GOLD_COLLECT{num_of_gold: self.gold_counter};
+        send2parent(msg_, msgType_inform);
+    }
+
+    receive RED_RESERVATION{
+        when (msg._type == msgType_inform) then {
+            list<tuple<int,int>> keys_visited;
+            keys_visited = msg.visited.keys();
+            for(int i=0; i<len(keys_visited); i=i+1){
+                if (bel.visited.get(keys_visited[i]) == None) bel.visited[keys_visited[i]] = 1;
+                if (bel.frontiers.get(keys_visited[i]) != None) del bel.frontiers[keys_visited[i]];
+            }
+            list<tuple<int,int>> keys_frontiers;
+            keys_frontiers = msg.frontiers.keys();
+            for(int i=0; i<len(keys_frontiers); i=i+1){
+                if (bel.visited.get(keys_frontiers[i]) != None) continue;
+                if (bel.frontiers.get(keys_frontiers[i]) == None)  bel.frontiers[keys_frontiers[i]] = msg.frontiers[keys_frontiers[i]];
+            }
+            if (len(self.plan_path) > 0){
+                if (bel.visited.get(self.plan_path[-1]) != None) {
+                    self.plan_path = [];
+                }
+            }
+            bel.reserved_by_other = msg.reserve;
+        }
+    }
+
+    action find_from_neighbours(): void{
+        bool found = False;
+        for (int i=0; i<3; i=i+1){
+            tuple<int,int> next_to_check = (bel.x +self.wall_sequence[bel.wall][0], bel.y + self.wall_sequence[bel.wall][1]);
+            if (bel.frontiers.get(next_to_check) != None  &&  bel.reserved_by_other != next_to_check ) {
+                found = True;
+                self.plan_path.add( next_to_check );
+                for (int i=0; i<3; i=i+1){
+                    bel.wall = self.wall_sequence[bel.wall];
+                }
+                break;
+            } else {
+                bel.wall = self.wall_sequence[bel.wall];
+            }
+        }
+        if (found == False) {
+            do find_closest_frontier();
+        }
+    }
+
+    action find_closest_frontier(): void {
+        dict<tuple<int,int>, tuple<int,int>> parent; // BFS tree (field: previous field)
+        tuple<int, int> start = (bel.x, bel.y);
+        parent[start] = start;
+        list<tuple<int,int>> Q = [start];
+        dict<tuple<int,int>, int> seen = {start: 1};
+        tuple<int,int> found = start;
+        self.plan_path = [];
+        int head = 0;
+        while (head < len(Q) && found == start){
+            tuple<int,int> u = Q[head];
+            head = head + 1;
+            if (bel.frontiers.get(u) != None) {
+                found = u;
+                break;
+            }
+            for (int i=0; i<4; i=i+1){
+                tuple<int,int> neighbor = (u[0] + self.neighbors[i][0], u[1] + self.neighbors[i][1]);
+                if (seen.get(neighbor) == 1) continue;
+                elif (bel.visited.get(neighbor) != None) {
+                    seen[neighbor] = 1;
+                    parent[neighbor] = u;
+                    Q.add(neighbor);
+                }
+                elif (bel.frontiers.get(neighbor) != None) {
+                        found = neighbor;
+                        parent[found] = u;
+                        break;
+                }
+            }
+        }
+        if (found != start){
+            tuple<int,int> curr = found;
+            while (curr != start) {
+                self.plan_path.add(curr);
+                curr = parent[curr];
+            }
+        }
+    }
+
+    action follow_the_path(): void{
+        bel.x = self.plan_path[-1][0];
+        bel.y = self.plan_path[-1][1];
+        print("GLOBAL POSSITION::", self.START[0] + bel.x, self.START[1] + bel.y, "RELATIV POSSITION::", bel.x, bel.y, "visited::", len(bel.visited), "GOLD::", self.gold_counter);
+        if (self.plan_path[-1] == (bel.x, bel.y) && bel.frontiers.get(self.plan_path[-1]) != None) del bel.frontiers[self.plan_path[-1]];
+        del self.plan_path[-1];
+    }
+
+    action collect_gold(): void{
+        if (*self.WORLD[self.START[1] + bel.y][self.START[0] + bel.x] == 1){
+            *self.WORLD[self.START[1] + bel.y][self.START[0] + bel.x] = 0;
+            self.gold_counter = self.gold_counter + 1;
+            logging("GOLD colected at", (self.START[0] + bel.x, self.START[1] + bel.y));
+            sleep(0.5);
+        }
+    }
+
+    action reserve_my_targer(): void {
+        RED_RESERVATION msg_ = RED_RESERVATION{frontiers: bel.frontiers, visited: bel.visited, reserve: self.plan_path[-1]};
+        send2siblings(_, msg_, msgType_inform);
+    }
+} 
+
+agent red_master {
+    fields {
+        pointer<list<list<int>>> WORLD;
+        tuple<int,int> START;
+        int num_of_gold = 0;
+        int received = 0;
+    }
+    beliefs {
+    }
+    initialize {
+        print("Color RED; start possition:", self.START);
+        if (self.START == (0,0)) {
+            spawn(red_scout, {WORLD: self.WORLD, START: self.START, wall_sequence: {(1,0):(0,1),(0,1):(-1,0),(-1,0):(0,-1),(0,-1):(1,0)}, first_wall: (-1,0) });
+            spawn(red_scout, {WORLD: self.WORLD, START: self.START, wall_sequence: {(0,1):(1,0),(1,0):(0,-1),(0,-1):(-1,0),(-1,0):(0,1)}, first_wall: (0,-1) });
+        }
+        else {
+            spawn(red_scout, {WORLD: self.WORLD, START: self.START, wall_sequence: {(1,0):(0,1),(0,1):(-1,0),(-1,0):(0,-1),(0,-1):(1,0)}, first_wall: (1,0) });
+            spawn(red_scout, {WORLD: self.WORLD, START: self.START, wall_sequence: {(0,1):(1,0),(1,0):(0,-1),(0,-1):(-1,0),(-1,0):(0,1)}, first_wall: (0,1) });
+        }
+    }
+    rules {
+        when (self.received == 2) then {
+            kill();
+        }
+    }
+    destroy {
+        RED_GOLD_COLECT msg_ = RED_GOLD_COLECT{gold: self.num_of_gold};
+        send2parent(msg_, msgType_inform);
+        //print("Team RED finished with:", self.num_of_gold, "GOLD.");
+    }
+    receive GOLD_COLLECT{
+        when () then {
+            self.received = self.received + 1;
+            self.num_of_gold = self.num_of_gold + msg.num_of_gold;
+        }
+    }
+}
+
+
+agent mother {
+    fields {
+        list<list<list<int>>> WORLDS = [
+            
+[
+[0, 1, 1, 0, 0, -1, -1, -1, -1, 0, 0, -1, 0, 0, -1, -1, -1, 0, 0, 0],
+[1, -1, -1, 0, 0, -1, -1, 1, 0, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0],
+[0, -1, -1, 0, -1, 0, 1, 0, 1, 0, -1, 0, -1, -1, 0, 1, 0, 0, 0, -1],
+[0, -1, 0, -1, 0, 0, -1, -1, 1, -1, 0, -1, -1, -1, -1, 0, -1, 0, 0, -1],
+[0, 0, 0, -1, -1, -1, -1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0],
+[-1, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, -1, 0, -1, 1, -1, -1, 0, -1, 0],
+[-1, 1, 1, 0, -1, -1, -1, 0, -1, 0, -1, -1, 0, 1, 0, -1, 0, 0, -1, 0],
+[-1, 0, 0, -1, 0, 1, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1, 1, -1, 0, 0],
+[-1, 0, 0, -1, 0, 0, -1, -1, 1, -1, -1, 0, 1, -1, 0, -1, 0, 0, -1, 0],
+[0, 1, 1, 0, -1, -1, 0, 0, 0, -1, -1, 0, 0, -1, 0, 0, -1, 1, -1, 0],
+[-1, 0, -1, 1, 0, 0, -1, 0, -1, -1, -1, -1, 0, 0, 0, -1, 0, 1, -1, 1],
+[0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 1, -1, 0, -1, 0, -1, -1, 1],
+[0, -1, -1, -1, -1, 0, -1, -1, 0, -1, 0, 1, 0, 0, -1, 0, 0, -1, -1, 0],
+[0, -1, -1, -1, 0, 1, -1, 0, 0, -1, 0, 1, 0, -1, -1, 0, -1, 0, -1, -1],
+[0, 0, -1, -1, -1, 0, 1, 0, -1, -1, -1, -1, 0, 0, -1, 0, -1, 0, -1, -1],
+[-1, -1, -1, 0, 0, -1, 0, 1, 0, 0, -1, 0, -1, -1, -1, 0, -1, 0, 0, -1],
+[0, -1, -1, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, 0, -1, 0, 1, 0, 0, -1],
+[0, 0, -1, 0, -1, 0, 0, 1, 0, -1, -1, 0, 0, 0, -1, -1, -1, 0, 0, -1],
+[0, 0, 0, 1, 0, 0, -1, -1, 0, -1, -1, -1, 0, 0, 0, -1, 0, 0, -1, -1],
+[0, -1, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 1, 0, 0]
+],
+
+[
+[0, 0, 0, -1, -1, 0, 0, -1, 1, 0, -1, -1, -1, -1, -1, 0, 0, 0, 1, 1],
+[0, 0, -1, -1, 0, 0, -1, 0, 0, 1, -1, 0, 1, 0, 0, 0, -1, -1, -1, -1],
+[0, 0, 1, -1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, -1, 0, 1, 0, -1],
+[-1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 1],
+[1, 0, 0, 0, -1, 0, 0, -1, -1, 0, 0, -1, 0, -1, -1, -1, 0, 0, -1, 0],
+[0, -1, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, -1, 0],
+[1, 0, -1, -1, -1, -1, 1, 1, -1, 0, 1, 0, 0, -1, 0, 1, 1, -1, 0, 0],
+[0, 1, 0, -1, -1, -1, 0, 0, 0, -1, -1, 0, -1, -1, 0, -1, 0, 0, 0, -1],
+[-1, -1, 0, 0, -1, -1, 0, -1, -1, -1, 0, 0, -1, 0, -1, -1, -1, 1, -1, 1],
+[-1, 0, 0, 0, -1, 0, 1, 0, 0, -1, -1, 0, 0, 0, 1, -1, -1, 0, -1, 1],
+[-1, 0, -1, 0, -1, -1, 0, -1, -1, 0, 0, -1, 0, -1, -1, -1, -1, 0, 1, 0],
+[0, 0, -1, -1, 0, -1, 0, 0, 1, -1, 0, 0, 0, -1, -1, 0, 0, -1, -1, -1],
+[0, 0, -1, 0, 0, -1, 0, 0, -1, -1, -1, 0, 0, 0, -1, -1, 1, 0, 0, -1],
+[1, -1, -1, 0, -1, -1, 1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0],
+[0, -1, 0, 0, 0, 1, 0, -1, -1, 0, 0, -1, 0, 1, -1, 1, 0, -1, -1, 0],
+[-1, 0, 0, 0, 1, -1, 0, 0, -1, -1, 1, -1, -1, -1, 0, -1, 0, -1, -1, -1],
+[0, 0, -1, 0, 1, -1, 0, -1, 0, 0, 0, -1, -1, 0, 0, -1, 0, 0, -1, 1],
+[-1, -1, -1, 0, -1, -1, 0, -1, -1, -1, 0, -1, -1, 0, -1, 0, 0, -1, 0, 0],
+[0, 0, -1, 0, 0, -1, -1, -1, -1, -1, 0, 1, 0, 1, -1, 0, 1, 0, 0, -1],
+[-1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, -1, -1, 1, 0, 1, 0]
+],
+
+[
+[0, 0, 1, 1, 0, 0, 0, -1, -1, 1, 0, 0, -1, -1, -1, -1, -1, 0, 0, 1],
+[-1, 0, 0, -1, 0, -1, 1, -1, 0, 0, 0, -1, -1, -1, 1, -1, -1, -1, 0, -1],
+[0, 0, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, -1],
+[-1, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, -1, -1, -1, -1, 0, 0, 0, 1],
+[-1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, -1, -1, 0, 0, 0, 1, -1, 0, -1],
+[0, -1, 0, -1, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, -1],
+[1, -1, -1, -1, 0, -1, 0, -1, -1, 0, 0, 0, 0, 1, -1, -1, 0, -1, 0, -1],
+[0, 1, 0, 0, 1, 0, 0, 1, -1, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, -1],
+[-1, -1, 0, -1, 0, -1, 0, 1, 0, -1, -1, 0, -1, 1, 0, -1, 0, -1, 0, 0],
+[-1, -1, 0, -1, 1, 0, -1, -1, 1, -1, -1, 0, 0, -1, -1, -1, 0, 0, -1, 0],
+[0, 0, 0, 0, -1, -1, -1, 0, 0, -1, -1, -1, 0, 0, 0, -1, 0, 1, -1, -1],
+[0, -1, 0, 0, -1, -1, 0, 1, -1, 0, 0, 1, 0, 0, -1, -1, 0, 1, 0, -1],
+[-1, -1, 0, 1, 0, -1, -1, -1, -1, 0, 0, 0, -1, 0, 0, -1, -1, -1, -1, -1],
+[0, -1, 1, -1, 0, -1, -1, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, -1, -1, -1],
+[0, 0, 0, -1, 0, 1, 0, 0, -1, -1, 0, -1, -1, 1, 1, -1, 0, 0, 0, 0],
+[-1, 1, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, -1, -1, 0, 0, 0, -1, 0, 0],
+[-1, 0, 0, 0, -1, 0, 0, 0, -1, -1, -1, 0, 0, -1, -1, 1, -1, 1, -1, 0],
+[-1, 0, 1, 0, -1, 1, 0, 0, -1, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, 0],
+[-1, -1, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1],
+[0, 0, 0, 0, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, 1, 0, 0, -1, 1, 0]
+],
+
+[
+[0, 0, -1, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, -1, -1, 1, 0, 0, 1, -1],
+[-1, 0, 1, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0],
+[1, 0, -1, 0, -1, -1, 0, 0, -1, -1, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0],
+[-1, 0, -1, -1, 0, -1, -1, 0, -1, -1, -1, 0, -1, 1, 0, 0, 1, -1, 0, -1],
+[-1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, -1, -1, 1, -1, -1, -1, 0, -1],
+[-1, -1, 0, 0, -1, 0, 1, -1, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, 0, -1],
+[0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, 0, -1, -1, -1, 0, 0, 1, 0],
+[1, 0, -1, 0, 0, -1, -1, 0, 0, 0, -1, -1, 0, 0, -1, -1, -1, 0, 1, -1],
+[0, -1, 1, -1, 0, -1, -1, 1, -1, 0, -1, -1, 0, 1, -1, -1, -1, 0, 0, 0],
+[-1, 1, 1, 0, 0, 0, -1, 1, -1, -1, -1, 0, 1, 1, 0, 0, 1, -1, -1, 1],
+[0, 0, -1, -1, 1, -1, -1, -1, -1, 0, 0, 0, -1, 0, -1, 0, 0, 1, -1, 0],
+[0, 0, -1, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, -1, 0, 0, 0, -1, -1, -1],
+[1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, 0],
+[-1, -1, -1, 0, 0, 1, 0, 0, 0, 0, -1, 1, 0, -1, -1, 0, -1, -1, -1, 0],
+[-1, -1, 0, 0, -1, 0, -1, 0, 0, -1, -1, 0, 0, 0, -1, 0, 0, 0, 0, 0],
+[0, -1, 1, 0, -1, 1, 0, 0, 0, -1, -1, -1, -1, 0, 1, -1, 0, 0, 0, -1],
+[1, -1, 0, -1, -1, 0, 0, 0, 0, 0, -1, 1, 1, 0, -1, -1, 0, 0, 0, 0],
+[0, 0, 1, 0, -1, 0, -1, 0, 0, -1, 1, -1, 0, -1, 0, -1, 0, 0, -1, 0],
+[-1, 0, -1, 0, 0, -1, 0, -1, 1, 1, 0, 0, 0, 0, 0, 0, -1, 0, -1, -1],
+[-1, -1, 0, 0, 0, -1, 0, 0, 0, -1, -1, -1, -1, 0, 1, 0, -1, 0, 0, 0]
+],
+
+[
+[0, -1, 1, 0, 1, 0, -1, -1, 0, 0, 0, 0, 0, 0, -1, -1, 1, -1, 1, -1],
+[0, 1, -1, -1, -1, 1, 0, 0, -1, 0, -1, -1, -1, -1, -1, -1, 0, 0, 0, -1],
+[0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, -1, -1],
+[-1, -1, -1, 0, 0, 0, -1, -1, -1, -1, 0, 0, 0, 1, 1, 0, -1, 1, 0, 0],
+[-1, -1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0],
+[0, -1, -1, 1, -1, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, 0, 1, 0, 1, 0],
+[0, -1, -1, -1, 0, 0, 0, 0, 1, -1, 1, 0, 0, -1, -1, 0, 0, -1, -1, 0],
+[0, 0, -1, -1, -1, 1, -1, 0, -1, -1, 1, -1, 0, 0, -1, 0, -1, 0, 0, -1],
+[-1, 0, 0, 1, -1, 0, 1, 0, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, -1, -1, -1, 1, 1, -1, -1, 1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0],
+[1, -1, -1, -1, -1, -1, 0, 1, -1, 0, 0, 0, 1, -1, -1, -1, 0, 0, -1, -1],
+[0, -1, 0, 0, 0, 1, -1, 0, -1, -1, -1, -1, 0, -1, 0, 0, -1, 0, 0, 0],
+[0, 0, 0, -1, -1, 0, -1, 0, -1, 0, 0, 0, 0, 0, -1, 0, -1, 0, -1, 0],
+[0, -1, 0, 0, 0, 0, -1, -1, -1, 0, 0, -1, -1, 0, 0, 0, 0, 0, -1, -1],
+[-1, 0, -1, 0, 0, 0, 1, 0, 0, 0, -1, -1, -1, 0, -1, -1, 0, 1, 0, -1],
+[0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1, 1, -1, -1, 0, 0, 0, -1],
+[0, 1, -1, -1, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1],
+[0, 0, 0, -1, -1, -1, 0, 0, -1, 0, -1, 0, 0, 0, -1, 1, 1, -1, 0, -1],
+[0, 0, 0, 0, -1, -1, -1, 1, 0, -1, -1, 0, -1, 1, -1, 0, -1, -1, 0, 0],
+[1, 1, 0, -1, -1, 0, 1, 1, 0, 0, 0, -1, 0, 0, 0, 0, -1, -1, -1, 0]
+],
+
+[
+[0, -1, 0, -1, 0, -1, -1, -1, 0, 0, -1, -1, -1, 0, 0, -1, -1, -1, 0, -1],
+[0, -1, 0, 0, 0, 0, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, 0, -1],
+[0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, -1, 1, 0, -1, -1, -1, 0, -1, 0],
+[-1, 1, -1, -1, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 1, 0, -1, 0, 1, 0],
+[0, -1, -1, -1, -1, 0, -1, 0, 0, 1, 0, 0, -1, 0, 0, -1, -1, 0, 0, 0],
+[0, 0, 0, 0, 0, -1, -1, 1, -1, -1, 0, -1, 0, 0, 1, 1, 0, 0, 0, 0],
+[-1, -1, 0, -1, -1, 0, -1, 1, 0, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, 1],
+[1, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, -1, -1, 0, -1, -1, -1, 0, -1, 0],
+[-1, 0, -1, -1, -1, -1, 1, 0, 0, -1, 0, 0, -1, 0, -1, 0, -1, 1, 0, 0],
+[0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 0, -1, -1, -1, -1, 0, 0, 0, 1, 1],
+[0, -1, 0, -1, -1, -1, -1, 0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -1, -1, 0],
+[-1, 0, 0, -1, -1, 0, -1, 0, -1, -1, -1, -1, -1, 0, -1, 0, -1, -1, 0, 1],
+[-1, 0, 0, 0, -1, 0, 0, -1, 0, -1, 0, -1, 0, 1, -1, 0, -1, 1, 0, -1],
+[-1, 1, 0, 0, -1, -1, 0, -1, 0, 0, 1, -1, 0, 0, -1, 0, -1, 1, -1, -1],
+[0, 0, -1, -1, 0, 0, 1, 1, -1, 0, 1, -1, -1, 1, 0, 0, -1, -1, 0, 0],
+[-1, 1, -1, 0, 0, -1, -1, 0, -1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+[0, 0, 0, 1, -1, -1, 0, 0, 0, 0, -1, -1, -1, -1, 0, -1, 0, -1, 0, 0],
+[0, -1, -1, 0, -1, 0, -1, 0, 1, 0, -1, -1, 0, 0, 0, 0, 0, 0, 1, -1],
+[0, 0, 0, -1, -1, 1, 0, 0, -1, -1, -1, 0, 0, 0, 1, -1, 0, -1, 0, 0],
+[0, -1, 0, -1, -1, -1, 1, 0, 0, -1, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0]
+],
+
+[
+[0, 0, 0, 0, -1, 0, 1, 0, -1, -1, -1, -1, -1, -1, -1, 1, 0, 0, -1, -1],
+[-1, -1, 1, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, -1, -1, -1],
+[0, 0, 0, 0, -1, -1, 1, 0, -1, 0, -1, -1, 0, 0, -1, 1, 0, 0, 1, -1],
+[0, -1, 0, 0, -1, 0, 1, 0, 0, 0, 0, 1, -1, -1, -1, -1, 0, -1, -1, 0],
+[-1, 1, 0, -1, 0, 0, -1, -1, -1, -1, -1, -1, -1, 0, -1, 0, 0, 0, 0, 0],
+[0, 0, -1, -1, -1, -1, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, -1, 0],
+[-1, 1, -1, -1, -1, 0, 0, 0, -1, 0, -1, -1, -1, 0, 0, 0, 0, 0, -1, 0],
+[-1, 0, 1, 1, 0, -1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, -1],
+[0, 1, 1, 0, 1, 0, 0, -1, 0, 0, 0, -1, -1, 0, 1, 0, -1, 0, 0, 0],
+[1, -1, 1, 0, -1, -1, 0, -1, 0, 0, -1, -1, -1, 0, 0, -1, 0, -1, 0, -1],
+[0, -1, -1, 0, 1, -1, -1, -1, -1, -1, -1, 1, 0, 0, 0, -1, 0, 1, 1, -1],
+[-1, -1, 0, -1, 1, 0, 0, -1, -1, -1, -1, 0, -1, -1, 0, 0, -1, -1, -1, -1],
+[0, -1, 0, 0, 0, -1, -1, 1, -1, 0, 0, -1, 1, -1, 0, 0, 0, -1, 0, 0],
+[0, 0, 0, -1, -1, -1, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1],
+[0, -1, 1, 0, -1, 0, -1, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, -1],
+[0, 0, 1, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, 0, -1, 0, 1, 0, -1],
+[-1, -1, 1, 0, 0, 0, 1, 0, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, 0],
+[-1, -1, 0, -1, 0, -1, -1, -1, 1, 0, -1, -1, -1, 0, 0, 0, 0, -1, -1, 0],
+[-1, 0, 1, -1, 0, 1, 0, 0, -1, 0, 0, 1, 1, -1, 0, 0, -1, -1, 0, 0],
+[-1, 0, -1, -1, 0, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, 0, 1, 0, 0, 0]
+],
+
+[
+[0, -1, -1, 0, 0, 0, 0, -1, 0, 0, 0, -1, -1, 0, -1, -1, -1, 0, 1, 0],
+[0, 0, 0, 1, 1, 0, -1, -1, 1, -1, 0, 0, 0, 0, -1, 0, 0, 1, -1, 0],
+[0, -1, -1, -1, -1, 0, 0, -1, -1, -1, 0, 0, -1, -1, -1, 1, -1, -1, -1, 0],
+[0, 0, -1, 1, 0, 0, -1, 0, -1, 0, 0, 0, 1, -1, -1, 0, -1, -1, -1, -1],
+[0, -1, 0, -1, 0, 0, 0, 1, 0, 0, 0, -1, -1, -1, 0, 0, -1, -1, 1, -1],
+[0, 1, 1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0],
+[-1, 0, 0, 0, 0, -1, -1, -1, 1, 0, 0, 0, 1, -1, 1, 0, 0, -1, -1, -1],
+[-1, -1, 0, 0, 0, 0, 0, -1, 0, 0, -1, -1, 1, 0, 0, 1, 1, -1, 0, 0],
+[0, -1, 0, 1, -1, -1, 0, -1, 0, -1, 0, -1, -1, 0, -1, 0, -1, -1, 0, 0],
+[0, -1, 0, -1, -1, 0, 0, 0, -1, 1, 1, 0, -1, 1, -1, 0, 1, -1, -1, 0],
+[0, 0, 0, -1, -1, -1, 0, -1, 1, 0, -1, -1, 1, -1, -1, 1, 0, -1, 0, 0],
+[0, -1, 0, 0, 0, -1, -1, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, 1, 0, 0],
+[-1, 0, -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, -1, -1, -1, -1],
+[0, 0, -1, -1, 0, 0, -1, 0, -1, 0, 1, -1, 0, -1, -1, 0, 0, -1, -1, 0],
+[-1, 0, 0, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, 0],
+[0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, -1, 0, 0],
+[0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, -1, 0, -1, 0, 0, 0, 0, 0, -1],
+[0, -1, -1, 0, -1, -1, 0, 0, 0, -1, 0, -1, 0, 1, 1, 1, -1, -1, 0, -1],
+[0, 0, -1, 1, 0, 0, 0, -1, 1, 1, -1, 0, -1, -1, 0, -1, -1, 0, 1, 0],
+[-1, 0, 0, -1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0]
+],
+
+[
+[0, -1, -1, -1, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, 0, -1, -1, -1, 0, 1],
+[1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, -1, 1, 0, -1, -1, 0, -1],
+[0, -1, -1, -1, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 1, 0, 0],
+[0, 0, 0, 0, -1, -1, 0, -1, 0, -1, 0, 0, -1, 0, -1, 1, -1, -1, -1, 0],
+[0, 1, -1, 0, 0, 0, 0, -1, -1, -1, 1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, -1, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, 0, 0, 0],
+[-1, 0, -1, -1, -1, 0, 0, 1, -1, 0, -1, -1, 0, -1, 0, 0, -1, 0, -1, 0],
+[0, 0, 0, -1, -1, 0, 1, 1, 0, 0, -1, 0, 1, 0, 0, -1, 1, 0, -1, 0],
+[-1, 0, 0, -1, 1, -1, -1, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, 0, 0, 0],
+[-1, -1, 0, -1, 0, 0, -1, -1, -1, 0, 0, 0, -1, 0, 0, -1, 0, -1, 0, -1],
+[0, -1, 0, 1, -1, 0, 1, 0, -1, 1, -1, -1, -1, -1, 0, 1, 0, -1, 1, -1],
+[1, 0, 0, -1, -1, -1, -1, 0, 0, 0, -1, 0, 0, 1, -1, -1, -1, 0, 0, 0],
+[0, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 1, -1, 0, 0, -1, -1, 0, 0, 0],
+[0, 1, 0, 0, 0, 0, 0, -1, -1, 0, -1, -1, 1, 0, 0, 0, 0, 0, -1, 0],
+[-1, -1, 1, 0, -1, -1, 0, 0, -1, 0, 0, -1, -1, -1, 1, -1, 1, -1, 1, 0],
+[1, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, -1, -1, -1, 0, 1, -1, -1],
+[-1, 0, 1, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, 0, 0, 0, 0, -1, -1, 0],
+[-1, -1, -1, 0, 0, 0, 0, 1, 1, 0, -1, 0, 1, 1, -1, -1, 0, -1, 0, 0],
+[0, 0, -1, 0, -1, -1, -1, -1, 0, -1, -1, 1, 0, -1, 0, 0, 0, 0, 0, -1],
+[0, 0, 0, 0, 1, 0, -1, -1, 1, 0, 1, -1, 0, -1, 0, -1, -1, -1, 0, 0]
+],
+
+[
+[0, -1, 0, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0, -1, 0, -1, 0, 0, 1],
+[0, 1, -1, 0, -1, 0, 0, -1, -1, 1, -1, 0, 0, -1, 1, 0, -1, 0, 0, -1],
+[-1, 0, 0, 0, -1, 1, -1, 0, -1, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0],
+[0, 0, 0, -1, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 1, 0, 1, -1, -1, 0],
+[0, 1, 0, -1, 0, -1, -1, 0, -1, -1, -1, -1, 0, -1, -1, -1, 0, -1, 0, 0],
+[-1, -1, 0, -1, 1, -1, -1, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, -1, 0, -1],
+[0, -1, 0, -1, -1, -1, 0, 0, -1, -1, 1, 0, -1, 0, 0, 1, 0, 0, 1, 1],
+[0, -1, -1, 0, -1, -1, 0, -1, -1, -1, 0, -1, 1, -1, 1, -1, -1, -1, -1, 0],
+[0, 0, 0, 1, -1, 1, 0, 0, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, -1, -1],
+[-1, 0, 0, -1, 1, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0],
+[-1, -1, 0, 0, 0, 0, -1, -1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, -1],
+[-1, -1, 0, 0, -1, 1, 0, 1, -1, 0, 0, 1, -1, -1, 0, 0, 0, -1, 0, 0],
+[0, -1, -1, 0, -1, -1, 0, -1, 0, 0, 1, 0, 0, 0, -1, 0, 0, 1, 0, -1],
+[0, 0, -1, -1, 1, 0, 0, 0, -1, -1, -1, -1, 0, -1, -1, -1, 0, -1, -1, -1],
+[0, -1, -1, -1, -1, 0, 0, 0, 1, -1, 0, 0, 0, 1, -1, -1, 0, -1, 0, 1],
+[1, -1, -1, 0, 0, 0, 0, -1, 0, 0, -1, -1, -1, -1, 0, 0, 1, 0, 1, -1],
+[0, 0, 1, 0, -1, -1, 0, -1, -1, 0, 0, 0, 0, -1, -1, -1, -1, 0, 1, -1],
+[0, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, 1, -1, 0, 0, -1, 0, 0, -1, -1],
+[0, 0, -1, -1, 0, 0, 0, 0, -1, 0, 0, 1, 0, -1, 0, 1, -1, 0, 0, 0],
+[-1, 0, 0, -1, 0, 1, -1, 0, -1, -1, 0, -1, 1, 0, 1, 0, 0, -1, -1, 0]
+],
+
+[
+[0, 1, 0, 1, -1, 0, 1, 0, 0, 0, -1, 0, 0, -1, -1, -1, 0, 0, 0, 0],
+[-1, 0, -1, 0, 0, -1, -1, 1, -1, 1, -1, -1, 1, -1, 0, -1, 0, -1, -1, 0],
+[0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, -1, 1, -1, 0, -1, -1, -1, 0, 0],
+[-1, 0, 1, 0, -1, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, 1, 0, 0, 0, -1],
+[-1, -1, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, 0, 0, -1, -1, 0, 0, 0, -1],
+[-1, 1, -1, -1, 1, -1, 0, -1, 0, -1, 0, 0, -1, -1, 0, 0, 0, 1, 1, -1],
+[1, 1, 0, -1, -1, -1, 0, -1, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1],
+[-1, -1, 0, 0, 0, 0, 0, 1, 0, -1, 0, -1, -1, 0, 1, -1, -1, -1, -1, -1],
+[1, 0, -1, -1, -1, -1, -1, 1, -1, -1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+[0, -1, -1, 0, -1, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, -1, -1, 0, -1, -1],
+[0, 0, -1, 0, 1, 0, -1, 0, 0, -1, -1, 1, 0, 0, -1, 0, 0, 0, -1, -1],
+[0, 0, 0, -1, -1, 0, 0, -1, -1, -1, 0, -1, -1, -1, 1, 1, -1, 0, 1, 0],
+[-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 1, -1, -1, -1, 0, -1, 0, 0, -1, 0],
+[-1, 0, -1, -1, 0, 0, -1, 0, 0, 0, 0, -1, -1, -1, -1, 1, -1, -1, -1, 0],
+[-1, 0, -1, 1, 0, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, 0, 1, -1, 0, 0],
+[0, 0, -1, -1, 1, -1, -1, -1, -1, 0, 0, -1, 1, 0, 0, -1, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 1, -1],
+[0, 0, -1, 0, 1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, 0, -1, -1, -1, 0],
+[0, -1, 0, 0, -1, -1, 0, 0, -1, 0, -1, 1, 0, 0, -1, 0, 1, 0, 0, 1],
+[0, 0, -1, 0, -1, -1, -1, 0, 1, 0, -1, 0, -1, 0, 1, 0, 0, 0, -1, 0]
+],
+
+[
+[0, 0, -1, 0, 0, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, 0, 0, 0],
+[-1, 1, 0, 1, 0, 1, 0, -1, -1, -1, 0, -1, 0, 0, 1, 0, -1, -1, 0, 0],
+[0, 0, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, -1, -1, 0, 0, -1, 0, 0],
+[0, 1, -1, 0, 0, -1, -1, -1, 0, -1, 0, -1, 1, 0, -1, 0, 0, 0, -1, 1],
+[-1, -1, -1, 0, 0, 0, 0, -1, 0, -1, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0],
+[0, 0, -1, 0, -1, 0, -1, 0, 0, -1, -1, 1, -1, 0, -1, 0, 0, 0, 0, 0],
+[0, 1, 0, 0, 0, -1, -1, -1, 0, -1, 0, -1, 0, 0, 0, 0, -1, -1, 0, 0],
+[-1, 1, -1, 0, -1, -1, -1, 0, 0, -1, 0, 0, 0, -1, 0, -1, 0, 0, -1, 0],
+[0, 0, -1, 1, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, 0, -1, -1, 1, 1, 0],
+[0, 0, 0, 1, -1, -1, -1, 0, -1, -1, -1, -1, 0, -1, 0, -1, 0, 0, 0, -1],
+[-1, -1, -1, -1, 0, -1, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, -1, 0, 0],
+[-1, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, -1, -1, 0, -1, 0, 1, -1, -1, 0],
+[0, -1, -1, 0, 0, 0, 1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0],
+[0, 1, 0, 0, -1, 0, 1, -1, -1, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, -1],
+[-1, -1, -1, 0, 0, -1, -1, 0, -1, 0, -1, 0, 0, 0, 1, 1, 0, -1, 0, 0],
+[1, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 1, 0, -1, 0, -1, -1, -1],
+[-1, 0, -1, -1, 0, -1, 1, 0, 0, 0, 0, 1, -1, 1, -1, -1, -1, 0, 0, -1],
+[-1, 0, -1, 0, -1, -1, 0, -1, -1, -1, 0, 0, 0, -1, -1, 0, 1, 0, 0, 0],
+[0, 1, 1, 0, -1, 0, 0, -1, -1, 0, 1, 1, 0, 0, 1, 1, 0, -1, 0, 0],
+[-1, 1, 0, 0, 1, -1, -1, -1, -1, 1, 0, 1, -1, -1, 0, 0, -1, -1, -1, 0]
+],
+
+[
+[0, -1, -1, 1, 0, -1, 0, -1, -1, -1, -1, 0, -1, -1, -1, 0, -1, -1, -1, 0],
+[0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, -1, -1, 0, 0, 0, 0, -1, 0],
+[-1, 0, 0, -1, 0, -1, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 1],
+[0, -1, 0, 0, 1, 0, -1, -1, 0, 0, -1, -1, -1, 1, -1, 0, 1, 0, 0, -1],
+[0, 1, 0, -1, -1, 0, -1, 0, -1, 0, 0, -1, 1, -1, 0, 0, -1, -1, 0, -1],
+[0, -1, 0, 0, 0, 0, -1, 0, 1, -1, -1, 0, 0, 0, 0, -1, -1, -1, 0, -1],
+[0, 0, -1, 0, 0, 0, -1, -1, 0, -1, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0],
+[1, -1, -1, -1, -1, 0, 0, 1, 0, -1, -1, -1, 0, 0, -1, -1, 0, 0, 1, 0],
+[0, 1, 1, -1, -1, 0, -1, 0, -1, 1, 0, 0, 0, 1, 0, -1, -1, 0, 0, -1],
+[1, -1, 0, 0, -1, 0, 0, -1, -1, -1, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1],
+[0, -1, -1, -1, -1, 0, -1, 0, 0, 0, 0, -1, -1, -1, -1, 0, 0, 1, 0, 0],
+[0, 0, 0, -1, 0, 0, -1, -1, 1, -1, -1, 0, -1, -1, -1, 0, -1, 0, 0, 0],
+[0, -1, -1, 0, 0, 0, -1, 0, -1, 0, 1, 1, -1, 0, 0, -1, -1, 1, -1, -1],
+[1, 0, 0, -1, 0, -1, 0, 1, -1, 0, -1, 0, 0, 0, -1, 0, -1, -1, -1, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0, 0, 0],
+[0, -1, -1, 0, -1, 1, 0, -1, 0, 1, 1, -1, 0, 0, 0, -1, 0, 0, -1, 0],
+[0, -1, -1, 0, -1, -1, 0, -1, -1, -1, 0, 0, 0, -1, 1, 0, -1, 0, -1, 0],
+[0, -1, 0, 1, 1, -1, -1, -1, 0, 0, -1, -1, 0, -1, -1, 0, -1, 1, 0, -1],
+[1, -1, -1, 0, 0, -1, -1, 1, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0],
+[-1, -1, -1, 0, -1, 0, 1, 0, 0, -1, -1, -1, 0, 0, 0, -1, -1, 0, -1, 0]
+],
+
+[
+[0, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 1, 0, -1, 0, -1, 0, -1, 1],
+[1, -1, -1, -1, -1, 1, -1, 0, -1, 0, -1, 0, 0, 1, 0, 0, 0, 0, -1, 0],
+[0, -1, -1, 0, 0, 0, -1, 1, 0, 0, 0, -1, 0, 0, 1, -1, -1, 1, -1, 0],
+[0, -1, -1, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, 1, -1, -1, 0],
+[0, -1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, -1, -1, -1, 0, 0, 1, 0],
+[0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 1, -1, 0, -1, 0, 0, -1],
+[0, -1, 0, 0, 0, -1, -1, -1, -1, -1, 0, -1, 0, 0, 0, 0, 0, -1, 1, 0],
+[0, 0, 0, -1, -1, -1, -1, -1, 0, -1, 0, 1, -1, 0, 0, -1, 0, 0, 0, 1],
+[0, 0, -1, 0, 1, 0, -1, -1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 1, -1, -1],
+[0, -1, 0, 0, -1, -1, 1, 1, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, -1, -1],
+[0, 0, 0, 0, 0, -1, -1, 1, 0, 1, -1, 1, 0, 1, -1, -1, -1, 0, 0, 1],
+[-1, -1, 0, 0, -1, 0, -1, 0, 1, 0, -1, 1, -1, 0, 1, 0, -1, 0, -1, 0],
+[-1, -1, -1, -1, -1, 0, 1, 0, -1, -1, -1, -1, 0, 0, -1, 0, -1, 0, 1, 0],
+[0, -1, 1, 0, -1, -1, -1, 0, 0, -1, 0, 0, 0, 1, -1, 0, 0, 0, -1, -1],
+[0, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, -1, 1, -1, 1, 0, 0, 1, 0, -1],
+[0, 0, -1, -1, 0, -1, 1, 0, 0, 0, -1, -1, 0, 0, -1, 0, 1, 0, 0, -1],
+[0, -1, 0, -1, -1, -1, 0, -1, -1, -1, -1, -1, 0, 0, 0, 0, -1, 0, -1, -1],
+[0, 0, 0, 0, 0, -1, 1, -1, 1, 0, 0, 1, -1, 0, -1, 0, -1, 0, 0, 0],
+[-1, 0, 0, -1, 0, 0, 0, -1, 0, -1, 0, 0, 0, -1, 0, 1, 0, 0, -1, 1],
+[-1, 0, -1, -1, 0, -1, -1, -1, 0, -1, 0, -1, 0, 0, 0, -1, 0, 0, -1, 0]
+],
+
+[
+[0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, 1, 0, 0, 1, -1, 0, 0, 0],
+[-1, 0, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0],
+[-1, 0, 0, 0, -1, 0, -1, -1, 0, 0, -1, 0, -1, -1, -1, 0, 0, 1, -1, 0],
+[0, 0, -1, 0, 0, 0, -1, 0, 0, 0, 1, 0, -1, -1, 0, 0, 1, -1, 0, 1],
+[0, -1, -1, 0, -1, 1, -1, 0, -1, 1, 1, 0, 0, 0, -1, 0, -1, -1, 0, 0],
+[-1, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, -1, -1, -1, 1, 0, 0, -1, 0],
+[-1, 0, 0, 0, -1, 0, -1, -1, 0, -1, 0, -1, -1, 0, -1, 0, -1, -1, -1, 0],
+[-1, -1, -1, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, 1, 0, 0, -1, -1, -1],
+[-1, 1, 0, 0, 1, 1, 0, -1, -1, 0, 0, 0, -1, 0, -1, -1, -1, -1, 0, 0],
+[0, 0, -1, -1, -1, 0, -1, -1, -1, -1, 0, 0, -1, 1, 0, 0, 0, 1, 0, -1],
+[0, -1, 1, 1, 0, 0, 1, 1, -1, -1, 1, 0, 0, -1, -1, -1, 1, -1, -1, 0],
+[0, -1, -1, 0, 1, -1, -1, -1, -1, 1, 1, -1, -1, 0, 1, 0, 1, 0, 0, 0],
+[-1, -1, 0, -1, 0, 0, 0, -1, -1, 0, -1, 0, 0, 0, -1, 0, 0, 0, 0, -1],
+[0, -1, 1, 0, 1, -1, 0, -1, 0, 0, -1, 0, -1, -1, -1, 0, -1, 0, -1, -1],
+[0, 0, 0, -1, 0, 1, 1, 0, -1, 0, 0, -1, -1, 0, 0, 0, -1, -1, -1, -1],
+[0, 1, -1, -1, -1, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+[1, -1, -1, 0, -1, 0, -1, -1, 0, -1, -1, 1, -1, 0, -1, 0, 0, -1, 0, -1],
+[-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, -1, -1, 0, 0, -1, 1, 0],
+[-1, -1, 0, 0, -1, 0, -1, -1, -1, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1, 0],
+[-1, 1, 0, 1, -1, 0, -1, 0, 0, 0, -1, -1, -1, 0, 0, -1, -1, -1, -1, 0]
+]
+
+
+        ];
+
+        list<list<int>> WORLD_BUF;
+        int num_of_worlds;
+
+        list<tuple<tuple<int, int>, tuple<int,int> >> results;   //(red_gold, blue_gold) red up, (red_gold, blue_gold) red down
+        int red_first_round = -1;
+        int blue_first_round = -1;
+        int red_second_round = -1;
+        int blue_second_round = -1;
+        int res_in_one_game = 0;
+
+
+        int response = 0;  // in total
+        bool first_round = True;
+        bool second_round = False;
+    }
+
+    initialize {
+        del self.results[-1];
+        self.num_of_worlds = len(self.WORLDS) - 1; //index from 0 in 
+
+        //logging("WORLD::", self.WORLD);
+        //// red down; green up
+        //spawn(red_master, {WORLD: &self.WORLD, START: (len(self.WORLD[0])-1, len(self.WORLD)-1 )});
+        //spawn(green_master, {WORLD: &self.WORLD, START: (0,0)});
+        //// red up; blue down;
+        //spawn(red_master, {WORLD: &self.WORLD, START: (0,0)});
+        //spawn(green_master, {WORLD: &self.WORLD, START: (len(self.WORLD[0])-1, len(self.WORLD)-1 )});
+    }
+    rules {
+        when (self.res_in_one_game == 4) then {
+            print(self.red_first_round, self.blue_first_round, self.red_second_round, self.blue_second_round);
+            self.res_in_one_game = 0;
+            self.results.add(((self.red_first_round, self.blue_first_round), (self.red_second_round, self.blue_second_round)));
+            self.response = self.response + 1;
+            self.red_first_round = -1;
+            self.blue_first_round = -1;
+            self.red_second_round = -1;
+            self.blue_second_round = -1;
+            self.first_round = True;
+
+        }
+        when (self.num_of_worlds >= 0 && self.first_round == True) then {
+            self.first_round = False;
+            self.WORLD_BUF = self.WORLDS[self.num_of_worlds];
+            print("First round RED vs BLUE");
+            spawn(red_master, {WORLD: &self.WORLD_BUF, START: (len(self.WORLD_BUF[0])-1, len(self.WORLD_BUF)-1 )});
+            spawn(green_master, {WORLD: &self.WORLD_BUF, START: (0,0)});
+        }
+        when (self.num_of_worlds >= 0 && self.second_round == True) then {
+            self.second_round = False;
+            self.WORLD_BUF = self.WORLDS[self.num_of_worlds];
+            self.num_of_worlds = self.num_of_worlds - 1;
+            print("Second round BLUE vs RED");
+            spawn(red_master, {WORLD: &self.WORLD_BUF, START: (0,0)});
+            spawn(green_master, {WORLD: &self.WORLD_BUF, START: (len(self.WORLD_BUF[0])-1, len(self.WORLD_BUF)-1 )});
+        }
+        when (self.num_of_worlds < 0 && len(self.results) == len(self.WORLDS)) then {
+            print("RESULTS::",self.results);
+            kill();
+        } 
+    }
+    receive RED_GOLD_COLECT {
+        when (self.red_first_round >= 0 && self.red_second_round == -1) then {
+            self.red_second_round = msg.gold;
+            self.res_in_one_game = self.res_in_one_game + 1;
+            print("2nd round RED::", msg.gold);
+        }
+        when (self.red_first_round == -1) then {
+            self.red_first_round = msg.gold;
+            self.res_in_one_game = self.res_in_one_game + 1;
+            print("1st round RED::", msg.gold);
+            if (self.blue_first_round >= 0) self.second_round = True;
+        }
+    }
+    receive BLUE_GOLD_COLECT {
+        when (self.blue_first_round >= 0 && self.blue_second_round == -1) then {
+            self.blue_second_round = msg.gold;
+            self.res_in_one_game = self.res_in_one_game + 1;
+            print("2nd round BLUE::", msg.gold);
+        }
+        when (self.blue_first_round == -1) then {
+            self.blue_first_round = msg.gold;
+            self.res_in_one_game = self.res_in_one_game + 1;
+            print("1st round BLUE::", msg.gold);
+            if (self.red_first_round >= 0) self.second_round = True;
+        }
+    }
+}

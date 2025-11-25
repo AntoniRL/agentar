@@ -116,6 +116,7 @@ statement
     | goalCheckStmt
     | getTimeStmt
     | dictDelStmt
+    | processMessageStmt
     ;
 
 
@@ -229,6 +230,10 @@ breakStmt
 
 continueStmt
     : 'continue' ';'
+    ;
+
+processMessageStmt
+    : 'process_message' '('')' ';'
     ;
 
 doStmt

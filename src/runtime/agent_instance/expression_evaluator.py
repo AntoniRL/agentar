@@ -2,6 +2,8 @@
 # runtime/agent_instance/expression_evaluator.py
 # ExpressionEvaluator: evaluates expressions in the context of an agent instance
 
+from queue import Queue
+
 from ast_tree.nodes import *
 from core.agentar_types import MessageType
 from core.agent_id import AgentId
@@ -89,6 +91,8 @@ class ExpressionEvaluator:
                 value = self.eval_expr(base, local_vars, message, line, deref)
                 if isinstance(value, (TypedList, TypedDict, TypedTuple, str, list)):
                     return len(value)
+                elif isinstance(value, Queue):
+                    return value.qsize() 
                 else:
                     if isinstance(base, BelAccessNode):
                         raise WrongTypeError("bel."+base.path[1], "list, string, tuple or dict", type(value).__name__, line)
